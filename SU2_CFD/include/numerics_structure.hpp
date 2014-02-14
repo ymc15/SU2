@@ -382,9 +382,9 @@ public:
 	void SetTurbVar(double *val_turbvar_i, double *val_turbvar_j);
     
 	/*!
-	 * \brief Set the value of the turbulent variable.
-	 * \param[in] val_transvar_i - Value of the turbulent variable at point i.
-	 * \param[in] val_transvar_j - Value of the turbulent variable at point j.
+	 * \brief Set the value of the transition variable.
+	 * \param[in] val_transvar_i - Value of the transition variable at point i.
+	 * \param[in] val_transvar_j - Value of the transition variable at point j.
 	 */
 	void SetTransVar(double *val_transvar_i, double *val_transvar_j);
     
@@ -396,9 +396,9 @@ public:
 	void SetTurbVarGradient(double **val_turbvar_grad_i, double **val_turbvar_grad_j);
     
 	/*!
-	 * \brief Set the gradient of the turbulent variables.
-	 * \param[in] val_turbvar_grad_i - Gradient of the turbulent variable at point i.
-	 * \param[in] val_turbvar_grad_j - Gradient of the turbulent variable at point j.
+	 * \brief Set the gradient of the transition variables.
+	 * \param[in] val_transvar_grad_i - Gradient of the transition variable at point i.
+	 * \param[in] val_transvar_grad_j - Gradient of the transition variable at point j.
 	 */
 	void SetTransVarGradient(double **val_transvar_grad_i, double **val_transvar_grad_j);
     
@@ -1194,10 +1194,12 @@ public:
 	 */
 	virtual void ComputeResidual(double *val_residual_i, double *val_residual_j);
     
-  virtual void ComputeResidual_TransLM(double *val_residual,
-                                       double **val_Jacobian_i,
-                                       double **val_Jacobian_j, CConfig *config,
-                                       double &gamma_sep) ;
+  virtual void ComputeResidual_TransLM(double *val_residual, 
+                                       double **val_Jacobian_i, 
+                                       double &gamma_eff, 
+                                       CConfig *config, 
+                                       bool boundary, 
+                                       ofstream &sagt_debug) ;
     
 	/*!
 	 * \overload
@@ -1362,6 +1364,11 @@ public:
 	 */
 	virtual void SetIntermittency(double intermittency_in);
   
+    /*!
+	 * \brief Set effective intermittency (gamma_eff from Langtry 2009)
+	 * \param[in] gamma_eff_in
+	 */
+  virtual void SetGammaEff(double gamma_eff_in); 
   /*!
 	 * \brief Computes the viscous source term for the TNE2 adjoint problem
 	 * \param[in] config - Definition of the particular problem.
@@ -2974,6 +2981,8 @@ public:
 	 * \param[in] config - Definition of the particular problem.
 	 */
 	void ComputeResidual(double *val_residual, double **Jacobian_i, double **Jacobian_j, CConfig *config);
+
+  void ComputeResidual_d(double *TransVar_i, double *TransVar_id, double *TransVar_j, double *TransVar_jd, double *val_residual, double *val_residuald);
 };
 
 /*!
@@ -3785,9 +3794,10 @@ private:
   bool transition;
   bool rotating_frame;
   double div, StrainMag;
-  double beta, gamma_sep, gamma_eff, intermittency;
+  double beta, gamma_eff, intermittency;
   double Freattach, r_t, s1;
   double Production, Destruction, CrossProduction;
+  double production_jacobian_contribution, destruction_jacobian_contribution;
   
   SpalartAllmarasInputs* SAInputs;
   SpalartAllmarasConstants* SAConstants;
@@ -3827,6 +3837,12 @@ public:
 	 */
     void SetIntermittency(double intermittency_in);
     
+	/*!
+	 * \brief Set effective intermittency (gamma_eff from Langtry 2009)
+	 * \param[in] gamma_eff_in
+	 */
+  void SetGammaEff(double gamma_eff_in); 
+
     /*!
 	 * \brief Residual for source term integration.
 	 * \param[in] val_production - Value of the Production.
@@ -4013,6 +4029,12 @@ private:
     double flen_global;
     double alpha_global;
     
+  	/*-- Intermediate values computed in translm_helper() --*/
+	double rey, mach, tu;
+	double strain, time_scale;
+	double Velocity_Mag, du_ds;
+	double re_theta_t, f_lambda;
+
 	double DivVelocity, Vorticity;
 	unsigned short iDim;
 	double nu, Ji, fv1, fv2, Omega, Shat, dist_0_2, Ji_2, Ji_3;
@@ -4048,7 +4070,10 @@ public:
 	 * \param[out] val_Jacobian_j - Jacobian of the numerical method at node j (implicit computation).
 	 * \param[in] config - Definition of the particular problem.
 	 */
-    void ComputeResidual_TransLM(double *val_residual, double **val_Jacobian_i, double **val_Jacobian_j, CConfig *config, double &gamma_sep);
+  void ComputeResidual_TransLM(double *val_residual, double **val_Jacobian_i, double &gamma_eff, CConfig *config, bool boundary, ofstream &sagt_debug);
+    
+  void translm_helper(CConfig *config);
+  double corr_func(double lambda);
     
     void CSourcePieceWise_TransLM__ComputeResidual_TransLM_d(double *TransVar_i, double *TransVar_id, double *val_residual, double *val_residuald, CConfig *config);
 };
