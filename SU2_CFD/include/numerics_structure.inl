@@ -61,7 +61,7 @@ inline void CNumerics::GetEq_Rxn_Coefficients(double **EqnRxnConstants, CConfig 
 														
 inline void CNumerics::ComputeResidual(double *val_residual, double **val_Jacobian_i, CConfig *config) { }
 
-inline void CNumerics::ComputeResidual_TransLM(double *val_residual, double **val_Jacobian_i, double **val_Jacobian_j, CConfig *config, double &gamma_sep) {}
+inline void CNumerics::ComputeResidual_TransLM(double *val_residual, double **val_Jacobian_i, double &gamma_sep, CConfig *config, bool boundary, ofstream &sagt_debug) {}
 
 inline void CNumerics::ComputeResidual_Axisymmetric(double *val_residual, CConfig *config) { }
 
@@ -177,6 +177,8 @@ inline void CNumerics::SetEddyViscosity(double val_eddy_viscosity_i, double val_
 }
 
 inline void CNumerics::SetIntermittency(double intermittency_in) { }
+
+inline void CNumerics::SetGammaEff(double gamma_eff_in) {}
 
 inline void CNumerics::SetProduction(double val_production) { }
 
@@ -385,6 +387,8 @@ inline void CSourcePieceWise_TurbSST::SetCrossDiff(double val_CDkw_i, double val
 }			
 
 inline void CSourcePieceWise_TurbSA::SetIntermittency(double intermittency_in) { intermittency = intermittency_in; }
+
+inline void CSourcePieceWise_TurbSA::SetGammaEff(double gamma_eff_in) { gamma_eff = gamma_eff_in; }
 
 inline void CSourcePieceWise_TurbSA::SetProduction(double val_production) { Production = val_production; }
 
