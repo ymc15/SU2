@@ -4020,6 +4020,7 @@ private:
     
   	/*-- Intermediate values computed in translm_helper() --*/
 	double rey, mach, tu;
+  unsigned short turb_model;
 	double strain, time_scale;
 	double Velocity_Mag, du_ds;
 	double re_theta_t, f_lambda;

@@ -513,8 +513,7 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 
 	rey  = config->GetReynolds();
 	mach = config->GetMach_FreeStreamND();
-	tu   = config->GetTurbulenceIntensity_FreeStream();
-
+  turb_model = config->GetKind_Turb_Model();
 	/*--- Compute vorticity and strain ---*/
 	Vorticity = (PrimVar_Grad_i[2][0]-PrimVar_Grad_i[1][1])*(PrimVar_Grad_i[2][0]-PrimVar_Grad_i[1][1]);
 	if (nDim == 3) Vorticity += ( (PrimVar_Grad_i[3][1]-PrimVar_Grad_i[2][2])*(PrimVar_Grad_i[3][1]-PrimVar_Grad_i[2][2]) +
@@ -534,6 +533,12 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 	} else if (nDim==3) {
 		Velocity_Mag = sqrt(U_i[1]*U_i[1]+U_i[2]*U_i[2]+U_i[3]*U_i[3])/U_i[0];
 	}
+
+  if (turb_model==SST) {
+    tu = 100.*pow(2*TurbVar_i[0]/3.,0.5)/Velocity_Mag;
+  } else if (turb_model==SA) {
+	  tu   = config->GetTurbulenceIntensity_FreeStream();
+  }
 
 	/*-- Gradient of velocity magnitude ---*/
 	dU_dx = 0.5*Velocity_Mag*( 2*U_i[1]/U_i[0]*PrimVar_Grad_i[1][0]
@@ -558,7 +563,8 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 
 	/*-- Begin iterations to solve REth correlation --*/
 	f_lambda = 1.;
-	tu = tu*100.;
+  if (turb_model==SA)
+  	tu = tu*100.;
 
 	/*-- Initial bracket for lambda --*/
 	if (du_ds>=0) {
@@ -639,7 +645,7 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 //	}
 
 	/*-- Restore tu to its regular value --*/
-	tu /= 100;
+  if (turb_model==SA) tu /= 100;
 
 
 	/*-- Calculate blending function f_theta --*/
@@ -687,8 +693,6 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	//SU2_CPP2C COMMENT START
   double val_residuald[2], TransVar_id[2];
 
-  unsigned short turb_model = (config->GetKind_Turb_Model() == SST);
-  
 	//SU2_CPP2C COMMENT END
   
 	val_residual[0] = 0.0;
@@ -742,7 +746,6 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	val_residual[0] *= Volume;
 
 	/*-- REtheta eq: --*/
-	// Deactivated the f_wake parameter...
 	theta_bl   = TransVar_i[1]/U_i[0]*Laminar_Viscosity_i / (U_i[0]*Velocity_Mag);
 	delta_bl   = 7.5*theta_bl;
 	delta      = 50.0*Vorticity*dist_i/Velocity_Mag*delta_bl + 1e-20;
@@ -797,7 +800,7 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
 	double re_theta_cd, f_onset1d, f_onset2d, f_onsetd;
 	double prod, des;
 	double prodd, desd;
-	double r_t;
+	double r_t, re_omega;
 	double delta, theta, lambda, var1, f_theta;
 	double deltad, var1d, f_thetad;
 	double theta_bl, f_reattach;
@@ -825,6 +828,7 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
 	double x3d;
 	double y1;
 	double y1d;
+
 	val_residuald[0] = 0.0;
 	val_residual[0] = 0.0;
 	val_residuald[1] = 0.0;
@@ -842,7 +846,11 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
 	re_v = U_i[0]*result1/Laminar_Viscosity_i*strain;
 	/*-- f_onset controls transition onset location --*/
 	// Vorticity Reynolds number
-	r_t = Eddy_Viscosity_i/Laminar_Viscosity_i;
+  if (turb_model==SST)  {
+    r_t = U_i[0]*TurbVar_i[0] / (Laminar_Viscosity_i*TurbVar_i[1]);
+  } else if(turb_model==SA) {
+    r_t = Eddy_Viscosity_i/Laminar_Viscosity_i;
+  }
 	f_onset1d = -(re_v*2.193*re_theta_cd/(2.193*re_theta_c*(2.193*re_theta_c))
 	);
 	f_onset1 = re_v/(2.193*re_theta_c);
@@ -896,7 +904,6 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
 	val_residuald[0] = Volume*val_residuald[0];
 	val_residual[0] *= Volume;
 	/*-- REtheta eq: --*/
-	// Deactivated the f_wake parameter...
 	theta_bld = Laminar_Viscosity_i*TransVar_id[1]/U_i[0]/(U_i[0]*Velocity_Mag
 	);
 	theta_bl = TransVar_i[1]/U_i[0]*Laminar_Viscosity_i/(U_i[0]*Velocity_Mag);
@@ -904,7 +911,13 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
 	delta_bl = 7.5*theta_bl;
 	deltad = 50.0*Vorticity*dist_i*delta_bld/Velocity_Mag;
 	delta = 50.0*Vorticity*dist_i/Velocity_Mag*delta_bl + 1e-20;
-	f_wake = 1.;
+
+  if (turb_model==SST) {
+    re_omega = U_i[0]*TurbVar_i[1]*dist_i*dist_i/Laminar_Viscosity_i;
+    f_wake   = exp(-pow(re_omega/1.e5,2));
+  } else if(turb_model==SA) {
+  	f_wake = 1.;
+  }
 	var1d = TransVar_id[0]/U_i[0]/(1.0-1./c_e2);
 	var1 = (TransVar_i[0]/U_i[0]-1./c_e2)/(1.0-1./c_e2);
 	result1d = pow_d(var1, var1d, 2, &result1);
