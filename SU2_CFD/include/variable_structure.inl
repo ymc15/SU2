@@ -208,9 +208,9 @@ inline double CVariable::GetEddyViscosity(void) { return 0; }
 
 inline double CVariable::GetEddyViscosityInc(void) { return 0; }
 
-inline void CVariable::SetGammaEff(void) { }
+inline void CVariable::SetGammaEff(double gamma_eff_in) {}
 
-inline void CVariable::SetGammaSep(double gamma_sep) { }
+inline double CVariable::GetGammaEff(void) {return 0.;}
 
 inline double CVariable::GetIntermittency(void) { return 0; }
 
@@ -607,7 +607,9 @@ inline bool CNSVariable::SetPressure(double Gamma, double turb_ke) {
 
 inline double CTransLMVariable::GetIntermittency() { return Solution[0]; }
 
-inline void CTransLMVariable::SetGammaSep(double gamma_sep_in) {gamma_sep = gamma_sep_in;}
+inline void CTransLMVariable::SetGammaEff(double gamma_eff_in) {gamma_eff = gamma_eff_in;}
+
+inline double CTransLMVariable::GetGammaEff(void) {return gamma_eff;}
 
 inline double *CAdjEulerVariable::GetForceProj_Vector(void) { return ForceProj_Vector; }
 

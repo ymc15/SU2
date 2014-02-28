@@ -949,15 +949,10 @@ public:
 
 	/*!
 	 * \brief A virtual member.
-	 * \return Sets separation intermittency
+	 * \return Sets  effectiveintermittency
 	 */
-	virtual void SetGammaSep(double gamma_sep);
-
-	/*!
-	 * \brief A virtual member.
-	 * \return Sets separation intermittency
-	 */
-	virtual void SetGammaEff(void);
+	virtual void SetGammaEff(double gamma_eff_in);
+	virtual double GetGammaEff(void);
 
 	/*!
 	 * \brief A virtual member.
@@ -2464,7 +2459,7 @@ public:
 
 class CTransLMVariable : public CTurbVariable {
 protected:
-  double gamma_sep;
+  double gamma_eff;
   
 public:
   
@@ -2488,26 +2483,10 @@ public:
 	 */
 	~CTransLMVariable(void);
 
-  /*!
-	 * \brief ________________.
-	 * \param[in] val_var - Index of the variable.
-	 * \param[in] val_solution - Value of the time spectral source term. for the index <i>val_var</i>.
-	 */
   double GetIntermittency(void);
   
-  /*!
-	 * \brief ________________.
-	 * \param[in] val_var - Index of the variable.
-	 * \param[in] val_solution - Value of the time spectral source term. for the index <i>val_var</i>.
-	 */
-  void SetGammaSep(double gamma_sep_in);
-  
-  /*!
-	 * \brief ________________.
-	 * \param[in] val_var - Index of the variable.
-	 * \param[in] val_solution - Value of the time spectral source term. for the index <i>val_var</i>.
-	 */
-  void SetGammaEff(void);
+  void SetGammaEff(double gamma_eff_in);
+  double GetGammaEff(void);
   
 };
 

@@ -1359,11 +1359,6 @@ public:
 	 */
   virtual void GetKeqConstants(double *A, unsigned short val_reaction, CConfig *config);
   
-	/*!
-	 * \brief Set intermittency for numerics (used in SA with LM transition model)
-	 */
-	virtual void SetIntermittency(double intermittency_in);
-  
     /*!
 	 * \brief Set effective intermittency (gamma_eff from Langtry 2009)
 	 * \param[in] gamma_eff_in
@@ -3832,12 +3827,6 @@ public:
 	void ComputeResidual(double *val_residual, double **val_Jacobian_i, double **val_Jacobian_j, CConfig *config);
     
 	/*!
-	 * \brief Residual for source term integration.
-	 * \param[in] intermittency_in - Value of the intermittency.
-	 */
-    void SetIntermittency(double intermittency_in);
-    
-	/*!
 	 * \brief Set effective intermittency (gamma_eff from Langtry 2009)
 	 * \param[in] gamma_eff_in
 	 */
@@ -3951,11 +3940,11 @@ public:
 	void ComputeResidual(double *val_residual, double **val_Jacobian_i, double **val_Jacobian_j, CConfig *config);
   
 	/*!
-	 * \brief Residual for source term integration.
-	 * \param[in] intermittency_in - Value of the intermittency.
+	 * \brief Set effective intermittency (gamma_eff from Langtry 2009)
+	 * \param[in] gamma_eff_in
 	 */
-  void SetIntermittency(double intermittency_in);
-  
+  void SetGammaEff(double gamma_eff_in); 
+
   /*!
 	 * \brief Residual for source term integration.
 	 * \param[in] val_production - Value of the Production.
@@ -4075,7 +4064,7 @@ public:
   void translm_helper(CConfig *config);
   double corr_func(double lambda);
     
-    void CSourcePieceWise_TransLM__ComputeResidual_TransLM_d(double *TransVar_i, double *TransVar_id, double *val_residual, double *val_residuald, CConfig *config);
+    void CSourcePieceWise_TransLM__ComputeResidual_TransLM_d(double *TransVar_i, double *TransVar_id, double *val_residual, double *val_residuald, CConfig *config, bool boundary);
 };
 
 /*!
@@ -4106,6 +4095,9 @@ private:
 	norm2_Grad;
     
 	bool incompressible;
+
+  bool transition;
+  double gamma_eff;
     
 public:
     
@@ -4150,6 +4142,13 @@ public:
 	 */
 	virtual void SetCrossDiff(double val_CDkw_i, double val_CDkw_j);
     
+    
+	/*!
+	 * \brief Set effective intermittency (gamma_eff from Langtry 2009)
+	 * \param[in] gamma_eff_in
+	 */
+  void SetGammaEff(double gamma_eff_in); 
+
 	/*!
 	 * \brief Residual for source term integration.
 	 * \param[out] val_residual - Pointer to the total residual.

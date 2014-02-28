@@ -3489,6 +3489,34 @@ public:
 	 * \param[in] config - Definition of the particular problem.
 	 */
 	void ImplicitEuler_Iteration(CGeometry *geometry, CSolver **solver_container, CConfig *config);
+
+  /*!
+	 * \brief Impose the send-receive boundary condition.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	void Set_MPI_Solution(CGeometry *geometry, CConfig *config);
+    
+  /*!
+	 * \brief Impose the send-receive boundary condition.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	void Set_MPI_Solution_Gradient(CGeometry *geometry, CConfig *config);
+    
+    /*!
+	 * \brief Impose the send-receive boundary condition.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	void Set_MPI_Solution_Limiter(CGeometry *geometry, CConfig *config);
+  
+  /*!
+	 * \brief Impose the send-receive boundary condition.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	void Set_MPI_Solution_Old(CGeometry *geometry, CConfig *config);
     
 	// Another set of matrix structures for the Lm equations
 	CSysMatrix JacobianItmc; /*!< \brief Complete sparse Jacobian structure for implicit computations. */

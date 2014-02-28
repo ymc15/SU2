@@ -672,7 +672,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	double re_theta_c, flen, re_v, f_onset1, f_onset2, f_onset3, f_onset, f_turb;
 
 	double prod, des;
-	double r_t;
+	double r_t, re_omega;
 	double delta, theta, lambda, var1, f_theta;
 	double theta_bl, f_reattach;
 	double delta_bl, f_wake;
@@ -686,6 +686,8 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
 	//SU2_CPP2C COMMENT START
   double val_residuald[2], TransVar_id[2];
+
+  unsigned short turb_model = (config->GetKind_Turb_Model() == SST);
   
 	//SU2_CPP2C COMMENT END
   
@@ -715,8 +717,14 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
 	re_v   = U_i[0]*pow(dist_i,2.)/Laminar_Viscosity_i*strain;  // Vorticity Reynolds number
 
+	
+  if (turb_model==SST)  {
+    r_t = U_i[0]*TurbVar_i[0] / (Laminar_Viscosity_i*TurbVar_i[1]);
+  } else if(turb_model==SA) {
+    r_t = Eddy_Viscosity_i/Laminar_Viscosity_i;
+  }
+
 	/*-- f_onset controls transition onset location --*/
-	r_t      = Eddy_Viscosity_i/Laminar_Viscosity_i;
 	f_onset1 = re_v / (2.193*re_theta_c);
 	f_onset2 = min(max(f_onset1, pow(f_onset1,4.)), 2.);
 	f_onset3 = max(1. - pow(0.4*r_t,3),0.);
@@ -739,7 +747,12 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	delta_bl   = 7.5*theta_bl;
 	delta      = 50.0*Vorticity*dist_i/Velocity_Mag*delta_bl + 1e-20;
 
-	f_wake = 1.;
+  if (turb_model==SST) {
+    re_omega = U_i[0]*TurbVar_i[1]*dist_i*dist_i/Laminar_Viscosity_i;
+    f_wake   = exp(-pow(re_omega/1.e5,2));
+  } else if(turb_model==SA) {
+  	f_wake = 1.;
+  }
 
 	var1 = (TransVar_i[0]/U_i[0]-1./c_e2)/(1.0-1./c_e2);
 	var1 = 1. - pow(var1,2);

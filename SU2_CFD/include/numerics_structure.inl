@@ -176,8 +176,6 @@ inline void CNumerics::SetEddyViscosity(double val_eddy_viscosity_i, double val_
 	Eddy_Viscosity_j=val_eddy_viscosity_j;
 }
 
-inline void CNumerics::SetIntermittency(double intermittency_in) { }
-
 inline void CNumerics::SetGammaEff(double gamma_eff_in) {}
 
 inline void CNumerics::SetProduction(double val_production) { }
@@ -386,7 +384,7 @@ inline void CSourcePieceWise_TurbSST::SetCrossDiff(double val_CDkw_i, double val
 	CDkw = val_CDkw_i;
 }			
 
-inline void CSourcePieceWise_TurbSA::SetIntermittency(double intermittency_in) { intermittency = intermittency_in; }
+inline void CSourcePieceWise_TurbSST::SetGammaEff(double gamma_eff_in) { gamma_eff = gamma_eff_in; }
 
 inline void CSourcePieceWise_TurbSA::SetGammaEff(double gamma_eff_in) { gamma_eff = gamma_eff_in; }
 
@@ -402,9 +400,7 @@ inline double CSourcePieceWise_TurbSA::GetDestruction(void) { return Destruction
 
 inline double CSourcePieceWise_TurbSA::GetCrossProduction(void) { return CrossProduction; }
 
-
-
-inline void CSourcePieceWise_TurbML::SetIntermittency(double intermittency_in) { intermittency = intermittency_in; }
+inline void CSourcePieceWise_TurbML::SetGammaEff(double gamma_eff_in) { gamma_eff = gamma_eff_in; }
 
 inline void CSourcePieceWise_TurbML::SetProduction(double val_production) { Production = val_production; }
 

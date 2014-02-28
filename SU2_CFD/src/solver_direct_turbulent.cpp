@@ -1234,9 +1234,8 @@ void CTurbSASolver::Source_Residual(CGeometry *geometry, CSolver **solver_contai
     numerics->SetPrimVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive(), NULL);
     
     /*--- Set intermittency ---*/
-    
     if (transition) {
-      numerics->SetIntermittency(solver_container[TRANS_SOL]->node[iPoint]->GetIntermittency());
+      numerics->SetGammaEff(solver_container[TRANS_SOL]->node[iPoint]->GetGammaEff());
     }
     
     /*--- Turbulent variables w/o reconstruction, and its gradient ---*/
@@ -2518,7 +2517,7 @@ void CTurbMLSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contai
     
     /*--- Set intermittency ---*/
     if (transition) {
-      numerics->SetIntermittency(solver_container[TRANS_SOL]->node[iPoint]->GetIntermittency() );
+      numerics->SetGammaEff(solver_container[TRANS_SOL]->node[iPoint]->GetGammaEff());
     }
     
     /*--- Turbulent variables w/o reconstruction, and its gradient ---*/
@@ -3337,6 +3336,7 @@ void CTurbSSTSolver::Postprocessing(CGeometry *geometry, CSolver **solver_contai
 void CTurbSSTSolver::Source_Residual(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics, CNumerics *second_numerics,
                                      CConfig *config, unsigned short iMesh) {
   unsigned long iPoint;
+  bool transition = (config->GetKind_Trans_Model() == LM);
   
   for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
     
@@ -3368,6 +3368,11 @@ void CTurbSSTSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
     /*--- Cross diffusion ---*/
     numerics->SetCrossDiff(node[iPoint]->GetCrossDiff(),0.0);
     
+    /*--- Set intermittency ---*/
+    if (transition) {
+      numerics->SetGammaEff(solver_container[TRANS_SOL]->node[iPoint]->GetGammaEff());
+    }
+
     /*--- Compute the source term ---*/
     numerics->ComputeResidual(Residual, Jacobian_i, NULL, config);
     

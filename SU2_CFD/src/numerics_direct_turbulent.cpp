@@ -246,8 +246,7 @@ CSourcePieceWise_TurbSA::CSourcePieceWise_TurbSA(unsigned short val_nDim, unsign
                                                  CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
   
   incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
-  //transition     = (config->GetKind_Trans_Model() == LM);
-  transition = false; // Debugging, -AA
+  transition     = (config->GetKind_Trans_Model() == LM);
   rotating_frame = config->GetRotating_Frame();
   
   /*--- Spalart-Allmaras closure constants ---*/
@@ -1102,6 +1101,7 @@ void CAvgGradCorrected_TurbSST::ComputeResidual(double *val_residual, double **J
 CSourcePieceWise_TurbSST::CSourcePieceWise_TurbSST(unsigned short val_nDim, unsigned short val_nVar, double *constants,
                                                    CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
   
+  transition     = (config->GetKind_Trans_Model() == LM);
   incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
   
   /*--- Closure constants ---*/
@@ -1121,7 +1121,7 @@ void CSourcePieceWise_TurbSST::ComputeResidual(double *val_residual, double **va
   
   unsigned short iDim;
   double alfa_blended, beta_blended;
-  double diverg, pk, pw, zeta;
+  double diverg, pk, pw, dk, zeta;
   
   if (incompressible) {
     Density_i = V_i[nDim+1];
@@ -1159,12 +1159,18 @@ void CSourcePieceWise_TurbSST::ComputeResidual(double *val_residual, double **va
     pw = StrainMag*StrainMag - 2.0/3.0*zeta*diverg;
     pw = max(pw,0.0);
     
+    if (transition) pk *= gamma_eff;
+
     val_residual[0] += pk*Volume;
     val_residual[1] += alfa_blended*Density_i*pw*Volume;
     
     /*--- Dissipation ---*/
     
-    val_residual[0] -= beta_star*Density_i*TurbVar_i[1]*TurbVar_i[0]*Volume;
+    dk = beta_star*Density_i*TurbVar_i[1]*TurbVar_i[0];
+
+    if (transition) dk *= min(max(gamma_eff,0.1),1.0);
+
+    val_residual[0] -= dk*Volume;
     val_residual[1] -= beta_blended*Density_i*TurbVar_i[1]*TurbVar_i[1]*Volume;
 
     /*--- Cross diffusion ---*/
