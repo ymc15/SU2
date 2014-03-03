@@ -1305,6 +1305,7 @@ void CPhysicalGeometry::Read_SU2_Format(CConfig *config, string val_mesh_filenam
           config->SetMarker_All_Moving(iMarker, config->GetMarker_Config_Moving(Marker_Tag));
           config->SetMarker_All_PerBound(iMarker, config->GetMarker_Config_PerBound(Marker_Tag));
           config->SetMarker_All_SendRecv(iMarker, NONE);
+          config->SetMarker_All_Out_1D(iMarker, config->GetMarker_Config_Out_1D(Marker_Tag));
           
         }
         
@@ -2123,6 +2124,7 @@ void CPhysicalGeometry::Read_CGNS_Format(CConfig *config, string val_mesh_filena
           config->SetMarker_All_DV(iMarker, config->GetMarker_Config_DV(Marker_Tag));
           config->SetMarker_All_Moving(iMarker, config->GetMarker_Config_Moving(Marker_Tag));
           config->SetMarker_All_SendRecv(iMarker, NONE);
+          config->SetMarker_All_Out_1D(iMarker, config->GetMarker_Config_Out_1D(Marker_Tag));
         }
         iMarker++;
       }
@@ -2542,6 +2544,7 @@ void CPhysicalGeometry::Read_NETCDF_Format(CConfig *config, string val_mesh_file
     config->SetMarker_All_DV(iMarker, config->GetMarker_Config_DV(Marker_Tag));
     config->SetMarker_All_Moving(iMarker, config->GetMarker_Config_Moving(Marker_Tag));
     config->SetMarker_All_SendRecv(iMarker, NONE);
+    config->SetMarker_All_Out_1D(iMarker, config->GetMarker_Config_Out_1D(Marker_Tag));
   }
   
 }
@@ -2941,17 +2944,23 @@ void CPhysicalGeometry::ComputeWall_Distance(CConfig *config) {
    of the no-slip boundary nodes. Store the minimum distance to the wall for
    each interior mesh node. ---*/
   
-  for (iPoint = 0; iPoint < GetnPoint(); iPoint++) {
-    coord = node[iPoint]->GetCoord();
-    dist = 1E20;
-    for (iVertex = 0; iVertex < nVertex_SolidWall; iVertex++) {
-      dist2 = 0.0;
-      for (iDim = 0; iDim < nDim; iDim++)
-        dist2 += (coord[iDim]-Coord_bound[iVertex][iDim])
-        *(coord[iDim]-Coord_bound[iVertex][iDim]);
-      if (dist2 < dist) dist = dist2;
+  if (nVertex_SolidWall != 0) {
+    for (iPoint = 0; iPoint < GetnPoint(); iPoint++) {
+      coord = node[iPoint]->GetCoord();
+      dist = 1E20;
+      for (iVertex = 0; iVertex < nVertex_SolidWall; iVertex++) {
+        dist2 = 0.0;
+        for (iDim = 0; iDim < nDim; iDim++)
+          dist2 += (coord[iDim]-Coord_bound[iVertex][iDim])
+          *(coord[iDim]-Coord_bound[iVertex][iDim]);
+        if (dist2 < dist) dist = dist2;
+      }
+      node[iPoint]->SetWall_Distance(sqrt(dist));
     }
-    node[iPoint]->SetWall_Distance(sqrt(dist));
+  }
+  else {
+    for (iPoint = 0; iPoint < GetnPoint(); iPoint++)
+      node[iPoint]->SetWall_Distance(0.0);
   }
   
   /*--- Deallocate the vector of boundary coordinates. ---*/
@@ -3037,18 +3046,29 @@ void CPhysicalGeometry::ComputeWall_Distance(CConfig *config) {
    the distances to each of the no-slip boundary nodes in the entire mesh.
    Store the minimum distance to the wall for each interior mesh node. ---*/
   
-  for (iPoint = 0; iPoint < GetnPoint(); iPoint++) {
-    coord = node[iPoint]->GetCoord();
-    dist = 1E20;
-    for (iProcessor = 0; iProcessor < nProcessor; iProcessor++)
-      for (iVertex = 0; iVertex < Buffer_Receive_nVertex[iProcessor]; iVertex++) {
-        dist2 = 0.0;
-        for (iDim = 0; iDim < nDim; iDim++)
-          dist2 += (coord[iDim]-Buffer_Receive_Coord[(iProcessor*MaxLocalVertex_NS+iVertex)*nDim+iDim])*
-          (coord[iDim]-Buffer_Receive_Coord[(iProcessor*MaxLocalVertex_NS+iVertex)*nDim+iDim]);
-        if (dist2 < dist) dist = dist2;
-      }
-    node[iPoint]->SetWall_Distance(sqrt(dist));
+  nVertex_SolidWall = 0;
+  for (iProcessor = 0; iProcessor < nProcessor; iProcessor++) {
+    nVertex_SolidWall += Buffer_Receive_nVertex[iProcessor];
+  }
+  
+  if (nVertex_SolidWall != 0) {
+    for (iPoint = 0; iPoint < GetnPoint(); iPoint++) {
+      coord = node[iPoint]->GetCoord();
+      dist = 1E20;
+      for (iProcessor = 0; iProcessor < nProcessor; iProcessor++)
+        for (iVertex = 0; iVertex < Buffer_Receive_nVertex[iProcessor]; iVertex++) {
+          dist2 = 0.0;
+          for (iDim = 0; iDim < nDim; iDim++)
+            dist2 += (coord[iDim]-Buffer_Receive_Coord[(iProcessor*MaxLocalVertex_NS+iVertex)*nDim+iDim])*
+            (coord[iDim]-Buffer_Receive_Coord[(iProcessor*MaxLocalVertex_NS+iVertex)*nDim+iDim]);
+          if (dist2 < dist) dist = dist2;
+        }
+      node[iPoint]->SetWall_Distance(sqrt(dist));
+    }
+  }
+  else {
+    for (iPoint = 0; iPoint < GetnPoint(); iPoint++)
+      node[iPoint]->SetWall_Distance(0.0);
   }
   
   /*--- Deallocate the buffers needed for the MPI communication. ---*/
@@ -4018,7 +4038,7 @@ void CPhysicalGeometry::SetControlVolume(CConfig *config, unsigned short action)
   Volume, DomainVolume, my_DomainVolume, *NormalFace = NULL;
   bool change_face_orientation;
   int rank;
-  
+//  int counter = 0;
 #ifdef NO_MPI
   rank = MASTER_NODE;
 #else
@@ -4083,6 +4103,19 @@ void CPhysicalGeometry::SetControlVolume(CConfig *config, unsigned short action)
           Coord_FacejPoint[iDim] = node[face_jPoint]->GetCoord(iDim);
         }
         
+//        /*--- Print out the coordinates for a set of triangles making
+//         up a single dual control volume (for visualization) 124 is center ---*/
+//        if (face_iPoint == 124 || face_jPoint == 124) {
+//          for (iDim = 0; iDim < nDim; iDim++) cout << Coord_FaceElem_CG[iDim] << "\t";
+//          cout << endl;
+//          for (iDim = 0; iDim < nDim; iDim++) cout << Coord_Edge_CG[iDim] << "\t";
+//          cout << endl;
+//          for (iDim = 0; iDim < nDim; iDim++) cout << Coord_Elem_CG[iDim] << "\t";
+//          cout << endl;
+//          counter++;
+//        }
+        
+        
         switch (nDim) {
           case 2:
             /*--- Two dimensional problem ---*/
@@ -4105,6 +4138,13 @@ void CPhysicalGeometry::SetControlVolume(CConfig *config, unsigned short action)
         }
       }
     }
+  
+//  //cout << counter << endl;
+//  for (int i = 0; i < counter; i++){
+//    int j = i*3;
+//    cout << j+1 <<"\t"<<j+2 <<"\t"<<j+3 <<"\t"<<j+3 <<"\t"<<j+3<<"\t" <<j+3 <<"\t"<<j+3 <<"\t"<<j+3 << endl;
+//  }
+  
   
   /*--- Check if there is a normal with null area ---*/
   for (iEdge = 0; iEdge < nEdge; iEdge++) {
@@ -8982,6 +9022,7 @@ CBoundaryGeometry::CBoundaryGeometry(CConfig *config, string val_mesh_filename, 
           config->SetMarker_All_Moving(iMarker, config->GetMarker_Config_Moving(Marker_Tag));
           config->SetMarker_All_PerBound(iMarker, config->GetMarker_Config_PerBound(Marker_Tag));
           config->SetMarker_All_SendRecv(iMarker, NONE);
+          config->SetMarker_All_Out_1D(iMarker, config->GetMarker_Config_Out_1D(Marker_Tag));
           
         }
         
