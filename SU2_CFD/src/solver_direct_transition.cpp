@@ -44,9 +44,9 @@ CTransLMSolver::CTransLMSolver(CGeometry *geometry, CConfig *config, unsigned sh
   bool restart = (config->GetRestart() || config->GetRestart_Flow());
 	bool incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
 	bool freesurface = (config->GetKind_Regime() == FREESURFACE);
-    bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
-    bool dual_time = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
-                      (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
+  bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
+  bool dual_time = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
+                    (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
 
   cout << "Entered constructor for CTransLMSolver -AA\n";
   Gamma = config->GetGamma();
@@ -116,7 +116,7 @@ CTransLMSolver::CTransLMSolver(CGeometry *geometry, CConfig *config, unsigned sh
   Density_Inf       = config->GetDensity_FreeStreamND();
   Viscosity_Inf     = config->GetViscosity_FreeStreamND();
   Intermittency_Inf = config->GetIntermittency_FreeStream();
-	tu_Inf            = config->GetTurbulenceIntensity_FreeStream()*100;
+	tu_Inf            = config->GetTurbulenceIntensity_FreeStream();
 
   /*-- Initialize REth from correlation --*/
   if (tu_Inf <= 1.3) {
@@ -128,6 +128,7 @@ CTransLMSolver::CTransLMSolver(CGeometry *geometry, CConfig *config, unsigned sh
   mach = config->GetMach_FreeStreamND();
 
   //  REth_Inf *= mach/rey;
+  cout << "tu_Inf = " << tu_Inf << endl;
   cout << "REth_Inf = " << REth_Inf << ", rey: "<< rey << " -AA" << endl;
 
   /*--- Restart the solution from file information ---*/
@@ -780,85 +781,85 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
 	bool high_order_diss = (config->GetKind_Upwind_Turb() == SCALAR_UPWIND_2ND);
 	bool limiter = (config->GetKind_SlopeLimit() != NONE);
   double FlowSolution_i[nVar],FlowSolution_j[nVar];
-
-
-	if (high_order_diss) {
-		if (config->GetKind_Gradient_Method() == GREEN_GAUSS) solver_container[FLOW_SOL]->SetSolution_Gradient_GG(geometry, config);
-		if (config->GetKind_Gradient_Method() == WEIGHTED_LEAST_SQUARES) solver_container[FLOW_SOL]->SetSolution_Gradient_LS(geometry, config);
-	}
-
-  for (iEdge = 0; iEdge < geometry->GetnEdge(); iEdge++) {
-
-    /*--- Points in edge and normal vectors ---*/
-    iPoint = geometry->edge[iEdge]->GetNode(0);
-    jPoint = geometry->edge[iEdge]->GetNode(1);
-    numerics->SetNormal(geometry->edge[iEdge]->GetNormal());
-
-    /*--- Conservative variables w/o reconstruction ---*/
-    U_i = solver_container[FLOW_SOL]->node[iPoint]->GetSolution();
-    U_j = solver_container[FLOW_SOL]->node[jPoint]->GetSolution();
-    numerics->SetConservative(U_i, U_j);
-
-    /*--- Transition variables w/o reconstruction ---*/
-    trans_var_i = node[iPoint]->GetSolution();
-    trans_var_j = node[jPoint]->GetSolution();
-    numerics->SetTransVar(trans_var_i,trans_var_j);
-
-		if (high_order_diss) {
-            
-			/*--- Conservative solution using gradient reconstruction ---*/
-			for (iDim = 0; iDim < nDim; iDim++) {
-				Vector_i[iDim] = 0.5*(geometry->node[jPoint]->GetCoord(iDim) - geometry->node[iPoint]->GetCoord(iDim));
-				Vector_j[iDim] = 0.5*(geometry->node[iPoint]->GetCoord(iDim) - geometry->node[jPoint]->GetCoord(iDim));
-			}
-			Gradient_i = solver_container[FLOW_SOL]->node[iPoint]->GetGradient();
-			Gradient_j = solver_container[FLOW_SOL]->node[jPoint]->GetGradient();
-            
-			for (iVar = 0; iVar < solver_container[FLOW_SOL]->GetnVar(); iVar++) {
-				Project_Grad_i = 0; Project_Grad_j = 0;
-				for (iDim = 0; iDim < nDim; iDim++) {
-					Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
-					Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
-				}
-				FlowSolution_i[iVar] = U_i[iVar] + Project_Grad_i;
-				FlowSolution_j[iVar] = U_j[iVar] + Project_Grad_j;
-			}
-			numerics->SetConservative(FlowSolution_i, FlowSolution_j);
-            
-			/*--- Transition variables using gradient reconstruction ---*/
-			Gradient_i = node[iPoint]->GetGradient(); Gradient_j = node[jPoint]->GetGradient();
-			if (limiter) { Limiter_i = node[iPoint]->GetLimiter(); Limiter_j = node[jPoint]->GetLimiter(); }
-            
-			for (iVar = 0; iVar < nVar; iVar++) {
-				Project_Grad_i = 0; Project_Grad_j = 0;
-				for (iDim = 0; iDim < nDim; iDim++) {
-					Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
-					Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
-				}
-				if (limiter) {
-					Solution_i[iVar] = trans_var_i[iVar] + Project_Grad_i*Limiter_i[iVar];
-					Solution_j[iVar] = trans_var_j[iVar] + Project_Grad_j*Limiter_j[iVar];
-				}
-				else {
-					Solution_i[iVar] = trans_var_i[iVar] + Project_Grad_i;
-					Solution_j[iVar] = trans_var_j[iVar] + Project_Grad_j;
-				}
-			}
-			numerics->SetTransVar(Solution_i, Solution_j);
-		}
-
-    /*--- Add and subtract Residual ---*/
-    numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-    LinSysRes.AddBlock(iPoint, Residual);
-    LinSysRes.SubtractBlock(jPoint, Residual);
-
-    /*--- Implicit part ---*/
-    Jacobian.AddBlock(iPoint,iPoint,Jacobian_i);
-    Jacobian.AddBlock(iPoint,jPoint,Jacobian_j);
-    Jacobian.SubtractBlock(jPoint,iPoint,Jacobian_i);
-    Jacobian.SubtractBlock(jPoint,jPoint,Jacobian_j);
-
-  }
+//
+//
+//	if (high_order_diss) {
+//		if (config->GetKind_Gradient_Method() == GREEN_GAUSS) solver_container[FLOW_SOL]->SetSolution_Gradient_GG(geometry, config);
+//		if (config->GetKind_Gradient_Method() == WEIGHTED_LEAST_SQUARES) solver_container[FLOW_SOL]->SetSolution_Gradient_LS(geometry, config);
+//	}
+//
+//  for (iEdge = 0; iEdge < geometry->GetnEdge(); iEdge++) {
+//
+//    /*--- Points in edge and normal vectors ---*/
+//    iPoint = geometry->edge[iEdge]->GetNode(0);
+//    jPoint = geometry->edge[iEdge]->GetNode(1);
+//    numerics->SetNormal(geometry->edge[iEdge]->GetNormal());
+//
+//    /*--- Conservative variables w/o reconstruction ---*/
+//    U_i = solver_container[FLOW_SOL]->node[iPoint]->GetSolution();
+//    U_j = solver_container[FLOW_SOL]->node[jPoint]->GetSolution();
+//    numerics->SetConservative(U_i, U_j);
+//
+//    /*--- Transition variables w/o reconstruction ---*/
+//    trans_var_i = node[iPoint]->GetSolution();
+//    trans_var_j = node[jPoint]->GetSolution();
+//    numerics->SetTransVar(trans_var_i,trans_var_j);
+//
+//		if (high_order_diss) {
+//            
+//			/*--- Conservative solution using gradient reconstruction ---*/
+//			for (iDim = 0; iDim < nDim; iDim++) {
+//				Vector_i[iDim] = 0.5*(geometry->node[jPoint]->GetCoord(iDim) - geometry->node[iPoint]->GetCoord(iDim));
+//				Vector_j[iDim] = 0.5*(geometry->node[iPoint]->GetCoord(iDim) - geometry->node[jPoint]->GetCoord(iDim));
+//			}
+//			Gradient_i = solver_container[FLOW_SOL]->node[iPoint]->GetGradient();
+//			Gradient_j = solver_container[FLOW_SOL]->node[jPoint]->GetGradient();
+//            
+//			for (iVar = 0; iVar < solver_container[FLOW_SOL]->GetnVar(); iVar++) {
+//				Project_Grad_i = 0; Project_Grad_j = 0;
+//				for (iDim = 0; iDim < nDim; iDim++) {
+//					Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
+//					Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
+//				}
+//				FlowSolution_i[iVar] = U_i[iVar] + Project_Grad_i;
+//				FlowSolution_j[iVar] = U_j[iVar] + Project_Grad_j;
+//			}
+//			numerics->SetConservative(FlowSolution_i, FlowSolution_j);
+//            
+//			/*--- Transition variables using gradient reconstruction ---*/
+//			Gradient_i = node[iPoint]->GetGradient(); Gradient_j = node[jPoint]->GetGradient();
+//			if (limiter) { Limiter_i = node[iPoint]->GetLimiter(); Limiter_j = node[jPoint]->GetLimiter(); }
+//            
+//			for (iVar = 0; iVar < nVar; iVar++) {
+//				Project_Grad_i = 0; Project_Grad_j = 0;
+//				for (iDim = 0; iDim < nDim; iDim++) {
+//					Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
+//					Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
+//				}
+//				if (limiter) {
+//					Solution_i[iVar] = trans_var_i[iVar] + Project_Grad_i*Limiter_i[iVar];
+//					Solution_j[iVar] = trans_var_j[iVar] + Project_Grad_j*Limiter_j[iVar];
+//				}
+//				else {
+//					Solution_i[iVar] = trans_var_i[iVar] + Project_Grad_i;
+//					Solution_j[iVar] = trans_var_j[iVar] + Project_Grad_j;
+//				}
+//			}
+//			numerics->SetTransVar(Solution_i, Solution_j);
+//		}
+//
+//    /*--- Add and subtract Residual ---*/
+//    numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
+//    LinSysRes.AddBlock(iPoint, Residual);
+//    LinSysRes.SubtractBlock(jPoint, Residual);
+//
+//    /*--- Implicit part ---*/
+//    Jacobian.AddBlock(iPoint,iPoint,Jacobian_i);
+//    Jacobian.AddBlock(iPoint,jPoint,Jacobian_j);
+//    Jacobian.SubtractBlock(jPoint,iPoint,Jacobian_i);
+//    Jacobian.SubtractBlock(jPoint,jPoint,Jacobian_j);
+//
+//  }
 
 }
 
@@ -867,108 +868,108 @@ void CTransLMSolver::Viscous_Residual(CGeometry *geometry, CSolver **solver_cont
 																				CConfig *config, unsigned short iMesh, unsigned short iRKStep) {
 	unsigned long iEdge, iPoint, jPoint;
 	
-  for (iEdge = 0; iEdge < geometry->GetnEdge(); iEdge++) {
-    
-    /*--- Points in edge ---*/
-    iPoint = geometry->edge[iEdge]->GetNode(0);
-    jPoint = geometry->edge[iEdge]->GetNode(1);
-    
-    /*--- Points coordinates, and normal vector ---*/
-    numerics->SetCoord(geometry->node[iPoint]->GetCoord(),
-                     geometry->node[jPoint]->GetCoord());
-    
-    numerics->SetNormal(geometry->edge[iEdge]->GetNormal());
-    
-    /*--- Conservative variables w/o reconstruction ---*/
-    numerics->SetConservative(solver_container[FLOW_SOL]->node[iPoint]->GetSolution(),
-                            solver_container[FLOW_SOL]->node[jPoint]->GetSolution());
-    
-    /*--- Laminar Viscosity ---*/
-    numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity(),
-                                solver_container[FLOW_SOL]->node[jPoint]->GetLaminarViscosity());
-    /*--- Eddy Viscosity ---*/
-    numerics->SetEddyViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity(),
-                             solver_container[FLOW_SOL]->node[jPoint]->GetEddyViscosity());
-    
-    /*--- Transition variables w/o reconstruction, and its gradients ---*/
-    numerics->SetTransVar(node[iPoint]->GetSolution(), node[jPoint]->GetSolution());
-    numerics->SetTransVarGradient(node[iPoint]->GetGradient(), node[jPoint]->GetGradient());
-    
-    numerics->SetConsVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient(),
-                               solver_container[FLOW_SOL]->node[jPoint]->GetGradient());
-    
-    
-    /*--- Compute residual, and Jacobians ---*/
-    numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-    
-    /*--- Add and subtract residual, and update Jacobians ---*/
-    LinSysRes.SubtractBlock(iPoint, Residual);
-    LinSysRes.AddBlock(jPoint, Residual);
-    
-    Jacobian.SubtractBlock(iPoint,iPoint,Jacobian_i);
-    Jacobian.SubtractBlock(iPoint,jPoint,Jacobian_j);
-    Jacobian.AddBlock(jPoint,iPoint,Jacobian_i);
-    Jacobian.AddBlock(jPoint,jPoint,Jacobian_j);
-    
-  }
+//  for (iEdge = 0; iEdge < geometry->GetnEdge(); iEdge++) {
+//    
+//    /*--- Points in edge ---*/
+//    iPoint = geometry->edge[iEdge]->GetNode(0);
+//    jPoint = geometry->edge[iEdge]->GetNode(1);
+//    
+//    /*--- Points coordinates, and normal vector ---*/
+//    numerics->SetCoord(geometry->node[iPoint]->GetCoord(),
+//                     geometry->node[jPoint]->GetCoord());
+//    
+//    numerics->SetNormal(geometry->edge[iEdge]->GetNormal());
+//    
+//    /*--- Conservative variables w/o reconstruction ---*/
+//    numerics->SetConservative(solver_container[FLOW_SOL]->node[iPoint]->GetSolution(),
+//                            solver_container[FLOW_SOL]->node[jPoint]->GetSolution());
+//    
+//    /*--- Laminar Viscosity ---*/
+//    numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity(),
+//                                solver_container[FLOW_SOL]->node[jPoint]->GetLaminarViscosity());
+//    /*--- Eddy Viscosity ---*/
+//    numerics->SetEddyViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity(),
+//                             solver_container[FLOW_SOL]->node[jPoint]->GetEddyViscosity());
+//    
+//    /*--- Transition variables w/o reconstruction, and its gradients ---*/
+//    numerics->SetTransVar(node[iPoint]->GetSolution(), node[jPoint]->GetSolution());
+//    numerics->SetTransVarGradient(node[iPoint]->GetGradient(), node[jPoint]->GetGradient());
+//    
+//    numerics->SetConsVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient(),
+//                               solver_container[FLOW_SOL]->node[jPoint]->GetGradient());
+//    
+//    
+//    /*--- Compute residual, and Jacobians ---*/
+//     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
+//    
+//    /*--- Add and subtract residual, and update Jacobians ---*/
+//     LinSysRes.SubtractBlock(iPoint, Residual);
+//     LinSysRes.AddBlock(jPoint, Residual);
+//     
+//     Jacobian.SubtractBlock(iPoint,iPoint,Jacobian_i);
+//     Jacobian.SubtractBlock(iPoint,jPoint,Jacobian_j);
+//     Jacobian.AddBlock(jPoint,iPoint,Jacobian_i);
+//     Jacobian.AddBlock(jPoint,jPoint,Jacobian_j);
+//    
+//  }
 }
 
 void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics, CNumerics *second_numerics, CConfig *config, unsigned short iMesh) {
   unsigned long iPoint, iVertex;
   unsigned short iMarker;
-  double gamma_eff;
+  double gamma_eff = 1.;
   bool boundary;
   ofstream sagt_debug;
 
-    //cout << "Setting Trans residual -AA " << endl;
-    //cout << "\nBeginAA" << endl;
-
-  // DEBUG
-  sagt_debug.open("sagt_debug.plt");
+//    //cout << "Setting Trans residual -AA " << endl;
+//    //cout << "\nBeginAA" << endl;
+//
+//  // DEBUG
+//  sagt_debug.open("sagt_debug.plt");
 //  sagt_debug << "TITLE = \"SAGT (Langtry+Menter) Transition model debug file \" " << endl;
 //  sagt_debug << "VARIABLES = \"itmc\" \"Re_th_bar\" \"re_theta_t\" \"flen\" \"re_theta_c\"" << endl;
 //  sagt_debug << "ZONE DATAPACKING=POINT" << endl;
-
-  for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
-	  //   cout << "\niPoint: " << iPoint << endl;
-
-	  /*--- Conservative variables w/o reconstruction ---*/
-	  numerics->SetConservative(solver_container[FLOW_SOL]->node[iPoint]->GetSolution(), NULL);
-
-	  /*--- Gradient of the primitive and conservative variables ---*/
-	  numerics->SetPrimVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive(), NULL);
-
-	  /*--- Laminar and eddy viscosity ---*/
-	  numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity(), 0.0);
-	  numerics->SetEddyViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity(),0.0);
-
-	  /*--- Turbulent variables ---*/
-	  numerics->SetTurbVar(solver_container[TURB_SOL]->node[iPoint]->GetSolution(), NULL);
-
-	  /*--- Transition Variables ---*/
-	  numerics->SetTransVar(node[iPoint]->GetSolution(), NULL);
-
-	  /*--- Set volume ---*/
-	  numerics->SetVolume(geometry->node[iPoint]->GetVolume());
-
-	  /*--- Set distance to the surface ---*/
-	  numerics->SetDistance(geometry->node[iPoint]->GetWall_Distance(), 0.0);
-
-	  /*--- Set distance to the surface ---*/
-	  boundary = geometry->node[iPoint]->GetBoundary();
-
-	  /*--- Compute the source term ---*/
-	  numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
-
-	  /*-- Store gamma_eff in variable class, where CTurbSASolver can access it --*/
-	  node[iPoint]->SetGammaEff(gamma_eff);
-
-	  /*--- Subtract residual and the jacobian ---*/
-	  LinSysRes.SubtractBlock(iPoint, Residual);
-	  Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
-
-  }
-//  sagt_debug.close();
+//
+//  for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
+//	  //cout << "\niPoint: " << iPoint << endl;
+//
+//	  /*--- Conservative variables w/o reconstruction ---*/
+//	  numerics->SetConservative(solver_container[FLOW_SOL]->node[iPoint]->GetSolution(), NULL);
+//
+//	  /*--- Gradient of the primitive and conservative variables ---*/
+//	  numerics->SetPrimVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive(), NULL);
+//
+//	  /*--- Laminar and eddy viscosity ---*/
+//	  numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity(), 0.0);
+//	  numerics->SetEddyViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity(),0.0);
+//
+//	  /*--- Turbulent variables ---*/
+//	  numerics->SetTurbVar(solver_container[TURB_SOL]->node[iPoint]->GetSolution(), NULL);
+//
+//	  /*--- Transition Variables ---*/
+//	  numerics->SetTransVar(node[iPoint]->GetSolution(), NULL);
+//
+//	  /*--- Set volume ---*/
+//	  numerics->SetVolume(geometry->node[iPoint]->GetVolume());
+//
+//	  /*--- Set distance to the surface ---*/
+//	  numerics->SetDistance(geometry->node[iPoint]->GetWall_Distance(), 0.0);
+//
+//	  /*--- Set distance to the surface ---*/
+//	  boundary = geometry->node[iPoint]->GetBoundary();
+//
+//	  /*--- Compute the source term ---*/
+//	   numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
+//
+//	  /*-- Store gamma_eff in variable class, where CTurbSASolver can access it --*/
+//	  node[iPoint]->SetGammaEff(gamma_eff);
+//
+//	  /*--- Subtract residual and the jacobian ---*/
+//	  LinSysRes.SubtractBlock(iPoint, Residual);
+//	  Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
+//
+//  }
+////  sagt_debug.close();
   
 }
 
@@ -1285,39 +1286,6 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
         /*--- Jacobian contribution for implicit integration ---*/
         Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);
         
-  //      /*--- Viscous contribution ---*/
-  //      visc_numerics->SetCoord(geometry->node[iPoint]->GetCoord(), geometry->node[Point_Normal]->GetCoord());
-  //      visc_numerics->SetNormal(Normal);
-  //      
-  //      /*--- Conservative variables w/o reconstruction ---*/
-  //      visc_numerics->SetConservative(FlowSolution_i, FlowSolution_j);
-  //      
-  //      /*--- Laminar Viscosity, and density (incompresible solver)  ---*/
-  //      if (incompressible) {
-  //        visc_numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosityInc(),
-  //                                         solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosityInc());
-  //        visc_numerics->SetDensityInc(solver_container[FLOW_SOL]->node[iPoint]->GetDensityInc(),
-  //                                   solver_container[FLOW_SOL]->node[iPoint]->GetDensityInc());
-  //      } else {
-  //        visc_numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity(),
-  //                                         solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity());
-  //      }
-  //      
-  //      /*--- Eddy Viscosity ---*/
-  //      visc_numerics->SetEddyViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity(),
-  //                                    solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity());
-  //      
-  //      /*--- Turbulent variables w/o reconstruction, and its gradients ---*/
-  //      visc_numerics->SetTurbVar(Solution_i, Solution_j);
-  //      visc_numerics->SetTurbVarGradient(node[iPoint]->GetGradient(), node[iPoint]->GetGradient());
-  //      
-  //      /*--- Compute residual, and Jacobians ---*/
-  //      visc_numerics->SetResidual(Residual, Jacobian_i, Jacobian_j, config);
-  //      
-  //      /*--- Subtract residual, and update Jacobians ---*/
-  //      SubtractResidual(iPoint, Residual);
-  //      Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
-  //
       }
     }
     
@@ -1383,39 +1351,6 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
         /*--- Jacobian contribution for implicit integration ---*/
         Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);
         
-  //      /*--- Viscous contribution ---*/
-  //      visc_numerics->SetCoord(geometry->node[iPoint]->GetCoord(), geometry->node[Point_Normal]->GetCoord());
-  //      visc_numerics->SetNormal(Normal);
-  //      
-  //      /*--- Conservative variables w/o reconstruction ---*/
-  //      visc_numerics->SetConservative(solver_container[FLOW_SOL]->node[iPoint]->GetSolution(),
-  //                                   solver_container[FLOW_SOL]->node[iPoint]->GetSolution());
-  //      
-  //      /*--- Laminar Viscosity, and density (incompresible solver)  ---*/
-  //      if (incompressible) {
-  //        visc_numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosityInc(),
-  //                                         solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosityInc());
-  //        visc_numerics->SetDensityInc(solver_container[FLOW_SOL]->node[iPoint]->GetDensityInc(),
-  //                                   solver_container[FLOW_SOL]->node[iPoint]->GetDensityInc());
-  //      } else {
-  //        visc_numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity(),
-  //                                         solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity());
-  //      }
-  //      
-  //      /*--- Eddy Viscosity ---*/
-  //      visc_numerics->SetEddyViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity(),
-  //                                    solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity());
-  //      
-  //      /*--- Turbulent variables w/o reconstruction, and its gradients ---*/
-  //      visc_numerics->SetTurbVar(Solution_i, Solution_j);
-  //      visc_numerics->SetTurbVarGradient(node[iPoint]->GetGradient(), node[iPoint]->GetGradient());
-  //      
-  //      /*--- Compute residual, and Jacobians ---*/
-  //      visc_numerics->SetResidual(Residual, Jacobian_i, Jacobian_j, config);
-  //      
-  //      /*--- Subtract residual, and update Jacobians ---*/
-  //      SubtractResidual(iPoint, Residual);
-  //      Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
         
       }
     }

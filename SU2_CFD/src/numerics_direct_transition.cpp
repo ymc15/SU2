@@ -690,6 +690,8 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	double newton_tol = 1e-10;
 	int iter;
 
+  double re_tilda, R_omega, f_sublayer;
+
 	//SU2_CPP2C COMMENT START
   double val_residuald[2], TransVar_id[2];
 
@@ -715,12 +717,38 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	//SU2_CPP2C COMMENT END
 
 
-	/*-- Medida 2011, eq. 29-30 --*/
-	re_theta_c = (4.45*pow(tu,3) - 5.7*pow(tu,2) + 1.37*tu + 0.585)*TransVar_i[1]/U_i[0];
-	flen       = 0.171*pow(tu,2) - 0.0083*tu + 0.0306;
+  if (turb_model==SST) {
+    re_tilda = TransVar_i[1]/U_i[0];
+
+    if (re_tilda<=1870.) {
+      re_theta_c = re_tilda - (396.035e-2 - 120.656e-4*re_tilda + 868.23e-6*pow(re_tilda,2)
+                               -696.506e-9*pow(re_tilda,3) + 174.105e-12*pow(re_tilda,4));
+    } else {
+      re_theta_c = re_tilda - (593.11 + (re_tilda-1870.)*0.482); 
+    }
+
+    // Correlation for flen
+    if (re_tilda < 400) {
+      flen = 398.189e-1 - 119.27e-4*re_tilda - 132.567e-6*pow(re_tilda,2);
+    } else if (re_tilda < 596) {
+      flen = 263.404 - 123.939e-2*re_tilda + 194.548e-5*pow(re_tilda,2) - 101.695e-8*pow(re_tilda,3);
+    } else if (re_tilda < 1200) {
+      flen = 0.5 - (re_tilda-596.)*3e-4;
+    } else {
+      flen = 0.3188;
+    }
+
+    // Correction of flen for higher Reynolds numbers
+    R_omega    = U_i[0]*dist_i*dist_i*TurbVar_i[1]/(500*Laminar_Viscosity_i);
+    f_sublayer = exp(-pow(R_omega/0.4,2));
+    flen       = flen*(1-f_sublayer) + 40.0*f_sublayer;
+  } else if (turb_model==SA) {
+	  /*-- Medida 2011, eq. 29-30 --*/
+	  re_theta_c = (4.45*pow(tu,3) - 5.7*pow(tu,2) + 1.37*tu + 0.585)*TransVar_i[1]/U_i[0];
+	  flen       = 0.171*pow(tu,2) - 0.0083*tu + 0.0306;
+  }
 
 	re_v   = U_i[0]*pow(dist_i,2.)/Laminar_Viscosity_i*strain;  // Vorticity Reynolds number
-
 	
   if (turb_model==SST)  {
     r_t = U_i[0]*TurbVar_i[0] / (Laminar_Viscosity_i*TurbVar_i[1]);
