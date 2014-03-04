@@ -3389,7 +3389,9 @@ public:
 
 class CTransLMSolver: public CTurbSolver {
 private:
-	double Intermittency_Inf, REth_Inf;
+	double Intermittency_Inf, REth_Inf, Density_Inf;
+	double *FlowPrimVar_i,	/*!< \brief Store the flow solution at point i. */
+	*FlowPrimVar_j;        /*!< \brief Store the flow solution at point j. */
 public:
 	/*!
 	 * \brief Constructor of the class.

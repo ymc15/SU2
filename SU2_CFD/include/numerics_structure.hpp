@@ -2169,7 +2169,7 @@ public:
 class CUpwSca_TransLM : public CNumerics {
 private:
 	double *Velocity_i, *Velocity_j;
-	bool implicit, grid_movement;
+	bool implicit, incompressible, grid_movement;
 	double Density_i, Density_j,
 	q_ij,
 	a0, a1;

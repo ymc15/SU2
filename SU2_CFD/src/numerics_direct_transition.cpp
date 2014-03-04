@@ -46,6 +46,7 @@ CUpwLin_TransLM::~CUpwLin_TransLM(void) {
 void CUpwLin_TransLM::ComputeResidual (double *val_residual, double **val_Jacobian_i, double **val_Jacobian_j, CConfig *config) {
   
   
+  cout << "\t\tEntered CUpwLin_TransLM::ComputeResidual" << endl;
 	Density_i = U_i[0];
 	Density_j = U_j[0];
   
@@ -60,9 +61,10 @@ void CUpwLin_TransLM::ComputeResidual (double *val_residual, double **val_Jacobi
 	a1 = 0.5*(q_ij-fabs(q_ij));
 	val_residual[0] = a0*TransVar_i[0]+a1*TransVar_j[0];
 	val_residual[1] = a0*TransVar_i[1]+a1*TransVar_j[1];
-  //	cout << "Velicity x: " << Velocity_i[0] << ", " << Velocity_j[0] << endl;
-  //	cout << "Velicity y: " << Velocity_i[1] << ", " << Velocity_j[1] << endl;
-  //	cout << "val_resid: " << val_residual[0] << ", " << val_residual[1] << endl;
+  cout << "CUpwLin_TransLM::ComputeResidual" << endl;
+  cout << "Velicity x: " << Velocity_i[0] << ", " << Velocity_j[0] << endl;
+  cout << "Velicity y: " << Velocity_i[1] << ", " << Velocity_j[1] << endl;
+  cout << "val_resid: " << val_residual[0] << ", " << val_residual[1] << endl;
   
   
 	if (implicit) {
@@ -74,14 +76,13 @@ void CUpwLin_TransLM::ComputeResidual (double *val_residual, double **val_Jacobi
 CUpwSca_TransLM::CUpwSca_TransLM(unsigned short val_nDim, unsigned short val_nVar,
                                  CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
   
-	implicit = (config->GetKind_TimeIntScheme_Turb() == EULER_IMPLICIT);
-	grid_movement = config->GetGrid_Movement();
+  implicit        = (config->GetKind_TimeIntScheme_Turb() == EULER_IMPLICIT);
+  incompressible  = (config->GetKind_Regime() == INCOMPRESSIBLE);
+  grid_movement   = config->GetGrid_Movement();
   
-	Gamma = config->GetGamma();
-	Gamma_Minus_One = Gamma - 1.0;
+  Velocity_i = new double [nDim];
+  Velocity_j = new double [nDim];
   
-	Velocity_i = new double [nDim];
-	Velocity_j = new double [nDim];
 }
 
 CUpwSca_TransLM::~CUpwSca_TransLM(void) {
@@ -91,28 +92,61 @@ CUpwSca_TransLM::~CUpwSca_TransLM(void) {
 
 void CUpwSca_TransLM::ComputeResidual(double *val_residual, double **val_Jacobian_i, double **val_Jacobian_j, CConfig *config) {
   
-	q_ij = 0;
-	for (iDim = 0; iDim < nDim; iDim++) {
-		q_ij += 0.5*(U_i[iDim+1]+U_j[iDim+1])*Normal[iDim];
-	}
+  cout << "\t\tEntered CUpwSca_TransLM::ComputeResidual" << endl;
+  cout << "V_i: " << V_i[0];
+  cout << " " << V_i[1];
+  cout << " " << V_i[2];
+  cout << " " << V_i[3];
+  cout << " " << V_i[4];
+  cout << " " << V_i[5];
+  if (incompressible) {
+    Density_i = V_i[nDim+1];
+    Density_j = V_j[nDim+1];
+  }
+  else {
+    Density_i = V_i[nDim+2];
+    Density_j = V_j[nDim+2];
+  }
   
-	a0 = 0.5*(q_ij+fabs(q_ij));
-	a1 = 0.5*(q_ij-fabs(q_ij));
-	val_residual[0] = a0*TransVar_i[0]+a1*TransVar_j[0];
-	val_residual[1] = a0*TransVar_i[1]+a1*TransVar_j[1];
+  cout << "\t\tSet density" << endl;
+  q_ij = 0.0;
+  if (grid_movement) {
+    for (iDim = 0; iDim < nDim; iDim++) {
+      Velocity_i[iDim] = V_i[iDim+1] - GridVel_i[iDim];
+      Velocity_j[iDim] = V_j[iDim+1] - GridVel_j[iDim];
+      q_ij += 0.5*(Velocity_i[iDim]+Velocity_j[iDim])*Normal[iDim];
+    }
+  }
+  else {
+    for (iDim = 0; iDim < nDim; iDim++) {
+      Velocity_i[iDim] = V_i[iDim+1];
+      Velocity_j[iDim] = V_j[iDim+1];
+      q_ij += 0.5*(Velocity_i[iDim]+Velocity_j[iDim])*Normal[iDim];
+    }
+  }
+  cout << "\t\tSet Velocity" << endl;
   
-	if (implicit) {
-		val_Jacobian_i[0][0] = a0;
-		val_Jacobian_j[0][0] = a1;
-		val_Jacobian_i[1][1] = a0;
-		val_Jacobian_j[1][1] = a1;
+  a0 = 0.5*(q_ij+fabs(q_ij));
+  a1 = 0.5*(q_ij-fabs(q_ij));
+  
+  val_residual[0] = a0*TransVar_i[0]+a1*TransVar_j[0];
+  val_residual[1] = a0*TransVar_i[1]+a1*TransVar_j[1];
+
+  cout << "Density_i,j: " << Density_i << " " << Density_j << endl;
+  cout << "Velocity_i,j: " << "(" << Velocity_i[0] << "," << Velocity_i[1] << ") " 
+                           << "(" << Velocity_j[0] << "," << Velocity_j[1] << ") " << endl;
+  cout << "Transvar_i,j: " << "("<<TransVar_i[0]<<","<<TransVar_i[1]<<") "
+                           << "("<<TransVar_j[0]<<","<<TransVar_j[1]<<") " << endl;
+  cout << "a0,a1: " << a0 << " " << a1 << endl;
+  cout << "val_residual: " << val_residual[0] << " " << val_residual[1] << endl;
+  
+  if (implicit) {
+    val_Jacobian_i[0][0] = a0;		val_Jacobian_i[0][1] = 0.0;
+    val_Jacobian_i[1][0] = 0.0;		val_Jacobian_i[1][1] = a0;
     
-    /* --- Zero out off-diagonal terms just in case ---*/
-		val_Jacobian_i[0][1] = 0;
-		val_Jacobian_j[0][1] = 0;
-    val_Jacobian_i[1][0] = 0;
-    val_Jacobian_j[1][0] = 0;
-	}
+    val_Jacobian_j[0][0] = a1;		val_Jacobian_j[0][1] = 0.0;
+    val_Jacobian_j[1][0] = 0.0;		val_Jacobian_j[1][1] = a1;
+  }
   
 }
 
