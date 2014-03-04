@@ -2949,7 +2949,8 @@ private:
 	double nu_i, nu_j, nu_e;
 	double dist_ij_2;
 	double proj_vector_ij;
-	unsigned short iVar, iDim;
+	unsigned short iVar, iDim, turb_model;
+  double tu;
 	double nu_hat_i;
 	double nu_hat_j;
     
@@ -3247,7 +3248,8 @@ private:
 	double *Edge_Vector;
 	bool implicit, incompressible;
 	double sigma, nu_i, nu_j, nu_e, dist_ij_2, proj_vector_ij, nu_hat_i, nu_hat_j;
-	unsigned short iVar, iDim;
+	unsigned short iVar, iDim, turb_model;
+  double tu;
     
 public:
     
