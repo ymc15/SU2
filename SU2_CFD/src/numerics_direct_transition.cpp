@@ -176,8 +176,9 @@ void CAvgGrad_TransLM::ComputeResidual(double *val_residual, double **Jacobian_i
   //SU2_CPP2C VARS DOUBLE *V_i *V_j
   //SU2_CPP2C VARS DOUBLE Density_i Laminar_Viscosity_i Eddy_Viscosity_i
   //SU2_CPP2C VARS DOUBLE Density_j Laminar_Viscosity_j Eddy_Viscosity_j
-  //SU2_CPP2C VARS DOUBLE *Coord_i *Coord_j *Normal *Edge_Vector
+  //SU2_CPP2C VARS DOUBLE *Coord_i *Coord_j *Normal 
   //SU2_CPP2C VARS DOUBLE **ConsVar_Grad_i **ConsVar_Grad_j **TransVar_Grad_i **TransVar_Grad_j
+  //SU2_CPP2C VARS DOUBLE **PrimVar_Grad_i **PrimVar_Grad_j
   //SU2_CPP2C CALL_LIST END
 
   //SU2_CPP2C DEFINE nDim nVar
@@ -185,8 +186,9 @@ void CAvgGrad_TransLM::ComputeResidual(double *val_residual, double **Jacobian_i
   //SU2_CPP2C DECL_LIST START
   //SU2_CPP2C VARS DOUBLE SCALAR dist_ij_2 proj_vector_ij 
   //SU2_CPP2C VARS INT SCALAR iDim iVar
+  //SU2_CPP2C VARS DOUBLE MATRIX SIZE=nDim Edge_Vector
   //SU2_CPP2C VARS DOUBLE MATRIX SIZE=nVar Proj_Mean_GradTransVar_Kappa
-  //SU2_CPP2C VARS DOUBLE MATRIX SIZE=nVar,iDim Mean_GradTransVar
+  //SU2_CPP2C VARS DOUBLE MATRIX SIZE=nVar SIZE=nDim Mean_GradTransVar
   //SU2_CPP2C DECL_LIST END
   double Density_Grad_i[nDim], Density_Grad_j[nDim], Conservative_Grad_i[nDim], Conservative_Grad_j[nDim];
   double Primitive_Grad_i[nDim], Primitive_Grad_j[nDim];
@@ -246,8 +248,8 @@ void CAvgGrad_TransLM::ComputeResidual(double *val_residual, double **Jacobian_i
 		for (iDim = 0; iDim < nDim; iDim++) {
       
       /* -- Compute primitive grad using chain rule -- */
-      Density_Grad_i[iDim]      = ConsVar_Grad_i[0][iDim];
-      Density_Grad_j[iDim]      = ConsVar_Grad_j[0][iDim];
+      Density_Grad_i[iDim]      = PrimVar_Grad_i[nDim+2][iDim];
+      Density_Grad_j[iDim]      = PrimVar_Grad_j[nDim+2][iDim];
       Conservative_Grad_i[iDim] = TransVar_Grad_i[iVar][iDim];
       Conservative_Grad_j[iDim] = TransVar_Grad_j[iVar][iDim];
       Primitive_Grad_i[iDim]    = 1./Density_i*(Conservative_Grad_i[iDim]-TransVar_i[iVar]*Density_Grad_i[iDim]);
@@ -297,23 +299,24 @@ void CAvgGrad_TransLM::ComputeResidual(double *val_residual, double **Jacobian_i
 void CAvgGrad_TransLM::ComputeResidual_d(double *TransVar_i, double *TransVar_id, double *TransVar_j, double *TransVar_jd, double *val_residual, double *val_residuald)
 {
 //SU2_INSERT START
+    double Edge_Vector[nDim];
+    double Proj_Mean_GradTransVar_Kappa[nVar];
+    double Proj_Mean_GradTransVar_Kappad[nVar];
+    double Mean_GradTransVar[nVar][nDim];
+    double Mean_GradTransVard[nVar][nDim];
     double Density_Grad_i[nDim], Density_Grad_j[nDim], 
     Conservative_Grad_i[nDim], Conservative_Grad_j[nDim];
     double Density_Grad_id[nDim], Density_Grad_jd[nDim], 
     Conservative_Grad_id[nDim], Conservative_Grad_jd[nDim];
     double Primitive_Grad_i[nDim], Primitive_Grad_j[nDim];
     double Primitive_Grad_id[nDim], Primitive_Grad_jd[nDim];
-    double Proj_Mean_GradTransVar_Kappa[nVar];
-    double Proj_Mean_GradTransVar_Kappad[nVar];
-    double Mean_GradTransVar[nVar][nDim];
-    double Mean_GradTransVard[nVar][nDim];
     /*--- Intermediate values for combining viscosities ---*/
     double Inter_Viscosity_i, Inter_Viscosity_j, REth_Viscosity_i, 
     REth_Viscosity_j, Inter_Viscosity_Mean, REth_Viscosity_Mean;
     /*--- Model constants---*/
     double sigmaf = 1.0;
     double sigma_thetat = 2.0;
-    double *Edge_Vectord;
+    double Edge_Vectord[nDim];
     int ii2;
     int ii1;
     /*--- Construct combinations of viscosity ---*/
@@ -351,9 +354,9 @@ void CAvgGrad_TransLM::ComputeResidual_d(double *TransVar_i, double *TransVar_id
         for (iDim = 0; iDim < nDim; ++iDim) {
             /* -- Compute primitive grad using chain rule -- */
             Density_Grad_id[iDim] = 0.0;
-            Density_Grad_i[iDim] = ConsVar_Grad_i[0][iDim];
+            Density_Grad_i[iDim] = PrimVar_Grad_i[nDim + 2][iDim];
             Density_Grad_jd[iDim] = 0.0;
-            Density_Grad_j[iDim] = ConsVar_Grad_j[0][iDim];
+            Density_Grad_j[iDim] = PrimVar_Grad_j[nDim + 2][iDim];
             Conservative_Grad_id[iDim] = 0.0;
             Conservative_Grad_i[iDim] = TransVar_Grad_i[iVar][iDim];
             Conservative_Grad_jd[iDim] = 0.0;

@@ -916,6 +916,8 @@ void CTransLMSolver::Viscous_Residual(CGeometry *geometry, CSolver **solver_cont
     
     numerics->SetPrimitive(solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(),
                            solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar());
+    numerics->SetPrimVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive(),
+                                 solver_container[FLOW_SOL]->node[jPoint]->GetGradient_Primitive());
     
     /*--- Turbulent variables w/o reconstruction, and its gradients ---*/
     numerics->SetTurbVar(solver_container[TURB_SOL]->node[iPoint]->GetSolution(), solver_container[TURB_SOL]->node[jPoint]->GetSolution());
@@ -954,55 +956,55 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
   bool boundary;
   ofstream sagt_debug;
 
-//    //cout << "Setting Trans residual -AA " << endl;
-//    //cout << "\nBeginAA" << endl;
-//
-//  // DEBUG
-//  sagt_debug.open("sagt_debug.plt");
-//  sagt_debug << "TITLE = \"SAGT (Langtry+Menter) Transition model debug file \" " << endl;
-//  sagt_debug << "VARIABLES = \"itmc\" \"Re_th_bar\" \"re_theta_t\" \"flen\" \"re_theta_c\"" << endl;
-//  sagt_debug << "ZONE DATAPACKING=POINT" << endl;
-//
-//  for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
-//	  //cout << "\niPoint: " << iPoint << endl;
-//
-//	  /*--- Conservative variables w/o reconstruction ---*/
-//	  numerics->SetConservative(solver_container[FLOW_SOL]->node[iPoint]->GetSolution(), NULL);
-//
-//	  /*--- Gradient of the primitive and conservative variables ---*/
-//	  numerics->SetPrimVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive(), NULL);
-//
-//	  /*--- Laminar and eddy viscosity ---*/
-//	  numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity(), 0.0);
-//	  numerics->SetEddyViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity(),0.0);
-//
-//	  /*--- Turbulent variables ---*/
-//	  numerics->SetTurbVar(solver_container[TURB_SOL]->node[iPoint]->GetSolution(), NULL);
-//
-//	  /*--- Transition Variables ---*/
-//	  numerics->SetTransVar(node[iPoint]->GetSolution(), NULL);
-//
-//	  /*--- Set volume ---*/
-//	  numerics->SetVolume(geometry->node[iPoint]->GetVolume());
-//
-//	  /*--- Set distance to the surface ---*/
-//	  numerics->SetDistance(geometry->node[iPoint]->GetWall_Distance(), 0.0);
-//
-//	  /*--- Set distance to the surface ---*/
-//	  boundary = geometry->node[iPoint]->GetBoundary();
-//
-//	  /*--- Compute the source term ---*/
-//	   numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
-//
-//	  /*-- Store gamma_eff in variable class, where CTurbSASolver can access it --*/
-//	  node[iPoint]->SetGammaEff(gamma_eff);
-//
-//	  /*--- Subtract residual and the jacobian ---*/
-//	  LinSysRes.SubtractBlock(iPoint, Residual);
-//	  Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
-//
-//  }
-////  sagt_debug.close();
+    //cout << "Setting Trans residual -AA " << endl;
+    //cout << "\nBeginAA" << endl;
+
+  // DEBUG
+  sagt_debug.open("sagt_debug.plt");
+  sagt_debug << "TITLE = \"SAGT (Langtry+Menter) Transition model debug file \" " << endl;
+  sagt_debug << "VARIABLES = \"itmc\" \"Re_th_bar\" \"re_theta_t\" \"flen\" \"re_theta_c\"" << endl;
+  sagt_debug << "ZONE DATAPACKING=POINT" << endl;
+
+  for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
+	  //cout << "\niPoint: " << iPoint << endl;
+
+	  /*--- Conservative variables w/o reconstruction ---*/
+	  numerics->SetConservative(solver_container[FLOW_SOL]->node[iPoint]->GetSolution(), NULL);
+
+	  /*--- Gradient of the primitive and conservative variables ---*/
+	  numerics->SetPrimVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive(), NULL);
+
+	  /*--- Laminar and eddy viscosity ---*/
+	  numerics->SetLaminarViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetLaminarViscosity(), 0.0);
+	  numerics->SetEddyViscosity(solver_container[FLOW_SOL]->node[iPoint]->GetEddyViscosity(),0.0);
+
+	  /*--- Turbulent variables ---*/
+	  numerics->SetTurbVar(solver_container[TURB_SOL]->node[iPoint]->GetSolution(), NULL);
+
+	  /*--- Transition Variables ---*/
+	  numerics->SetTransVar(node[iPoint]->GetSolution(), NULL);
+
+	  /*--- Set volume ---*/
+	  numerics->SetVolume(geometry->node[iPoint]->GetVolume());
+
+	  /*--- Set distance to the surface ---*/
+	  numerics->SetDistance(geometry->node[iPoint]->GetWall_Distance(), 0.0);
+
+	  /*--- Set distance to the surface ---*/
+	  boundary = geometry->node[iPoint]->GetBoundary();
+
+	  /*--- Compute the source term ---*/
+	   numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
+
+	  /*-- Store gamma_eff in variable class, where CTurbSASolver can access it --*/
+	  node[iPoint]->SetGammaEff(gamma_eff);
+
+	  /*--- Subtract residual and the jacobian ---*/
+	  LinSysRes.SubtractBlock(iPoint, Residual);
+	  Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
+
+  }
+  sagt_debug.close();
   
 }
 
@@ -1035,7 +1037,6 @@ void CTransLMSolver::BC_HeatFlux_Wall(CGeometry *geometry, CSolver **solver_cont
       }
     }
   }
-
 
 }
 
@@ -1074,7 +1075,6 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
   unsigned long iVertex, iPoint, Point_Normal;
   double *V_inlet, *V_domain, *Normal;
   
-  cout << "Entered BC_Inlet" << endl;
   Normal = new double[nDim];
   
   bool grid_movement  = config->GetGrid_Movement();
@@ -1084,13 +1084,11 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
   /*--- Loop over all the vertices on this boundary marker ---*/
   for (iVertex = 0; iVertex < geometry->nVertex[val_marker]; iVertex++) {
     
-    cout << "A" << endl;
     iPoint = geometry->vertex[val_marker][iVertex]->GetNode();
     
     /*--- Check if the node belongs to the domain (i.e., not a halo node) ---*/
     if (geometry->node[iPoint]->GetDomain()) {
       
-      cout << "\t B" << endl;
       /*--- Index of the closest interior node ---*/
       Point_Normal = geometry->vertex[val_marker][iVertex]->GetNormal_Neighbor();
       
@@ -1100,16 +1098,13 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       
       /*--- Allocate the value at the inlet ---*/
       V_inlet = solver_container[FLOW_SOL]->GetCharacPrimVar(val_marker, iVertex);
-      cout << "V_inlet: " << V_inlet[0] << " " << V_inlet[1] << " " << V_inlet[2] << " " << V_inlet[3] << endl;
       
       /*--- Retrieve solution at the farfield boundary node ---*/
       V_domain = solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar();
-      cout << "V_domain: " << V_domain[0] << " " << V_domain[1] << " " << V_domain[2] << " " << V_domain[3] << endl;
       
       /*--- Set various quantities in the solver class ---*/
       conv_numerics->SetPrimitive(V_domain, V_inlet);
       
-      cout << "\t C" << endl;
       /*--- Set the transition variable states. Use free-stream
        values for the turbulent state at the inflow. ---*/
       for (iVar = 0; iVar < nVar; iVar++)
@@ -1127,10 +1122,8 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
         conv_numerics->SetGridVel(geometry->node[iPoint]->GetGridVel(),
                                   geometry->node[iPoint]->GetGridVel());
       
-      cout << "\t D" << endl;
       /*--- Compute the residual using an upwind scheme ---*/
       conv_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-      cout << "\t E" << endl;
       LinSysRes.AddBlock(iPoint, Residual);
       
       /*--- Jacobian contribution for implicit integration ---*/
