@@ -701,14 +701,15 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	//SU2_CPP2C CALL_LIST START
 	//SU2_CPP2C INVARS *TransVar_i
 	//SU2_CPP2C OUTVARS *val_residual
-	//SU2_CPP2C VARS DOUBLE *U_i **PrimVar_Grad_i Laminar_Viscosity_i Eddy_Viscosity_i dist_i
-	//SU2_CPP2C VARS DOUBLE SCALAR c_a1 c_e1 c_a2 c_e2 c_theta alpha_global flen_global Volume tu strain Velocity_Mag time_scale Vorticity re_theta_t
+	//SU2_CPP2C VARS DOUBLE *U_i **PrimVar_Grad_i Laminar_Viscosity_i Eddy_Viscosity_i dist_i *TurbVar_i
+	//SU2_CPP2C VARS DOUBLE c_a1 c_e1 c_a2 c_e2 c_theta alpha_global flen_global Volume tu strain Velocity_Mag time_scale Vorticity re_theta_t
+	//SU2_CPP2C VARS INT turb_model
 	//SU2_CPP2C CALL_LIST END
   
-	//SU2_CPP2C DEFINE nDim
+	//SU2_CPP2C DEFINE nDim SST SA
   
 	//SU2_CPP2C DECL_LIST START
-	//SU2_CPP2C VARS DOUBLE SCALAR Vorticity
+	//SU2_CPP2C VARS DOUBLE SCALAR placeholder
 	//SU2_CPP2C DECL_LIST END
   
 	/*-- Local intermediate variables --*/
@@ -722,7 +723,6 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	double dU_dx, dU_dy, dU_dz;
 	double gamma_sep;
 
-	double fk[2], dx[2], J[2][2];
 	double re_theta0, f_lambda0, dre_dlamb, normres, factor;
 	double newton_tol = 1e-10;
 	int iter;
@@ -801,7 +801,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
 	f_turb = exp(-pow(0.25*r_t,4));  // Medida eq. 10
 
-	prod = flen*c_a1*U_i[0]*strain*sqrt(f_onset*TransVar_i[0]/U_i[0]);
+	prod = flen*c_a1*U_i[0]*strain*pow(f_onset*TransVar_i[0]/U_i[0],0.5);
 	prod = prod*(1. - c_e1*TransVar_i[0]/U_i[0]);
 
 	des = c_a2*U_i[0]*Vorticity*TransVar_i[0]/U_i[0]*f_turb;
@@ -860,159 +860,204 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
 void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM_d(double *TransVar_i, double *TransVar_id, double *val_residual, double *val_residuald, CConfig *config, bool boundary)
 {
-	double re_theta_c, flen, re_v, f_onset1, f_onset2, f_onset3, f_onset,
-	f_turb;
-	double re_theta_cd, f_onset1d, f_onset2d, f_onsetd;
-	double prod, des;
-	double prodd, desd;
-	double r_t, re_omega;
-	double delta, theta, lambda, var1, f_theta;
-	double deltad, var1d, f_thetad;
-	double theta_bl, f_reattach;
-	double theta_bld;
-	double delta_bl, f_wake;
-	double delta_bld;
-	double dU_dx, dU_dy, dU_dz;
-	double fk[2], dx[2], J[2][2];
-	double re_theta0, f_lambda0, dre_dlamb, normres, factor;
-	double newton_tol = 1e-10;
-	int iter;
-	double result1;
-	double result1d;
-	double result2;
-	double arg1;
-	double arg1d;
-	float result10;
-	float result10d;
-	double x4;
-	double x3;
-	double x2;
-	double x1;
-	double x1d;
-	double x4d;
-	double x3d;
-	double y1;
-	double y1d;
-
-	val_residuald[0] = 0.0;
-	val_residual[0] = 0.0;
-	val_residuald[1] = 0.0;
-	val_residual[1] = 0.0;
-	/*-- Medida 2011, eq. 29-30 --*/
-	result1 = pow(tu, 3);
-	result2 = pow(tu, 2);
-	re_theta_cd = (4.45*result1-5.7*result2+1.37*tu+0.585)*TransVar_id[1]/U_i[
-	                                                                          0];
-	re_theta_c = (4.45*result1-5.7*result2+1.37*tu+0.585)*TransVar_i[1]/U_i[0]
-	                                                                        ;
-	result1 = pow(tu, 2);
-	flen = 0.171*result1 - 0.0083*tu + 0.0306;
-	result1 = pow(dist_i, 2.);
-	re_v = U_i[0]*result1/Laminar_Viscosity_i*strain;
-	/*-- f_onset controls transition onset location --*/
-	// Vorticity Reynolds number
-  if (turb_model==SST)  {
-    r_t = U_i[0]*TurbVar_i[0] / (Laminar_Viscosity_i*TurbVar_i[1]);
-  } else if(turb_model==SA) {
-    r_t = Eddy_Viscosity_i/Laminar_Viscosity_i;
-  }
-	f_onset1d = -(re_v*2.193*re_theta_cd/(2.193*re_theta_c*(2.193*re_theta_c))
-	);
-	f_onset1 = re_v/(2.193*re_theta_c);
-	y1d = pow_d(f_onset1, f_onset1d, 4., &y1);
-	if (f_onset1 < y1) {
-		x1d = y1d;
-		x1 = y1;
-	} else {
-		x1d = f_onset1d;
-		x1 = f_onset1;
+    double re_theta_c, flen, re_v, f_onset1, f_onset2, f_onset3, f_onset, 
+    f_turb;
+    double re_theta_cd, flend, f_onset1d, f_onset2d, f_onsetd;
+    double prod, des;
+    double prodd, desd;
+    double r_t, re_omega;
+    double delta, theta, lambda, var1, f_theta;
+    double deltad, var1d, f_thetad;
+    double theta_bl, f_reattach;
+    double theta_bld;
+    double delta_bl, f_wake;
+    double delta_bld;
+    double dU_dx, dU_dy, dU_dz;
+    double gamma_sep;
+    double re_theta0, f_lambda0, dre_dlamb, normres, factor;
+    double newton_tol = 1e-10;
+    int iter;
+    double re_tilda, R_omega, f_sublayer;
+    double re_tildad;
+    double result1;
+    double result1d;
+    double result2;
+    double result2d;
+    double result3;
+    double result3d;
+    double x4;
+    double x3;
+    double x2;
+    double x1;
+    double x1d;
+    double x4d;
+    double x3d;
+    double y1;
+    double y1d;
+    val_residuald[0] = 0.0;
+    val_residual[0] = 0.0;
+    val_residuald[1] = 0.0;
+    val_residual[1] = 0.0;
+    if (turb_model == 123402) {
+        re_tildad = TransVar_id[1]/U_i[0];
+        re_tilda = TransVar_i[1]/U_i[0];
+        if (re_tilda <= 1870.) {
+            result1d = pow_d(re_tilda, re_tildad, 2, &result1);
+            result2d = pow_d(re_tilda, re_tildad, 3, &result2);
+            result3d = pow_d(re_tilda, re_tildad, 4, &result3);
+            re_theta_cd = re_tildad - 868.23e-6*result1d + 120.656e-4*
+                re_tildad + 696.506e-9*result2d - 174.105e-12*result3d;
+            re_theta_c = re_tilda - (396.035e-2 - 120.656e-4*re_tilda + 
+                868.23e-6*result1 - 696.506e-9*result2 + 174.105e-12*result3);
+        } else {
+            re_theta_cd = re_tildad - 0.482*re_tildad;
+            re_theta_c = re_tilda - (593.11 + (re_tilda-1870.)*0.482);
+        }
+        // Correlation for flen
+        if (re_tilda < 400) {
+            result1d = pow_d(re_tilda, re_tildad, 2, &result1);
+            flend = -(119.27e-4*re_tildad) - 132.567e-6*result1d;
+            flen = 398.189e-1 - 119.27e-4*re_tilda - 132.567e-6*result1;
+        } else
+            if (re_tilda < 596) {
+                result1d = pow_d(re_tilda, re_tildad, 2, &result1);
+                result2d = pow_d(re_tilda, re_tildad, 3, &result2);
+                flend = 194.548e-5*result1d - 123.939e-2*re_tildad - 
+                    101.695e-8*result2d;
+                flen = 263.404 - 123.939e-2*re_tilda + 194.548e-5*result1 - 
+                    101.695e-8*result2;
+            } else
+                if (re_tilda < 1200) {
+                    flend = -(3e-4*re_tildad);
+                    flen = 0.5 - (re_tilda-596.)*3e-4;
+                } else {
+                    flen = 0.3188;
+                    flend = 0.0;
+                }
+        // Correction of flen for higher Reynolds numbers
+        R_omega = U_i[0]*dist_i*dist_i*TurbVar_i[1]/(500*Laminar_Viscosity_i);
+        result1 = pow(R_omega/0.4, 2);
+        f_sublayer = exp(-result1);
+        flend = (1-f_sublayer)*flend;
+        flen = flen*(1-f_sublayer) + 40.0*f_sublayer;
+    } else
+        if (turb_model == 123403) {
+            /*-- Medida 2011, eq. 29-30 --*/
+            result1 = pow(tu, 3);
+            result2 = pow(tu, 2);
+            re_theta_cd = (4.45*result1-5.7*result2+1.37*tu+0.585)*TransVar_id
+                [1]/U_i[0];
+            re_theta_c = (4.45*result1-5.7*result2+1.37*tu+0.585)*TransVar_i[1
+                ]/U_i[0];
+            result1 = pow(tu, 2);
+            flen = 0.171*result1 - 0.0083*tu + 0.0306;
+            flend = 0.0;
+        } else {
+            flend = 0.0;
+            re_theta_cd = 0.0;
+        }
+    result1 = pow(dist_i, 2.);
+    re_v = U_i[0]*result1/Laminar_Viscosity_i*strain;
+    // Vorticity Reynolds number
+    if (turb_model == 123402)
+        r_t = U_i[0]*TurbVar_i[0]/(Laminar_Viscosity_i*TurbVar_i[1]);
+    else
+        if (turb_model == 123403)
+            r_t = Eddy_Viscosity_i/Laminar_Viscosity_i;
+    /*-- f_onset controls transition onset location --*/
+    f_onset1d = -(re_v*2.193*re_theta_cd/(2.193*re_theta_c*(2.193*re_theta_c))
+        );
+    f_onset1 = re_v/(2.193*re_theta_c);
+    y1d = pow_d(f_onset1, f_onset1d, 4., &y1);
+    if (f_onset1 < y1) {
+        x1d = y1d;
+        x1 = y1;
+    } else {
+        x1d = f_onset1d;
+        x1 = f_onset1;
+    }
+    if (x1 > 2.) {
+        f_onset2 = 2.;
+        f_onset2d = 0.0;
+    } else {
+        f_onset2d = x1d;
+        f_onset2 = x1;
+    }
+    result1 = pow(0.4*r_t, 3);
+    x2 = 1. - result1;
+    if (x2 < 0.)
+        f_onset3 = 0.;
+    else
+        f_onset3 = x2;
+    if (f_onset2 - f_onset3 < 0.) {
+        f_onset = 0.;
+        f_onsetd = 0.0;
+    } else {
+        f_onsetd = f_onset2d;
+        f_onset = f_onset2 - f_onset3;
+    }
+    result1 = pow(0.25*r_t, 4);
+    f_turb = exp(-result1);
+    // Medida eq. 10
+    result1d = pow_d(f_onset*TransVar_i[0]/U_i[0], (f_onsetd*TransVar_i[0]+
+        f_onset*TransVar_id[0])/U_i[0], 0.5, &result1);
+    prodd = c_a1*U_i[0]*strain*(flend*result1+flen*result1d);
+    prod = flen*c_a1*U_i[0]*strain*result1;
+    prodd = prodd*(1.-c_e1*TransVar_i[0]/U_i[0]) - prod*c_e1*TransVar_id[0]/
+        U_i[0];
+    prod = prod*(1.-c_e1*TransVar_i[0]/U_i[0]);
+    desd = f_turb*c_a2*Vorticity*TransVar_id[0];
+    des = c_a2*U_i[0]*Vorticity*TransVar_i[0]/U_i[0]*f_turb;
+    desd = desd*(c_e2*TransVar_i[0]/U_i[0]-1.) + des*c_e2*TransVar_id[0]/U_i[0
+        ];
+    des = des*(c_e2*TransVar_i[0]/U_i[0]-1.);
+    val_residuald[0] = prodd - desd;
+    val_residual[0] = prod - des;
+    val_residuald[0] = Volume*val_residuald[0];
+    val_residual[0] *= Volume;
+    /*-- REtheta eq: --*/
+    theta_bld = Laminar_Viscosity_i*TransVar_id[1]/U_i[0]/(U_i[0]*Velocity_Mag
+        );
+    theta_bl = TransVar_i[1]/U_i[0]*Laminar_Viscosity_i/(U_i[0]*Velocity_Mag);
+    delta_bld = 7.5*theta_bld;
+    delta_bl = 7.5*theta_bl;
+    deltad = 50.0*Vorticity*dist_i*delta_bld/Velocity_Mag;
+    delta = 50.0*Vorticity*dist_i/Velocity_Mag*delta_bl + 1e-20;
+    if (turb_model == 123402) {
+        re_omega = U_i[0]*TurbVar_i[1]*dist_i*dist_i/Laminar_Viscosity_i;
+        result1 = pow(re_omega/1.e5, 2);
+        f_wake = exp(-result1);
+    } else
+        if (turb_model == 123403)
+            f_wake = 1.;
+    var1d = TransVar_id[0]/U_i[0]/(1.0-1./c_e2);
+    var1 = (TransVar_i[0]/U_i[0]-1./c_e2)/(1.0-1./c_e2);
+    result1d = pow_d(var1, var1d, 2, &result1);
+    var1d = -result1d;
+    var1 = 1. - result1;
+    result1d = pow_d(dist_i/delta, -(dist_i*deltad/(delta*delta)), 4, &result1
+        );
+    x4d = -(f_wake*result1d*exp(-result1));
+    x4 = f_wake*exp(-result1);
+    if (x4 < var1) {
+        x3d = var1d;
+        x3 = var1;
+    } else {
+        x3d = x4d;
+        x3 = x4;
+    }
+    if (x3 > 1.0) {
+        f_theta = 1.0;
+        f_thetad = 0.0;
+    } else {
+        f_thetad = x3d;
+        f_theta = x3;
+    }
+    //f_theta = min(var1,1.0);
+    val_residuald[1] = c_theta*U_i[0]*(-(f_thetad*(re_theta_t-TransVar_i[1]/
+        U_i[0]))-(1.-f_theta)*TransVar_id[1]/U_i[0])/time_scale;
+    val_residual[1] = c_theta*U_i[0]/time_scale*(1.-f_theta)*(re_theta_t-
+        TransVar_i[1]/U_i[0]);
+    val_residuald[1] = Volume*val_residuald[1];
+    val_residual[1] *= Volume;
 	}
-	if (x1 > 2.) {
-		f_onset2 = 2.;
-		f_onset2d = 0.0;
-	} else {
-		f_onset2d = x1d;
-		f_onset2 = x1;
-	}
-	result1 = pow(0.4*r_t, 3);
-	x2 = 1. - result1;
-	if (x2 < 0.)
-		f_onset3 = 0.;
-	else
-		f_onset3 = x2;
-	if (f_onset2 - f_onset3 < 0.) {
-		f_onset = 0.;
-		f_onsetd = 0.0;
-	} else {
-		f_onsetd = f_onset2d;
-		f_onset = f_onset2 - f_onset3;
-	}
-	result1 = pow(0.25*r_t, 4);
-	f_turb = exp(-result1);
-	// Medida eq. 10
-	arg1d = (f_onsetd*TransVar_i[0]+f_onset*TransVar_id[0])/U_i[0];
-	arg1 = f_onset*TransVar_i[0]/U_i[0];
-	result10d = (arg1 == 0.0 ? 0.0 : arg1d/(2.0*sqrt(arg1)));
-	result10 = sqrt(arg1);
-	prodd = flen*c_a1*U_i[0]*strain*result10d;
-	prod = flen*c_a1*U_i[0]*strain*result10;
-	prodd = prodd*(1.-c_e1*TransVar_i[0]/U_i[0]) - prod*c_e1*TransVar_id[0]/
-			U_i[0];
-	prod = prod*(1.-c_e1*TransVar_i[0]/U_i[0]);
-	desd = f_turb*c_a2*Vorticity*TransVar_id[0];
-	des = c_a2*U_i[0]*Vorticity*TransVar_i[0]/U_i[0]*f_turb;
-	desd = desd*(c_e2*TransVar_i[0]/U_i[0]-1.) + des*c_e2*TransVar_id[0]/U_i[0
-	                                                                         ];
-	des = des*(c_e2*TransVar_i[0]/U_i[0]-1.);
-	val_residuald[0] = prodd - desd;
-	val_residual[0] = prod - des;
-	val_residuald[0] = Volume*val_residuald[0];
-	val_residual[0] *= Volume;
-	/*-- REtheta eq: --*/
-	theta_bld = Laminar_Viscosity_i*TransVar_id[1]/U_i[0]/(U_i[0]*Velocity_Mag
-	);
-	theta_bl = TransVar_i[1]/U_i[0]*Laminar_Viscosity_i/(U_i[0]*Velocity_Mag);
-	delta_bld = 7.5*theta_bld;
-	delta_bl = 7.5*theta_bl;
-	deltad = 50.0*Vorticity*dist_i*delta_bld/Velocity_Mag;
-	delta = 50.0*Vorticity*dist_i/Velocity_Mag*delta_bl + 1e-20;
-
-  if (turb_model==SST) {
-    re_omega = U_i[0]*TurbVar_i[1]*dist_i*dist_i/Laminar_Viscosity_i;
-    f_wake   = exp(-pow(re_omega/1.e5,2));
-  } else if(turb_model==SA) {
-  	f_wake = 1.;
-  }
-	var1d = TransVar_id[0]/U_i[0]/(1.0-1./c_e2);
-	var1 = (TransVar_i[0]/U_i[0]-1./c_e2)/(1.0-1./c_e2);
-	result1d = pow_d(var1, var1d, 2, &result1);
-	var1d = -result1d;
-	var1 = 1. - result1;
-	result1d = pow_d(dist_i/delta, -(dist_i*deltad/(delta*delta)), 4, &result1
-	);
-	x4d = -(f_wake*result1d*exp(-result1));
-	x4 = f_wake*exp(-result1);
-	if (x4 < var1) {
-		x3d = var1d;
-		x3 = var1;
-	} else {
-		x3d = x4d;
-		x3 = x4;
-	}
-	if (x3 > 1.0) {
-		f_theta = 1.0;
-		f_thetad = 0.0;
-	} else {
-		f_thetad = x3d;
-		f_theta = x3;
-	}
-	//f_theta = min(var1,1.0);
-	val_residuald[1] = c_theta*U_i[0]*(-(f_thetad*(re_theta_t-TransVar_i[1]/U_i[
-	                                                                          0]))-(1.-f_theta)*TransVar_id[1]/U_i[0])/time_scale;
-	val_residual[1] = c_theta*U_i[0]/time_scale*(1.-f_theta)*(re_theta_t-
-			TransVar_i[1]/U_i[0]);
-	val_residuald[1] = Volume*val_residuald[1];
-	val_residual[1] *= Volume;
-
-
-}

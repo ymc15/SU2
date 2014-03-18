@@ -348,7 +348,7 @@ def convert_cpp2c(source_routine, source_location, overwrite=False):
                         extra_line = ''
                         for word in data_words[2:]:
                             define_count = define_count + 1
-                            extra_line += '#define ' + word + ' ' + str(1234000 + define_count) + '\r\n'
+                            extra_line += '#define ' + word + ' ' + str(123400 + define_count) + '\r\n'
                             divider_line += '//SU2_C2CPP REDEFINE ' + str(1234000 + define_count) + '=' + word[0] + '_' + word[1:] + '\r\n' # inserts '_' in name to stop Tapenade replacing it with #define
                         new_data.insert(0, extra_line)
 
