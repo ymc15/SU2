@@ -962,7 +962,8 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
   // DEBUG
   sagt_debug.open("sagt_debug.plt");
   sagt_debug << "TITLE = \"SAGT (Langtry+Menter) Transition model debug file \" " << endl;
-  sagt_debug << "VARIABLES = \"itmc\" \"Re_th_bar\" \"re_theta_t\" \"flen\" \"re_theta_c\"" << endl;
+  sagt_debug << "VARIABLES = \"iPoint\" \"itmc\" \"Re_th_bar\" \"re_theta_t\" \"flen\" \"re_theta_c\" "; 
+  sagt_debug << "\"val_resid[0]\" \"val_resid[1]\"" << endl;
   sagt_debug << "ZONE DATAPACKING=POINT" << endl;
 
   for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
@@ -994,7 +995,8 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
 	  boundary = geometry->node[iPoint]->GetBoundary();
 
 	  /*--- Compute the source term ---*/
-	   numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
+    sagt_debug << iPoint << " "; 
+	  numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
 
 	  /*-- Store gamma_eff in variable class, where CTurbSASolver can access it --*/
 	  node[iPoint]->SetGammaEff(gamma_eff);

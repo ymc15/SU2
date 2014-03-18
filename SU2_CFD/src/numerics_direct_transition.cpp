@@ -545,7 +545,7 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 	double bracket_tol = 1e-10;
 	double lambda_check;
 
-	bool debug=false;
+	bool debug=true;
 
 
 	rey  = config->GetReynolds();
@@ -659,7 +659,6 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 					f_a      = f_c;
 				}
 			}
-			debug = true;
 		}
 	}
 
@@ -747,8 +746,10 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	}
 
 	/*-- Quit now if we're at the wall  --*/
-	if (dist_i<1e-12) return;
-
+	if (dist_i<1e-12) {
+    sagt_debug << "0 0 0 0 0 0 0 " << endl;
+    return;
+  }
 	/* -- Compute intermediate correlations/expressions. These quantities which do not depend on TransVar are isolated to simplify the differentiated version of this routine.--*/
 	translm_helper(config);
 	//SU2_CPP2C COMMENT END
@@ -833,7 +834,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
 	//SU2_CPP2C COMMENT START
 	sagt_debug << TransVar_i[0]/U_i[0] << " " << TransVar_i[1]/U_i[0] << " "
-			<< re_theta_t << " " << flen << " " << re_theta_c << endl;
+			<< re_theta_t << " " << flen << " " << re_theta_c << " " << val_residual[0] << " " << val_residual[1] << endl;
 
 	/*-- Calculate term for separation correction --*/
 	f_reattach = exp(-pow(0.05*r_t,4));
