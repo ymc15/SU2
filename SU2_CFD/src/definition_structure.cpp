@@ -1210,6 +1210,7 @@ void Numerics_Preprocessing(CNumerics ****numerics_container,
     /*--- Definition of the boundary condition method ---*/
     for (iMGlevel = 0; iMGlevel <= config->GetMGLevels(); iMGlevel++){
       numerics_container[iMGlevel][TRANS_SOL][CONV_BOUND_TERM] = new CUpwSca_TransLM(nDim, nVar_Trans, config);
+      numerics_container[iMGlevel][TRANS_SOL][VISC_BOUND_TERM] = new CAvgGrad_TransLM(nDim, nVar_Trans, config);
     }
   }
   

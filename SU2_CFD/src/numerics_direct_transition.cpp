@@ -45,7 +45,6 @@ CUpwLin_TransLM::~CUpwLin_TransLM(void) {
 
 void CUpwLin_TransLM::ComputeResidual (double *val_residual, double **val_Jacobian_i, double **val_Jacobian_j, CConfig *config) {
   
-  
 	Density_i = U_i[0];
 	Density_j = U_j[0];
   
@@ -87,6 +86,7 @@ CUpwSca_TransLM::~CUpwSca_TransLM(void) {
 
 void CUpwSca_TransLM::ComputeResidual(double *val_residual, double **val_Jacobian_i, double **val_Jacobian_j, CConfig *config) {
   
+
   if (incompressible) {
     Density_i = V_i[nDim+1];
     Density_j = V_j[nDim+1];
@@ -547,14 +547,13 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 
 	bool debug=true;
 
-
 	rey  = config->GetReynolds();
 	mach = config->GetMach_FreeStreamND();
   turb_model = config->GetKind_Turb_Model();
 	/*--- Compute vorticity and strain ---*/
 	Vorticity = (PrimVar_Grad_i[2][0]-PrimVar_Grad_i[1][1])*(PrimVar_Grad_i[2][0]-PrimVar_Grad_i[1][1]);
 	if (nDim == 3) Vorticity += ( (PrimVar_Grad_i[3][1]-PrimVar_Grad_i[2][2])*(PrimVar_Grad_i[3][1]-PrimVar_Grad_i[2][2]) +
-                                 (PrimVar_Grad_i[1][2]-PrimVar_Grad_i[3][0])*(PrimVar_Grad_i[1][2]-PrimVar_Grad_i[3][0]) );
+                                (PrimVar_Grad_i[1][2]-PrimVar_Grad_i[3][0])*(PrimVar_Grad_i[1][2]-PrimVar_Grad_i[3][0]) );
 
 	/*-- Strain = sqrt(2*Sij*Sij) --*/
 	strain = 0.0;
@@ -572,7 +571,7 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 	}
 
   if (turb_model==SST) {
-    tu = 100.*pow(2*TurbVar_i[0]/3.,0.5)/Velocity_Mag;
+    tu = pow(2*TurbVar_i[0]/3.,0.5)/Velocity_Mag;
   } else if (turb_model==SA) {
 	  tu   = config->GetTurbulenceIntensity_FreeStream();
   }
@@ -728,15 +727,18 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
   double re_tilda, R_omega, f_sublayer;
 
+	val_residual[0] = 0.0;
+	val_residual[1] = 0.0;
+
+	/*-- Quit now if we're at the wall  --*/
+	if (dist_i<1e-12) {
+    sagt_debug << "0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl;
+    return;
+  }
+
 	//SU2_CPP2C COMMENT START
   double val_residuald[2], TransVar_id[2];
 
-	//SU2_CPP2C COMMENT END
-  
-	val_residual[0] = 0.0;
-	val_residual[1] = 0.0;
-  
-	//SU2_CPP2C COMMENT START
 	implicit = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
 	if (implicit) {
 		val_Jacobian_i[0][0] = 0.0;
@@ -745,15 +747,10 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 		val_Jacobian_i[1][1] = 0.0;
 	}
 
-	/*-- Quit now if we're at the wall  --*/
-	if (dist_i<1e-12) {
-    sagt_debug << "0 0 0 0 0 0 0 " << endl;
-    return;
-  }
 	/* -- Compute intermediate correlations/expressions. These quantities which do not depend on TransVar are isolated to simplify the differentiated version of this routine.--*/
 	translm_helper(config);
+  
 	//SU2_CPP2C COMMENT END
-
 
   if (turb_model==SST) {
     re_tilda = TransVar_i[1]/U_i[0];
@@ -765,7 +762,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
       re_theta_c = re_tilda - (593.11 + (re_tilda-1870.)*0.482); 
     }
 
-    // Correlation for flen
+    // Correlation for flen (eq. 12)
     if (re_tilda < 400) {
       flen = 398.189e-1 - 119.27e-4*re_tilda - 132.567e-6*pow(re_tilda,2);
     } else if (re_tilda < 596) {
@@ -776,7 +773,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
       flen = 0.3188;
     }
 
-    // Correction of flen for higher Reynolds numbers
+    // Correction of flen for higher Reynolds numbers (eq. 13-15)
     R_omega    = U_i[0]*dist_i*dist_i*TurbVar_i[1]/(500*Laminar_Viscosity_i);
     f_sublayer = exp(-pow(R_omega/0.4,2));
     flen       = flen*(1-f_sublayer) + 40.0*f_sublayer;
@@ -786,22 +783,23 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	  flen       = 0.171*pow(tu,2) - 0.0083*tu + 0.0306;
   }
 
-	re_v   = U_i[0]*pow(dist_i,2.)/Laminar_Viscosity_i*strain;  // Vorticity Reynolds number
+	re_v   = U_i[0]*pow(dist_i,2)/Laminar_Viscosity_i*strain;  // Vorticity Reynolds number (eq. 6)
 	
   if (turb_model==SST)  {
-    r_t = U_i[0]*TurbVar_i[0] / (Laminar_Viscosity_i*TurbVar_i[1]);
+    r_t = U_i[0]*TurbVar_i[0] / (Laminar_Viscosity_i*TurbVar_i[1]); // (eq. 9)
   } else if(turb_model==SA) {
     r_t = Eddy_Viscosity_i/Laminar_Viscosity_i;
   }
 
-	/*-- f_onset controls transition onset location --*/
+	/*-- f_onset controls transition onset location (eq. 7,8,10,11) --*/
 	f_onset1 = re_v / (2.193*re_theta_c);
-	f_onset2 = min(max(f_onset1, pow(f_onset1,4.)), 2.);
-	f_onset3 = max(1. - pow(0.4*r_t,3),0.);
+	f_onset2 = min(max(f_onset1, pow(f_onset1,4)), 2.);
+	f_onset3 = max(1. - pow(r_t/2.5,3),0.);
 	f_onset  = max(f_onset2 - f_onset3, 0.);
 
-	f_turb = exp(-pow(0.25*r_t,4));  // Medida eq. 10
+	f_turb = exp(-pow(r_t/4,4));  // (Langtry 2006 eq. 15, Medida eq. 10)
 
+  /*-- Intermittency production and destruction (eq. 4-5) --*/
 	prod = flen*c_a1*U_i[0]*strain*pow(f_onset*TransVar_i[0]/U_i[0],0.5);
 	prod = prod*(1. - c_e1*TransVar_i[0]/U_i[0]);
 
@@ -812,9 +810,9 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	val_residual[0] *= Volume;
 
 	/*-- REtheta eq: --*/
-	theta_bl   = TransVar_i[1]/U_i[0]*Laminar_Viscosity_i / (U_i[0]*Velocity_Mag);
+	theta_bl   = TransVar_i[1]/U_i[0]*Laminar_Viscosity_i / (U_i[0]*Velocity_Mag); // (eq. 25)
 	delta_bl   = 7.5*theta_bl;
-	delta      = 50.0*Vorticity*dist_i/Velocity_Mag*delta_bl + 1e-20;
+	delta      = 50.*Vorticity*dist_i/Velocity_Mag*delta_bl + 1e-20;
 
   if (turb_model==SST) {
     re_omega = U_i[0]*TurbVar_i[1]*dist_i*dist_i/Laminar_Viscosity_i;
@@ -823,18 +821,21 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
   	f_wake = 1.;
   }
 
-	var1 = (TransVar_i[0]/U_i[0]-1./c_e2)/(1.0-1./c_e2);
+	var1 = (TransVar_i[0]/U_i[0]-1./c_e2)/(1.0-1./c_e2);  // (Part of eq. 24)
 	var1 = 1. - pow(var1,2);
 
-	f_theta = min(max(f_wake*exp(-pow(dist_i/delta,4)), var1),1.0);
+	f_theta = min(max(f_wake*exp(-pow(dist_i/delta,4)), var1),1.0); // (eq. 24)
 	//f_theta = min(var1,1.0);
 
+  /*-- REtheta source term (eq. 22) --*/
 	val_residual[1] = c_theta*U_i[0]/time_scale *  (1.-f_theta) * (re_theta_t-TransVar_i[1]/U_i[0]);
 	val_residual[1] *= Volume;
 
 	//SU2_CPP2C COMMENT START
 	sagt_debug << TransVar_i[0]/U_i[0] << " " << TransVar_i[1]/U_i[0] << " "
-			<< re_theta_t << " " << flen << " " << re_theta_c << " " << val_residual[0] << " " << val_residual[1] << endl;
+			<< re_theta_t << " " << flen << " " << re_theta_c << " " << val_residual[0] << " " << val_residual[1] << " " 
+      << strain << "  " << Vorticity << " " << tu << " " << f_lambda << " "
+      << time_scale << " " << f_theta << " " << du_ds << endl;
 
 	/*-- Calculate term for separation correction --*/
 	f_reattach = exp(-pow(0.05*r_t,4));
