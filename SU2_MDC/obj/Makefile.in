@@ -60,11 +60,16 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+build_triplet = @build@
+host_triplet = @host@
+target_triplet = @target@
 bin_PROGRAMS = ../bin/SU2_MDC$(EXEEXT)
 subdir = SU2_MDC/obj
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_tls.m4 \
+	$(top_srcdir)/m4/metis.m4 $(top_srcdir)/m4/tecio.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -82,15 +87,36 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+AM_V_CXX = $(am__v_CXX_@AM_V@)
+am__v_CXX_ = $(am__v_CXX_@AM_DEFAULT_V@)
+am__v_CXX_0 = @echo "  CXX   " $@;
+AM_V_at = $(am__v_at_@AM_V@)
+am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
+am__v_at_0 = @
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
+AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
+am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
+am__v_CXXLD_0 = @echo "  CXXLD " $@;
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_@AM_V@)
+am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
+am__v_CC_0 = @echo "  CC    " $@;
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_@AM_V@)
+am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_@AM_V@)
+am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(___bin_SU2_MDC_SOURCES)
 DIST_SOURCES = $(___bin_SU2_MDC_SOURCES)
 am__can_run_installinfo = \
@@ -103,12 +129,17 @@ CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+CC = @CC@
+CCDEPMODE = @CCDEPMODE@
+CFLAGS = @CFLAGS@
 CGNS_CXX = @CGNS_CXX@
 CGNS_LD = @CGNS_LD@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
@@ -119,7 +150,9 @@ DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -132,8 +165,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
-METIS_CXX = @METIS_CXX@
-METIS_LD = @METIS_LD@
+METIS_INCLUDE = @METIS_INCLUDE@
+METIS_LIB = @METIS_LIB@
 MKDIR_P = @MKDIR_P@
 MUTATIONPP_CXX = @MUTATIONPP_CXX@
 MUTATIONPP_LD = @MUTATIONPP_LD@
@@ -150,13 +183,15 @@ RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-TECIO_CXX = @TECIO_CXX@
-TECIO_LD = @TECIO_LD@
+SU2_METIS_CPPFLAGS = @SU2_METIS_CPPFLAGS@
+TECIO_CPPFLAGS = @TECIO_CPPFLAGS@
+TECIO_INCLUDE = @TECIO_INCLUDE@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
@@ -164,14 +199,22 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
+build = @build@
 build_alias = @build_alias@
+build_cpu = @build_cpu@
+build_os = @build_os@
+build_vendor = @build_vendor@
 builddir = @builddir@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+host = @host@
 host_alias = @host_alias@
+host_cpu = @host_cpu@
+host_os = @host_os@
+host_vendor = @host_vendor@
 htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
@@ -190,8 +233,14 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
+su2_externals_INCLUDES = @su2_externals_INCLUDES@
+su2_externals_LIBS = @su2_externals_LIBS@
 sysconfdir = @sysconfdir@
+target = @target@
 target_alias = @target_alias@
+target_cpu = @target_cpu@
+target_os = @target_os@
+target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
@@ -202,23 +251,19 @@ ___bin_SU2_MDC_SOURCES = ../include/SU2_MDC.hpp \
 		../src/SU2_MDC.cpp
 
 
+# always link to built dependencies from ./externals
+
 # if BUILD_CGNS
-# endif
-
-# if BUILD_METIS
-# endif
-
-# if BUILD_TECIO
 # endif
 
 # if BUILD_MUTATIONPP
 # endif
 
 # if BUILD_JSONCPP
-___bin_SU2_MDC_CXXFLAGS = @CGNS_CXX@ @METIS_CXX@ @TECIO_CXX@ \
+___bin_SU2_MDC_CXXFLAGS = @su2_externals_INCLUDES@ @CGNS_CXX@ \
 	@MUTATIONPP_CXX@ @JSONCPP_CXX@ $(am__empty)
-___bin_SU2_MDC_LDADD = ../../Common/lib/libSU2.a @CGNS_LD@ @METIS_LD@ \
-	@TECIO_LD@ @MUTATIONPP_LD@ @JSONCPP_LD@ $(am__empty)
+___bin_SU2_MDC_LDADD = ../../Common/lib/libSU2.a @su2_externals_LIBS@ \
+	@CGNS_LD@ @MUTATIONPP_LD@ @JSONCPP_LD@ $(am__empty)
 all: all-am
 
 .SUFFIXES:
@@ -306,7 +351,7 @@ clean-binPROGRAMS:
 	@: > ../bin/$(am__dirstamp)
 ../bin/SU2_MDC$(EXEEXT): $(___bin_SU2_MDC_OBJECTS) $(___bin_SU2_MDC_DEPENDENCIES) $(EXTRA____bin_SU2_MDC_DEPENDENCIES) ../bin/$(am__dirstamp)
 	@rm -f ../bin/SU2_MDC$(EXEEXT)
-	$(___bin_SU2_MDC_LINK) $(___bin_SU2_MDC_OBJECTS) $(___bin_SU2_MDC_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(___bin_SU2_MDC_LINK) $(___bin_SU2_MDC_OBJECTS) $(___bin_SU2_MDC_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -318,34 +363,34 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Po@am__quote@
 
 .cpp.o:
-@am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
 
 .cpp.obj:
-@am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 ../src/___bin_SU2_MDC-SU2_MDC.o: ../src/SU2_MDC.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(___bin_SU2_MDC_CXXFLAGS) $(CXXFLAGS) -MT ../src/___bin_SU2_MDC-SU2_MDC.o -MD -MP -MF ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Tpo -c -o ../src/___bin_SU2_MDC-SU2_MDC.o `test -f '../src/SU2_MDC.cpp' || echo '$(srcdir)/'`../src/SU2_MDC.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Tpo ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/SU2_MDC.cpp' object='../src/___bin_SU2_MDC-SU2_MDC.o' libtool=no @AMDEPBACKSLASH@
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(___bin_SU2_MDC_CXXFLAGS) $(CXXFLAGS) -MT ../src/___bin_SU2_MDC-SU2_MDC.o -MD -MP -MF ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Tpo -c -o ../src/___bin_SU2_MDC-SU2_MDC.o `test -f '../src/SU2_MDC.cpp' || echo '$(srcdir)/'`../src/SU2_MDC.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Tpo ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SU2_MDC.cpp' object='../src/___bin_SU2_MDC-SU2_MDC.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(___bin_SU2_MDC_CXXFLAGS) $(CXXFLAGS) -c -o ../src/___bin_SU2_MDC-SU2_MDC.o `test -f '../src/SU2_MDC.cpp' || echo '$(srcdir)/'`../src/SU2_MDC.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(___bin_SU2_MDC_CXXFLAGS) $(CXXFLAGS) -c -o ../src/___bin_SU2_MDC-SU2_MDC.o `test -f '../src/SU2_MDC.cpp' || echo '$(srcdir)/'`../src/SU2_MDC.cpp
 
 ../src/___bin_SU2_MDC-SU2_MDC.obj: ../src/SU2_MDC.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(___bin_SU2_MDC_CXXFLAGS) $(CXXFLAGS) -MT ../src/___bin_SU2_MDC-SU2_MDC.obj -MD -MP -MF ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Tpo -c -o ../src/___bin_SU2_MDC-SU2_MDC.obj `if test -f '../src/SU2_MDC.cpp'; then $(CYGPATH_W) '../src/SU2_MDC.cpp'; else $(CYGPATH_W) '$(srcdir)/../src/SU2_MDC.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Tpo ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/SU2_MDC.cpp' object='../src/___bin_SU2_MDC-SU2_MDC.obj' libtool=no @AMDEPBACKSLASH@
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(___bin_SU2_MDC_CXXFLAGS) $(CXXFLAGS) -MT ../src/___bin_SU2_MDC-SU2_MDC.obj -MD -MP -MF ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Tpo -c -o ../src/___bin_SU2_MDC-SU2_MDC.obj `if test -f '../src/SU2_MDC.cpp'; then $(CYGPATH_W) '../src/SU2_MDC.cpp'; else $(CYGPATH_W) '$(srcdir)/../src/SU2_MDC.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Tpo ../src/$(DEPDIR)/___bin_SU2_MDC-SU2_MDC.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SU2_MDC.cpp' object='../src/___bin_SU2_MDC-SU2_MDC.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(___bin_SU2_MDC_CXXFLAGS) $(CXXFLAGS) -c -o ../src/___bin_SU2_MDC-SU2_MDC.obj `if test -f '../src/SU2_MDC.cpp'; then $(CYGPATH_W) '../src/SU2_MDC.cpp'; else $(CYGPATH_W) '$(srcdir)/../src/SU2_MDC.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(___bin_SU2_MDC_CXXFLAGS) $(CXXFLAGS) -c -o ../src/___bin_SU2_MDC-SU2_MDC.obj `if test -f '../src/SU2_MDC.cpp'; then $(CYGPATH_W) '../src/SU2_MDC.cpp'; else $(CYGPATH_W) '$(srcdir)/../src/SU2_MDC.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

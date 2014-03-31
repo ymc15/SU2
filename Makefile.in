@@ -19,10 +19,13 @@
 # Stanford University Aerospace Design Lab
 #
 # Created: 		10/26/12
-# Last updated: 	10/30/13
+# Last updated: 	03/24/14
 #
 # Created by: 		M. Colonno
 # Updated by: 		T. Economon
+#
+# Major Changes/Contributions:
+# METIS & TECIO integration added by Ben Kirk, 3/24/2014
 #
 ##########################
 VPATH = @srcdir@
@@ -59,6 +62,9 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+build_triplet = @build@
+host_triplet = @host@
+target_triplet = @target@
 @BUILD_CFD_TRUE@am__append_1 = SU2_CFD/obj
 @BUILD_DDC_TRUE@am__append_2 = SU2_DDC/obj
 @BUILD_GPC_TRUE@am__append_3 = SU2_GPC/obj
@@ -71,9 +77,12 @@ POST_UNINSTALL = :
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure AUTHORS COPYING \
-	ChangeLog INSTALL NEWS depcomp install-sh missing
+	ChangeLog INSTALL NEWS compile config.guess config.sub depcomp \
+	install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_tls.m4 \
+	$(top_srcdir)/m4/metis.m4 $(top_srcdir)/m4/tecio.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -81,6 +90,12 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+AM_V_GEN = $(am__v_GEN_@AM_V@)
+am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
+am__v_GEN_0 = @echo "  GEN   " $@;
+AM_V_at = $(am__v_at_@AM_V@)
+am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
+am__v_at_0 = @
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -102,9 +117,9 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir dist dist-all distcheck
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = Common/lib SU2_PY SU2_CFD/obj SU2_DDC/obj SU2_GPC/obj \
-	SU2_MAC/obj SU2_MDC/obj SU2_PBC/obj SU2_SOL/obj SU2_GDC/obj \
-	SU2_UMC/obj
+DIST_SUBDIRS = externals Common/lib SU2_PY SU2_CFD/obj SU2_DDC/obj \
+	SU2_GPC/obj SU2_MAC/obj SU2_MDC/obj SU2_PBC/obj SU2_SOL/obj \
+	SU2_GDC/obj SU2_UMC/obj
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -147,12 +162,17 @@ am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+CC = @CC@
+CCDEPMODE = @CCDEPMODE@
+CFLAGS = @CFLAGS@
 CGNS_CXX = @CGNS_CXX@
 CGNS_LD = @CGNS_LD@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
@@ -163,7 +183,9 @@ DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -176,8 +198,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
-METIS_CXX = @METIS_CXX@
-METIS_LD = @METIS_LD@
+METIS_INCLUDE = @METIS_INCLUDE@
+METIS_LIB = @METIS_LIB@
 MKDIR_P = @MKDIR_P@
 MUTATIONPP_CXX = @MUTATIONPP_CXX@
 MUTATIONPP_LD = @MUTATIONPP_LD@
@@ -194,13 +216,15 @@ RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-TECIO_CXX = @TECIO_CXX@
-TECIO_LD = @TECIO_LD@
+SU2_METIS_CPPFLAGS = @SU2_METIS_CPPFLAGS@
+TECIO_CPPFLAGS = @TECIO_CPPFLAGS@
+TECIO_INCLUDE = @TECIO_INCLUDE@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
@@ -208,14 +232,22 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
+build = @build@
 build_alias = @build_alias@
+build_cpu = @build_cpu@
+build_os = @build_os@
+build_vendor = @build_vendor@
 builddir = @builddir@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+host = @host@
 host_alias = @host_alias@
+host_cpu = @host_cpu@
+host_os = @host_os@
+host_vendor = @host_vendor@
 htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
@@ -234,15 +266,23 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
+su2_externals_INCLUDES = @su2_externals_INCLUDES@
+su2_externals_LIBS = @su2_externals_LIBS@
 sysconfdir = @sysconfdir@
+target = @target@
 target_alias = @target_alias@
+target_cpu = @target_cpu@
+target_os = @target_os@
+target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # AUTOMAKE_OPTIONS = subdir-objects
-ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
-SUBDIRS = Common/lib SU2_PY $(am__append_1) $(am__append_2) \
+ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
+
+# build third-party optional dependencies first
+SUBDIRS = externals Common/lib SU2_PY $(am__append_1) $(am__append_2) \
 	$(am__append_3) $(am__append_4) $(am__append_5) \
 	$(am__append_6) $(am__append_7) $(am__append_8) \
 	$(am__append_9)
