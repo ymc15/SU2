@@ -878,6 +878,18 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
     /*--- Add and subtract residual ---*/
     
     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
+
+    // ERASE ME (AA)
+      if (iPoint==99|jPoint==99) {
+        cout << "-----------------" << endl;
+        cout << "Convective residuals: " << endl;
+        cout << "iPoint,jPoint: " << iPoint << ", " << jPoint << endl;
+        cout << "{u} FlowPrimVar_i[1], FlowPrimVar_j[1]: " << FlowPrimVar_i[1] << "," << FlowPrimVar_j[1] << endl;
+        cout << "{v} FlowPrimVar_i[2], FlowPrimVar_j[2]: " << FlowPrimVar_i[2] << "," << FlowPrimVar_j[2] << endl;
+        cout << "{P} FlowPrimVar_i[4], FlowPrimVar_j[4]: " << FlowPrimVar_i[4] << "," << FlowPrimVar_j[4] << endl;
+        cout << "{rho} FlowPrimVar_i[5], FlowPrimVar_j[5]: " << FlowPrimVar_i[5] << "," << FlowPrimVar_j[5] << endl;
+        cout << "Residual[1]: " << Residual[1] << endl;
+      }
     
     LinSysRes.AddBlock(iPoint, Residual);
     LinSysRes.SubtractBlock(jPoint, Residual);
@@ -935,6 +947,18 @@ void CTransLMSolver::Viscous_Residual(CGeometry *geometry, CSolver **solver_cont
     
     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
     
+    // ERASE ME (AA)
+      if (iPoint==99|jPoint==99) {
+        cout << "-----------------" << endl;
+        cout << "Viscous residuals: " << endl;
+        cout << "iPoint,jPoint: " << iPoint << ", " << jPoint << endl;
+        cout << "{u} FlowPrimVar_i[1], FlowPrimVar_j[1]: "   << solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(1) << "," << solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar(1) << endl;
+        cout << "{v} FlowPrimVar_i[2], FlowPrimVar_j[2]: "   << solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(2) << "," << solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar(2) << endl;
+        cout << "{P} FlowPrimVar_i[4], FlowPrimVar_j[4]: "   << solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(4) << "," << solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar(4) << endl;
+        cout << "{rho} FlowPrimVar_i[5], FlowPrimVar_j[5]: " << solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(5) << "," << solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar(5) << endl;
+        cout << "Residual[1]: " << Residual[1] << endl;
+      }
+    
     /*--- Add and subtract residual, and update Jacobians ---*/
     
     LinSysRes.SubtractBlock(iPoint, Residual);
@@ -959,23 +983,24 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
     //cout << "Setting Trans residual -AA " << endl;
     //cout << "\nBeginAA" << endl;
 
-  static int start_counter=0;
-  start_counter += 1;
-  if (start_counter < 100) {
-    cout << "Skipping source term" << endl;
-    return;
-  }
+   static int start_counter=0;
+   if (start_counter < 10) {
+     cout << "Skipping source term" << endl;
+     start_counter += 1;
+     return;
+   } 
+   
 
   // DEBUG
   sagt_debug.open("sagt_debug.plt");
   sagt_debug << "TITLE = \"SAGT (Langtry+Menter) Transition model debug file \" " << endl;
   sagt_debug << "VARIABLES = \"iPoint\" \"itmc\" \"Re_th_bar\" \"re_theta_t\" \"flen\" \"re_theta_c\" "; 
   sagt_debug << "\"val_resid[0]\" \"val_resid[1]\" \"strain\" \"vorticity\" \"tu\" \"f_lambda\" ";
-  sagt_debug << "\"time_scale\" \"f_theta\" \"du_ds\""<< endl;
+  sagt_debug << "\"time_scale\" \"f_theta\" \"du_ds\" \"dist_i\" \"Volume\" \"delta\" \"var1\" ";
+  sagt_debug << "\"dv_dx\" \"du_dy\"" << endl;
   sagt_debug << "ZONE DATAPACKING=POINT" << endl;
 
   for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
-	  //cout << "\niPoint: " << iPoint << endl;
 
 	  /*--- Conservative variables w/o reconstruction ---*/
 	  numerics->SetConservative(solver_container[FLOW_SOL]->node[iPoint]->GetSolution(), NULL);
@@ -1006,6 +1031,13 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
     sagt_debug << iPoint << " "; 
 	  numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
 
+      // ERASE ME (AA)
+      if (iPoint==99) {
+        cout << "-------------------" << endl;
+        cout << "Source Residual: " << endl;
+        cout << "Residual[1]: " << Residual[1] << endl;
+        cout << "Volume: " << geometry->node[iPoint]->GetVolume() << endl;
+      }
 	  /*-- Store gamma_eff in variable class, where CTurbSASolver can access it --*/
 	  node[iPoint]->SetGammaEff(gamma_eff);
 
@@ -1080,7 +1112,7 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       
       Solution_j[0] = Intermittency_Inf*Density_Inf;
       Solution_j[1] = REth_Inf*Density_Inf;
-      
+
       conv_numerics->SetTransVar(Solution_i, Solution_j);
       
       /*--- Set Normal (it is necessary to change the sign) ---*/
@@ -1095,7 +1127,7 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       
       /*--- Compute residuals and jacobians ---*/
       conv_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-      
+
       /*--- Add residuals and jacobians ---*/
       LinSysRes.AddBlock(iPoint, Residual);
       Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);
@@ -1227,6 +1259,18 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       /*--- Compute the residual using an upwind scheme ---*/
       conv_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
       LinSysRes.AddBlock(iPoint, Residual);
+
+      // ERASE ME (AA)
+      if (iPoint==99) {
+        cout << "-----------------" << endl;
+        cout << "BC residuals: " << endl;
+        cout << "{u} V_domain[1], V_outlet[1]: " << V_domain[1] << "," << V_outlet[1] << endl;
+        cout << "{v} V_domain[2], V_outlet[2]: " << V_domain[2] << "," << V_outlet[2] << endl;
+        cout << "{P} V_domain[4], V_outlet[4]: " << V_domain[4] << "," << V_outlet[4] << endl;
+        cout << "{rho} V_domain[5], V_outlet[5]: " << V_domain[5] << "," << V_outlet[5] << endl;
+        cout << "Normal[0],[1]: " << Normal[0] << ", " << Normal[1] <<endl;
+        cout << "Residual[1]: " << Residual[1] << endl;
+      }
       
       /*--- Jacobian contribution for implicit integration ---*/
       Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);

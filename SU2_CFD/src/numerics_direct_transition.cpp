@@ -575,6 +575,7 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
   } else if (turb_model==SA) {
 	  tu   = config->GetTurbulenceIntensity_FreeStream();
   }
+  tu = max(tu,0.027); // Tu limit, after eq. 38
 
 	/*-- Gradient of velocity magnitude ---*/
 	dU_dx = 0.5*Velocity_Mag*( 2*U_i[1]/U_i[0]*PrimVar_Grad_i[1][0]
@@ -671,6 +672,8 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 	else
 		re_theta_t = (331.5*pow(tu-0.5658,-0.671))*f_lambda;
 
+  re_theta_t = max(re_theta_t,20.0); // After eq. 38
+
 	// Check lambda, TODO: Remove this
 //	if (debug) {
 //		lambda_check = pow(re_theta_t,2)*Laminar_Viscosity_i/(U_i[0]*pow(Velocity_Mag,2))*du_ds;
@@ -732,12 +735,20 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
 	/*-- Quit now if we're at the wall  --*/
 	if (dist_i<1e-12) {
-    sagt_debug << "0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl;
+    sagt_debug << "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl;
     return;
   }
 
 	//SU2_CPP2C COMMENT START
   double val_residuald[2], TransVar_id[2];
+
+  if (boundary) {
+    for (int i=0; i<nDim; i++) {
+      for(int j=0; j<nDim; j++) {
+        PrimVar_Grad_i[i+1][j] = 1e-8;
+      }
+    }
+  }
 
 	implicit = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
 	if (implicit) {
@@ -835,7 +846,8 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	sagt_debug << TransVar_i[0]/U_i[0] << " " << TransVar_i[1]/U_i[0] << " "
 			<< re_theta_t << " " << flen << " " << re_theta_c << " " << val_residual[0] << " " << val_residual[1] << " " 
       << strain << "  " << Vorticity << " " << tu << " " << f_lambda << " "
-      << time_scale << " " << f_theta << " " << du_ds << endl;
+      << time_scale << " " << f_theta << " " << du_ds << " " << dist_i << " " << Volume <<  " " << delta 
+      << " " << var1 << " " << PrimVar_Grad_i[2][0] << " " << PrimVar_Grad_i[1][1] << endl;
 
 	/*-- Calculate term for separation correction --*/
 	f_reattach = exp(-pow(0.05*r_t,4));
