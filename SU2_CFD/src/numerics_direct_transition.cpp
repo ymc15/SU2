@@ -912,7 +912,7 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
     val_residual[0] = 0.0;
     val_residuald[1] = 0.0;
     val_residual[1] = 0.0;
-    if (turb_model == 123402) {
+    if (turb_model == SST) {
         re_tildad = TransVar_id[1]/U_i[0];
         re_tilda = TransVar_i[1]/U_i[0];
         if (re_tilda <= 1870.) {
@@ -955,7 +955,7 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
         flend = (1-f_sublayer)*flend;
         flen = flen*(1-f_sublayer) + 40.0*f_sublayer;
     } else
-        if (turb_model == 123403) {
+        if (turb_model == SA) {
             /*-- Medida 2011, eq. 29-30 --*/
             result1 = pow(tu, 3);
             result2 = pow(tu, 2);
@@ -973,10 +973,10 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
     result1 = pow(dist_i, 2.);
     re_v = U_i[0]*result1/Laminar_Viscosity_i*strain;
     // Vorticity Reynolds number
-    if (turb_model == 123402)
+    if (turb_model == SST)
         r_t = U_i[0]*TurbVar_i[0]/(Laminar_Viscosity_i*TurbVar_i[1]);
     else
-        if (turb_model == 123403)
+        if (turb_model == SA)
             r_t = Eddy_Viscosity_i/Laminar_Viscosity_i;
     /*-- f_onset controls transition onset location --*/
     f_onset1d = -(re_v*2.193*re_theta_cd/(2.193*re_theta_c*(2.193*re_theta_c))
@@ -1037,12 +1037,12 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
     delta_bl = 7.5*theta_bl;
     deltad = 50.0*Vorticity*dist_i*delta_bld/Velocity_Mag;
     delta = 50.0*Vorticity*dist_i/Velocity_Mag*delta_bl + 1e-20;
-    if (turb_model == 123402) {
+    if (turb_model == SST) {
         re_omega = U_i[0]*TurbVar_i[1]*dist_i*dist_i/Laminar_Viscosity_i;
         result1 = pow(re_omega/1.e5, 2);
         f_wake = exp(-result1);
     } else
-        if (turb_model == 123403)
+        if (turb_model == SA)
             f_wake = 1.;
     var1d = TransVar_id[0]/U_i[0]/(1.0-1./c_e2);
     var1 = (TransVar_i[0]/U_i[0]-1./c_e2)/(1.0-1./c_e2);
