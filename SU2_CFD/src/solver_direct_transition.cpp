@@ -879,18 +879,6 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
     
     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
 
-    // ERASE ME (AA)
-      if (iPoint==99|jPoint==99) {
-        cout << "-----------------" << endl;
-        cout << "Convective residuals: " << endl;
-        cout << "iPoint,jPoint: " << iPoint << ", " << jPoint << endl;
-        cout << "{u} FlowPrimVar_i[1], FlowPrimVar_j[1]: " << FlowPrimVar_i[1] << "," << FlowPrimVar_j[1] << endl;
-        cout << "{v} FlowPrimVar_i[2], FlowPrimVar_j[2]: " << FlowPrimVar_i[2] << "," << FlowPrimVar_j[2] << endl;
-        cout << "{P} FlowPrimVar_i[4], FlowPrimVar_j[4]: " << FlowPrimVar_i[4] << "," << FlowPrimVar_j[4] << endl;
-        cout << "{rho} FlowPrimVar_i[5], FlowPrimVar_j[5]: " << FlowPrimVar_i[5] << "," << FlowPrimVar_j[5] << endl;
-        cout << "Residual[1]: " << Residual[1] << endl;
-      }
-    
     LinSysRes.AddBlock(iPoint, Residual);
     LinSysRes.SubtractBlock(jPoint, Residual);
     
@@ -946,18 +934,6 @@ void CTransLMSolver::Viscous_Residual(CGeometry *geometry, CSolver **solver_cont
     /*--- Compute residual, and Jacobians ---*/
     
     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-    
-    // ERASE ME (AA)
-      if (iPoint==99|jPoint==99) {
-        cout << "-----------------" << endl;
-        cout << "Viscous residuals: " << endl;
-        cout << "iPoint,jPoint: " << iPoint << ", " << jPoint << endl;
-        cout << "{u} FlowPrimVar_i[1], FlowPrimVar_j[1]: "   << solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(1) << "," << solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar(1) << endl;
-        cout << "{v} FlowPrimVar_i[2], FlowPrimVar_j[2]: "   << solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(2) << "," << solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar(2) << endl;
-        cout << "{P} FlowPrimVar_i[4], FlowPrimVar_j[4]: "   << solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(4) << "," << solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar(4) << endl;
-        cout << "{rho} FlowPrimVar_i[5], FlowPrimVar_j[5]: " << solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(5) << "," << solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar(5) << endl;
-        cout << "Residual[1]: " << Residual[1] << endl;
-      }
     
     /*--- Add and subtract residual, and update Jacobians ---*/
     
@@ -1031,13 +1007,6 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
     sagt_debug << iPoint << " "; 
 	  numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
 
-      // ERASE ME (AA)
-      if (iPoint==99) {
-        cout << "-------------------" << endl;
-        cout << "Source Residual: " << endl;
-        cout << "Residual[1]: " << Residual[1] << endl;
-        cout << "Volume: " << geometry->node[iPoint]->GetVolume() << endl;
-      }
 	  /*-- Store gamma_eff in variable class, where CTurbSASolver can access it --*/
 	  node[iPoint]->SetGammaEff(gamma_eff);
 
@@ -1260,18 +1229,6 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       conv_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
       LinSysRes.AddBlock(iPoint, Residual);
 
-      // ERASE ME (AA)
-      if (iPoint==99) {
-        cout << "-----------------" << endl;
-        cout << "BC residuals: " << endl;
-        cout << "{u} V_domain[1], V_outlet[1]: " << V_domain[1] << "," << V_outlet[1] << endl;
-        cout << "{v} V_domain[2], V_outlet[2]: " << V_domain[2] << "," << V_outlet[2] << endl;
-        cout << "{P} V_domain[4], V_outlet[4]: " << V_domain[4] << "," << V_outlet[4] << endl;
-        cout << "{rho} V_domain[5], V_outlet[5]: " << V_domain[5] << "," << V_outlet[5] << endl;
-        cout << "Normal[0],[1]: " << Normal[0] << ", " << Normal[1] <<endl;
-        cout << "Residual[1]: " << Residual[1] << endl;
-      }
-      
       /*--- Jacobian contribution for implicit integration ---*/
       Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);
       

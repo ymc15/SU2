@@ -745,7 +745,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
   if (boundary) {
     for (int i=0; i<nDim; i++) {
       for(int j=0; j<nDim; j++) {
-        PrimVar_Grad_i[i+1][j] = 1e-8;
+        PrimVar_Grad_i[i+1][j] = 1e-5;
       }
     }
   }
