@@ -2,7 +2,7 @@
  * \file SU2_MDC.cpp
  * \brief Main file of Mesh Deformation Code (SU2_MDC).
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  *
  * SU2, Copyright (C) 2012-2014 Aerospace Design Laboratory (ADL).
  *
@@ -26,7 +26,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
   
   double StartTime = 0.0, StopTime = 0.0, UsedTime = 0.0;
-  unsigned short nZone = 1, ZONE_0;
+  unsigned short nZone = 1;
   char buffer_char[50], out_file[200], in_file[200], mesh_file[200];
   int rank = MASTER_NODE, size = SINGLE_NODE;
   string str;

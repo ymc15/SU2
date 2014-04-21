@@ -2,7 +2,7 @@
  * \file SU2_CFD.cpp
  * \brief Main file of Computational Fluid Dynamics Code (SU2_CFD).
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  *
  * SU2, Copyright (C) 2012-2014 Aerospace Design Laboratory (ADL).
  *
@@ -354,6 +354,18 @@ int main(int argc, char *argv[]) {
       config_container[iZone]->SetExtIter(ExtIter);
       config_container[iZone]->UpdateCFL(ExtIter);
     }
+    
+    /*--- Read the target pressure ---*/
+    
+    if (config_container[ZONE_0]->GetInvDesign_Cp() == YES)
+      output->SetCp_InverseDesign(solver_container[ZONE_0][MESH_0][FLOW_SOL],
+                                  geometry_container[ZONE_0][MESH_0], config_container[ZONE_0], ExtIter);
+    
+    /*--- Read the target heat flux ---*/
+
+    if (config_container[ZONE_0]->GetInvDesign_HeatFlux() == YES)
+      output->SetHeat_InverseDesign(solver_container[ZONE_0][MESH_0][FLOW_SOL],
+                                    geometry_container[ZONE_0][MESH_0], config_container[ZONE_0], ExtIter);
     
     /*--- Perform a single iteration of the chosen PDE solver. ---*/
     

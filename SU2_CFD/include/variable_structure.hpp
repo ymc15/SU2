@@ -4,7 +4,7 @@
  *        each kind of governing equation (direct, adjoint and linearized).
  *        The subroutines and functions are in the <i>variable_structure.cpp</i> file.
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  *
  * SU2, Copyright (C) 2012-2014 Aerospace Design Laboratory (ADL).
  *
@@ -36,7 +36,7 @@ using namespace std;
  * \class CVariable
  * \brief Main class for defining the variables.
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CVariable {
 protected:
@@ -1016,6 +1016,17 @@ public:
   /*!
 	 * \brief A virtual member.
 	 */
+  virtual bool Cons2PrimVar(CConfig *config, double *U, double *V,
+                            double *dPdU, double *dTdU,
+                            double *dTvedU);
+  /*!
+	 * \brief A virtual member.
+	 */
+  virtual void Prim2ConsVar(CConfig *config, double *V, double *U);
+  
+  /*!
+	 * \brief A virtual member.
+	 */
 	virtual bool SetPrimVar_Compressible(double SharpEdge_Distance, bool check, CConfig *config);
 	
   /*!
@@ -1556,7 +1567,7 @@ public:
  * \class CBaselineVariable
  * \brief Main class for defining the variables of a baseline solution from a restart file (for output).
  * \author F. Palacios, T. Economon.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CBaselineVariable : public CVariable {
 public:
@@ -1586,7 +1597,7 @@ public:
  * \brief Main class for defining the variables of the potential solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CPotentialVariable : public CVariable {
 	double *Charge_Density;
@@ -1630,7 +1641,7 @@ public:
  * \brief Main class for defining the variables of the wave equation solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CWaveVariable : public CVariable {
 protected:
@@ -1676,7 +1687,7 @@ public:
  * \brief Main class for defining the variables of the Heat equation solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CHeatVariable : public CVariable {
 protected:
@@ -1722,7 +1733,7 @@ public:
  * \brief Main class for defining the variables of the FEA equation solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CFEAVariable : public CVariable {
 protected:
@@ -1796,7 +1807,7 @@ public:
  * \brief Main class for defining the variables of the Euler's solver.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CEulerVariable : public CVariable {
 protected:
@@ -2172,7 +2183,7 @@ public:
  * \brief Main class for defining the variables of the Navier-Stokes' solver.
  * \ingroup Navier_Stokes_Equations
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CNSVariable : public CEulerVariable {
 private:
@@ -2317,7 +2328,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CTurbVariable : public CVariable {
 protected:
@@ -2361,7 +2372,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 
 class CTurbSAVariable : public CTurbVariable {
@@ -2408,7 +2419,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 
 class CTurbMLVariable : public CTurbVariable {
@@ -2454,7 +2465,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 
 class CTransLMVariable : public CTurbVariable {
@@ -2495,7 +2506,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 
 class CTurbSSTVariable : public CTurbVariable {
@@ -2557,7 +2568,7 @@ public:
  * \brief Main class for defining the variables of the adjoint potential solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CAdjPotentialVariable : public CVariable {
 private:
@@ -2592,7 +2603,7 @@ public:
  * \brief Main class for defining the variables of the adjoint Euler solver.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CAdjEulerVariable : public CVariable {
 protected:
@@ -2711,7 +2722,7 @@ public:
  * \brief Main class for defining the variables of the adjoint Navier-Stokes solver.
  * \ingroup Navier_Stokes_Equations
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CAdjNSVariable : public CAdjEulerVariable {	
 private:
@@ -2783,7 +2794,7 @@ public:
  * \brief Main class for defining the variables of the adjoint turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CAdjTurbVariable : public CVariable {
 protected:
@@ -2833,7 +2844,7 @@ public:
  * \brief Main class for defining the variables of the linearized potential equation.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CLinPotentialVariable : public CVariable {
 public:	
@@ -2844,7 +2855,7 @@ public:
  * \brief Main class for defining the variables of the linearized Euler's equations.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CLinEulerVariable : public CVariable {
 private:
@@ -2921,7 +2932,7 @@ public:
  * \brief Main class for defining the variables of the linearized Navier-Stokes' equations.
  * \ingroup Navier_Stokes_Equations
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CLinNSVariable : public CLinEulerVariable {
 public:
@@ -2932,7 +2943,7 @@ public:
  * \brief Main class for defining the variables of the Level Set.
  * \ingroup LevelSet_Model
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CAdjLevelSetVariable : public CVariable {
 public:
@@ -3174,6 +3185,17 @@ public:
 	 * \brief Set all the primitive variables for compressible flows.
 	 */
 	bool SetPrimVar_Compressible(CConfig *config);
+  
+  /*!
+	 * \brief Set all the conserved variables.
+	 */
+	bool Cons2PrimVar(CConfig *config, double *U, double *V, double *dPdU,
+                    double *dTdU, double *dTvedU);
+  
+  /*!
+	 * \brief Set all the conserved variables.
+	 */
+	void Prim2ConsVar(CConfig *config, double *V, double *U);
 	
 	/*!
 	 * \brief Get the primitive variables.
@@ -3306,6 +3328,29 @@ public:
 	 * \param[in] val_velocity - Pointer to the velocity.
 	 */
 	void SetVelocity_Old(double *val_velocity);
+  
+  /*!
+	 * \brief Get the value of the limiter.
+	 */
+  double *GetLimiter_Primitive(void);
+  
+  /*!
+	 * \brief Get the value of the primitive variables gradient.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \return Value of the primitive variables gradient.
+	 */
+	double GetLimiter_Primitive(unsigned short val_var);
+  
+  /*!
+	 * \brief Set the value of the limiter.
+	 */
+  void SetLimiter_Primitive(unsigned short val_var, double val_value);
+  
+  /*!
+	 * \brief Set the value of the limiter.
+	 */
+  void SetLimiter(unsigned short val_var, double val_value);
   
 	/*!
 	 * \brief Get the value of the preconditioner Beta.
@@ -3702,7 +3747,7 @@ public:
  * \brief Main class for defining the variables of the potential solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.0.0 "eagle"
+ * \version 3.1.0 "eagle"
  */
 class CTemplateVariable : public CVariable {
 public:
