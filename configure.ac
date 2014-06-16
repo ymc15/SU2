@@ -117,6 +117,9 @@ AC_ARG_ENABLE(SOL,
 AC_ARG_ENABLE(GEO,
    	AS_HELP_STRING([--disable-GEO], [build the SU2_GEO executable (default = yes)]),
 	[build_GEO=$enableval], [build_GEO="yes"])
+AC_ARG_ENABLE(UMC,
+   	AS_HELP_STRING([--disable-UMC], [build the SU2_UMC executable (default = yes)]),
+	[build_UMC =$enableval], [build_UMC ="yes"])
 
 ##########################
 
@@ -270,6 +273,7 @@ AM_CONDITIONAL([BUILD_MSH],[test $build_MSH != "no"])
 AM_CONDITIONAL([BUILD_DEF],[test $build_DEF != "no"])
 AM_CONDITIONAL([BUILD_SOL],[test $build_SOL != "no"])
 AM_CONDITIONAL([BUILD_GEO],[test $build_GEO != "no"])
+AM_CONDITIONAL([BUILD_UMC],[test $build_UMC != "no"])
 
 ###########################
 
@@ -283,6 +287,7 @@ AC_OUTPUT(Makefile \
 	SU2_DEF/obj/Makefile \
 	SU2_SOL/obj/Makefile \
 	SU2_GEO/obj/Makefile \
+       SU2_UMC/obj/Makefile \
 	SU2_PY/Makefile)
 
 abs_srcdir=`(cd $srcdir && pwd)`
@@ -317,6 +322,7 @@ Build Configuration Summary:
     Build SU2_DEF:        $build_DEF
     Build SU2_SOL:        $build_SOL
     Build SU2_GEO:        $build_GEO
+    Build SU2_UMC:        $build_UMC
 
 Please be sure to add the [\$]SU2_HOME and [\$]SU2_RUN environment variables,
 and update your [\$]PATH (and [\$]PYTHONPATH if applicable) with [\$]SU2_RUN.

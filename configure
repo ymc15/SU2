@@ -625,6 +625,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+BUILD_UMC_FALSE
+BUILD_UMC_TRUE
 BUILD_GEO_FALSE
 BUILD_GEO_TRUE
 BUILD_SOL_FALSE
@@ -788,6 +790,7 @@ enable_MSH
 enable_DEF
 enable_SOL
 enable_GEO
+enable_UMC
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1435,6 +1438,7 @@ Optional Features:
   --disable-DEF           build the SU2_DEF executable (default = yes)
   --disable-SOL           build the SU2_SOL executable (default = yes)
   --disable-GEO           build the SU2_GEO executable (default = yes)
+  --disable-UMC           build the SU2_UMC executable (default = yes)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -5613,6 +5617,13 @@ else
   build_GEO="yes"
 fi
 
+# Check whether --enable-UMC was given.
+if test "${enable_UMC+set}" = set; then :
+  enableval=$enable_UMC; build_UMC =$enableval
+else
+  build_UMC ="yes"
+fi
+
 
 ##########################
 
@@ -5989,10 +6000,18 @@ else
   BUILD_GEO_FALSE=
 fi
 
+ if test $build_UMC != "no"; then
+  BUILD_UMC_TRUE=
+  BUILD_UMC_FALSE='#'
+else
+  BUILD_UMC_TRUE='#'
+  BUILD_UMC_FALSE=
+fi
+
 
 ###########################
 
-ac_config_files="$ac_config_files Makefile externals/Makefile Common/lib/Makefile SU2_CFD/obj/Makefile SU2_PRT/obj/Makefile SU2_DOT/obj/Makefile SU2_MSH/obj/Makefile SU2_DEF/obj/Makefile SU2_SOL/obj/Makefile SU2_GEO/obj/Makefile SU2_PY/Makefile"
+ac_config_files="$ac_config_files Makefile externals/Makefile Common/lib/Makefile SU2_CFD/obj/Makefile SU2_PRT/obj/Makefile SU2_DOT/obj/Makefile SU2_MSH/obj/Makefile SU2_DEF/obj/Makefile SU2_SOL/obj/Makefile SU2_GEO/obj/Makefile SU2_UMC/obj/Makefile SU2_PY/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -6225,6 +6244,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_GEO_TRUE}" && test -z "${BUILD_GEO_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_GEO\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${BUILD_UMC_TRUE}" && test -z "${BUILD_UMC_FALSE}"; then
+  as_fn_error $? "conditional \"BUILD_UMC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -6813,6 +6836,7 @@ do
     "SU2_DEF/obj/Makefile") CONFIG_FILES="$CONFIG_FILES SU2_DEF/obj/Makefile" ;;
     "SU2_SOL/obj/Makefile") CONFIG_FILES="$CONFIG_FILES SU2_SOL/obj/Makefile" ;;
     "SU2_GEO/obj/Makefile") CONFIG_FILES="$CONFIG_FILES SU2_GEO/obj/Makefile" ;;
+    "SU2_UMC/obj/Makefile") CONFIG_FILES="$CONFIG_FILES SU2_UMC/obj/Makefile" ;;
     "SU2_PY/Makefile") CONFIG_FILES="$CONFIG_FILES SU2_PY/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -7407,6 +7431,7 @@ Build Configuration Summary:
     Build SU2_DEF:        $build_DEF
     Build SU2_SOL:        $build_SOL
     Build SU2_GEO:        $build_GEO
+    Build SU2_UMC:        $build_UMC
 
 Please be sure to add the \$SU2_HOME and \$SU2_RUN environment variables,
 and update your \$PATH (and \$PYTHONPATH if applicable) with \$SU2_RUN.
@@ -7447,6 +7472,7 @@ Build Configuration Summary:
     Build SU2_DEF:        $build_DEF
     Build SU2_SOL:        $build_SOL
     Build SU2_GEO:        $build_GEO
+    Build SU2_UMC:        $build_UMC
 
 Please be sure to add the \$SU2_HOME and \$SU2_RUN environment variables,
 and update your \$PATH (and \$PYTHONPATH if applicable) with \$SU2_RUN.
