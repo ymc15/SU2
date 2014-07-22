@@ -4,7 +4,7 @@
  *        each kind of governing equation (direct, adjoint and linearized).
  *        The subroutines and functions are in the <i>variable_structure.cpp</i> file.
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  *
  * SU2, Copyright (C) 2012-2014 Aerospace Design Laboratory (ADL).
  *
@@ -24,11 +24,16 @@
 
 #pragma once
 
+#ifdef HAVE_MPI
+  #include "mpi.h"
+#endif
 #include <cmath>
 #include <iostream>
 #include <cstdlib>
 
 #include "../../Common/include/config_structure.hpp"
+#include "fluid_model.hpp"
+
 
 using namespace std;
 
@@ -36,7 +41,7 @@ using namespace std;
  * \class CVariable
  * \brief Main class for defining the variables.
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CVariable {
 protected:
@@ -68,6 +73,9 @@ protected:
   unsigned short nPrimVar, nPrimVarGrad;		/*!< \brief Number of variables of the problem,
                                              note that this variable cannnot be static, it is possible to
                                              have different number of nVar in the same problem. */
+  unsigned short nSecondaryVar, nSecondaryVarGrad;		/*!< \brief Number of variables of the problem,
+                                             note that this variable cannnot be static, it is possible to
+                                             have different number of nVar in the same problem. */
   
 public:
 
@@ -85,11 +93,11 @@ public:
   
 	/*!
 	 * \overload 
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */
-	CVariable(unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -497,18 +505,6 @@ public:
 	 * \param[in] Value of the low Mach preconditioner variable Beta
 	 */
 	virtual void SetPreconditioner_Beta(double val_Beta);
-
-	/*!
-	 * \brief Get the value of the magnetic field
-	 * \return Value of the magnetic field
-	 */
-	virtual double* GetMagneticField();
-
-	/*!
-	 * \brief Set the value of the magnetic field
-	 * \param[in] Value of the magnetic field
-	 */
-	virtual void SetMagneticField(double* val_B);
 
        /*!
 	 * \brief Get the value of the wind gust
@@ -1012,7 +1008,17 @@ public:
 	 * \brief A virtual member.
 	 */		
 	virtual bool SetPrimVar_Compressible(CConfig *config);
-  
+
+	/*!
+	 * \brief A virtual member.
+	 */
+	 virtual bool SetPrimVar_Compressible(CFluidModel *FluidModel);
+
+	/*!
+     * \brief A virtual member.
+	 */
+     virtual void SetSecondaryVar_Compressible(CFluidModel *FluidModel);
+
   /*!
 	 * \brief A virtual member.
 	 */
@@ -1047,6 +1053,11 @@ public:
 	/*!
 	 * \brief A virtual member.
 	 */		
+	virtual bool SetPrimVar_Compressible(double eddy_visc, double turb_ke, CFluidModel *FluidModel);
+
+	/*!
+	 * \brief A virtual member.
+	 */
 	virtual bool SetPrimVar_Incompressible(double Density_Inf, CConfig *config);
   
   /*!
@@ -1067,22 +1078,72 @@ public:
 	/*!
 	 * \brief A virtual member.
 	 */
-	virtual double GetPrimVar(unsigned short val_var);
+	virtual double GetPrimitive(unsigned short val_var);
   
   /*!
 	 * \brief A virtual member.
 	 */
-  virtual void SetPrimVar(unsigned short val_var, double val_prim);
+  virtual void SetPrimitive(unsigned short val_var, double val_prim);
   
   /*!
 	 * \brief A virtual member.
 	 */
-  virtual void SetPrimVar(double *val_prim);
+  virtual void SetPrimitive(double *val_prim);
 
 	/*!
 	 * \brief A virtual member.
 	 */
-	virtual double *GetPrimVar(void);
+	virtual double *GetPrimitive(void);
+  
+  /*!
+	 * \brief A virtual member.
+	 */
+	virtual double GetSecondary(unsigned short val_var);
+  
+  /*!
+	 * \brief A virtual member.
+	 */
+  virtual void SetSecondary(unsigned short val_var, double val_secondary);
+  
+    /*!
+	 * \brief A virtual member.
+	 */
+    virtual void SetSecondary(double *val_secondary);
+
+    /*!
+ 	 * \brief A virtual member.
+ 	 */
+     virtual void SetdPdrho_e(double dPdrho_e);
+
+     /*!
+   	 * \brief A virtual member.
+   	 */
+     virtual void SetdPde_rho(double dPde_rho);
+
+    /*!
+  	 * \brief A virtual member.
+  	 */
+     virtual void SetdTdrho_e(double dTdrho_e);
+
+    /*!
+     * \brief A virtual member.
+     */
+     virtual void SetdTde_rho(double dTde_rho);
+
+     /*!
+   	 * \brief A virtual member.
+   	 */
+      virtual void Setdmudrho_T(double Setdmudrho_T);
+
+     /*!
+      * \brief A virtual member.
+      */
+      virtual void SetdmudT_rho(double SetdmudT_rho);
+
+	/*!
+	 * \brief A virtual member.
+	 */
+	 virtual double *GetSecondary(void);
 	
 	/*!
 	 * \brief A virtual member.
@@ -1229,13 +1290,13 @@ public:
 	 * \brief A virtual member.
 	 * \param[in] config - Configuration parameters.
 	 */	
-	virtual void SetPrimVar(CConfig *config);
+	virtual void SetPrimitive(CConfig *config);
   
   /*!
 	 * \brief A virtual member.
 	 * \param[in] config - Configuration parameters.
 	 */
-	virtual void SetPrimVar(CConfig *config, double *Coord);
+	virtual void SetPrimitive(CConfig *config, double *Coord);
 	
 	/*!
 	 * \brief A virtual member.
@@ -1314,6 +1375,13 @@ public:
 	 * \brief A virtual member.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
+//	virtual void SetLaminarViscosity(void);
+	virtual void SetLaminarViscosity(double laminarViscosity);
+
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] config - Definition of the particular problem.
+	 */
 	virtual void SetLaminarViscosity(CConfig *config);
 
 	/*!
@@ -1406,7 +1474,72 @@ public:
 	 * \return Value of the primitive variables gradient.
 	 */
 	virtual double *GetLimiter_Primitive(void);
-
+  
+  /*!
+	 * \brief A virtual member.
+	 */
+	virtual void SetGradient_SecondaryZero(unsigned short val_secondaryvar);
+  
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \param[in] val_value - Value to add to the gradient of the Secondary variables.
+	 */
+	virtual void AddGradient_Secondary(unsigned short val_var, unsigned short val_dim, double val_value);
+  
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \param[in] val_value - Value to subtract to the gradient of the Secondary variables.
+	 */
+	virtual void SubtractGradient_Secondary(unsigned short val_var, unsigned short val_dim, double val_value);
+  
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \return Value of the Secondary variables gradient.
+	 */
+	virtual double GetGradient_Secondary(unsigned short val_var, unsigned short val_dim);
+  
+  /*!
+	 * \brief A virtual member.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \return Value of the Secondary variables gradient.
+	 */
+	virtual double GetLimiter_Secondary(unsigned short val_var);
+  
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \param[in] val_value - Value of the gradient.
+	 */
+	virtual void SetGradient_Secondary(unsigned short val_var, unsigned short val_dim, double val_value);
+  
+  /*!
+	 * \brief A virtual member.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \param[in] val_value - Value of the gradient.
+	 */
+	virtual void SetLimiter_Secondary(unsigned short val_var, double val_value);
+  
+	/*!
+	 * \brief A virtual member.
+	 * \return Value of the Secondary variables gradient.
+	 */
+	virtual double **GetGradient_Secondary(void);
+  
+  /*!
+	 * \brief A virtual member.
+	 * \return Value of the Secondary variables gradient.
+	 */
+	virtual double *GetLimiter_Secondary(void);
+  
 	/*!
 	 * \brief Set the blending function for the blending of k-w and k-eps.
 	 * \param[in] val_viscosity - Value of the vicosity.
@@ -1567,7 +1700,7 @@ public:
  * \class CBaselineVariable
  * \brief Main class for defining the variables of a baseline solution from a restart file (for output).
  * \author F. Palacios, T. Economon.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CBaselineVariable : public CVariable {
 public:
@@ -1597,7 +1730,7 @@ public:
  * \brief Main class for defining the variables of the potential solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CPotentialVariable : public CVariable {
 	double *Charge_Density;
@@ -1611,11 +1744,11 @@ public:
 	/*!
 	 * \overload
 	 * \param[in] val_potential - Value of the potential solution (initialization value).		 
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CPotentialVariable(double val_potential, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CPotentialVariable(double val_potential, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
   /*!
 	 * \brief Destructor of the class.
@@ -1641,7 +1774,7 @@ public:
  * \brief Main class for defining the variables of the wave equation solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CWaveVariable : public CVariable {
 protected:
@@ -1657,11 +1790,11 @@ public:
 	/*!
 	 * \overload
 	 * \param[in] val_wave - Values of the wave solution (initialization value).		 
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CWaveVariable(double *val_wave, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CWaveVariable(double *val_wave, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -1687,7 +1820,7 @@ public:
  * \brief Main class for defining the variables of the Heat equation solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CHeatVariable : public CVariable {
 protected:
@@ -1703,11 +1836,11 @@ public:
 	/*!
 	 * \overload
 	 * \param[in] val_Heat - Values of the Heat solution (initialization value).		 
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CHeatVariable(double *val_Heat, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CHeatVariable(double *val_Heat, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -1733,7 +1866,7 @@ public:
  * \brief Main class for defining the variables of the FEA equation solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CFEAVariable : public CVariable {
 protected:
@@ -1751,11 +1884,11 @@ public:
 	/*!
 	 * \overload
 	 * \param[in] val_fea - Values of the fea solution (initialization value).		 
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CFEAVariable(double *val_fea, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CFEAVariable(double *val_fea, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -1807,21 +1940,27 @@ public:
  * \brief Main class for defining the variables of the Euler's solver.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CEulerVariable : public CVariable {
 protected:
 	double Velocity2;			/*!< \brief Square of the velocity vector. */
 	double *TS_Source;		/*!< \brief Time spectral source term. */
 	double Precond_Beta;	/*!< \brief Low Mach number preconditioner value, Beta. */
-	double *B_Field;		/*! < \brief Magnetic field value */
   double *WindGust;           /*! < \brief Wind gust value */
   double *WindGustDer;        /*! < \brief Wind gust derivatives value */
 
 	/*--- Primitive variable definition ---*/
+  
 	double *Primitive;	/*!< \brief Primitive variables (T,vx,vy,vz,P,rho,h,c) in compressible flows. */
 	double **Gradient_Primitive;	/*!< \brief Gradient of the primitive variables (T,vx,vy,vz,P,rho). */ 
   double *Limiter_Primitive;    /*!< \brief Limiter of the primitive variables (T,vx,vy,vz,P,rho). */ 
+
+  /*--- Secondary variable definition ---*/
+  
+	double *Secondary;	/*!< \brief Primitive variables (T,vx,vy,vz,P,rho,h,c) in compressible flows. */
+	double **Gradient_Secondary;	/*!< \brief Gradient of the primitive variables (T,vx,vy,vz,P,rho). */
+  double *Limiter_Secondary;    /*!< \brief Limiter of the primitive variables (T,vx,vy,vz,P,rho). */
 
 public:
 
@@ -1835,21 +1974,21 @@ public:
 	 * \param[in] val_density - Value of the flow density (initialization value).
 	 * \param[in] val_velocity - Value of the flow velocity (initialization value).
 	 * \param[in] val_energy - Value of the flow energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.		 
 	 * \param[in] config - Definition of the particular problem.	 
 	 */		
-	CEulerVariable(double val_density, double *val_velocity, double val_energy, unsigned short val_ndim, 
+	CEulerVariable(double val_density, double *val_velocity, double val_energy, unsigned short val_nDim, 
 			unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the flow value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */		
-	CEulerVariable(double *val_solution, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CEulerVariable(double *val_solution, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -1921,6 +2060,81 @@ public:
 	 */
 	double *GetLimiter_Primitive(void);
 
+  /*!
+	 * \brief Set to zero the gradient of the primitive variables.
+	 */
+	void SetGradient_SecondaryZero(unsigned short val_secondaryvar);
+  
+	/*!
+	 * \brief Add <i>val_value</i> to the gradient of the primitive variables.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \param[in] val_value - Value to add to the gradient of the primitive variables.
+	 */
+	void AddGradient_Secondary(unsigned short val_var, unsigned short val_dim, double val_value);
+  
+	/*!
+	 * \brief Subtract <i>val_value</i> to the gradient of the primitive variables.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \param[in] val_value - Value to subtract to the gradient of the primitive variables.
+	 */
+	void SubtractGradient_Secondary(unsigned short val_var, unsigned short val_dim, double val_value);
+  
+	/*!
+	 * \brief Get the value of the primitive variables gradient.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \return Value of the primitive variables gradient.
+	 */
+	double GetGradient_Secondary(unsigned short val_var, unsigned short val_dim);
+  
+  /*!
+	 * \brief Get the value of the primitive variables gradient.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \return Value of the primitive variables gradient.
+	 */
+	double GetLimiter_Secondary(unsigned short val_var);
+  
+	/*!
+	 * \brief Set the gradient of the primitive variables.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \param[in] val_value - Value of the gradient.
+	 */
+	void SetGradient_Secondary(unsigned short val_var, unsigned short val_dim, double val_value);
+  
+  /*!
+	 * \brief Set the gradient of the primitive variables.
+	 * \param[in] val_var - Index of the variable.
+	 * \param[in] val_dim - Index of the dimension.
+	 * \param[in] val_value - Value of the gradient.
+	 */
+	void SetLimiter_Secondary(unsigned short val_var, double val_value);
+  
+	/*!
+	 * \brief Get the value of the primitive variables gradient.
+	 * \return Value of the primitive variables gradient.
+	 */
+	double **GetGradient_Secondary(void);
+  
+  /*!
+	 * \brief Get the value of the primitive variables gradient.
+	 * \return Value of the primitive variables gradient.
+	 */
+	double *GetLimiter_Secondary(void);
+
+    /*!
+ 	 * \brief A virtual member.
+ 	 */
+    void SetdPdrho_e(double dPdrho_e);
+
+     /*!
+   	 * \brief A virtual member.
+   	 */
+    void SetdPde_rho(double dPde_rho);
+  
 	/*!
 	 * \brief Set the value of the pressure.
 	 */
@@ -1937,11 +2151,21 @@ public:
 	 */
 	void SetEnthalpy(void);
 	
+//	/*!
+//	 * \brief Set all the primitive variables for compressible flows.
+//	 */
+//	bool SetPrimVar_Compressible(CConfig *config);
+
 	/*!
 	 * \brief Set all the primitive variables for compressible flows.
 	 */
-	bool SetPrimVar_Compressible(CConfig *config);
-	
+	bool SetPrimVar_Compressible(CFluidModel *FluidModel);
+
+	/*!
+	 * \brief A virtual member.
+	 */
+	void SetSecondaryVar_Compressible(CFluidModel *FluidModel);
+
 	/*!
 	 * \brief Set all the primitive variables for incompressible flows.
 	 */
@@ -1957,7 +2181,7 @@ public:
 	 * \param[in] val_var - Index of the variable.
 	 * \return Value of the primitive variable for the index <i>val_var</i>.
 	 */
-	double GetPrimVar(unsigned short val_var);
+	double GetPrimitive(unsigned short val_var);
   
   /*!
 	 * \brief Set the value of the primitive variables.
@@ -1965,21 +2189,49 @@ public:
    * \param[in] val_var - Index of the variable.
 	 * \return Set the value of the primitive variable for the index <i>val_var</i>.
 	 */
-	void SetPrimVar(unsigned short val_var, double val_prim);
+	void SetPrimitive(unsigned short val_var, double val_prim);
   
   /*!
 	 * \brief Set the value of the primitive variables.
 	 * \param[in] val_prim - Primitive variables.
 	 * \return Set the value of the primitive variable for the index <i>val_var</i>.
 	 */
-	void SetPrimVar(double *val_prim);
+	void SetPrimitive(double *val_prim);
 
 	/*!
 	 * \brief Get the primitive variables of the problem.
 	 * \return Pointer to the primitive variable vector.
 	 */
-	double *GetPrimVar(void);
-	
+	double *GetPrimitive(void);
+  
+  /*!
+	 * \brief Get the primitive variables.
+	 * \param[in] val_var - Index of the variable.
+	 * \return Value of the primitive variable for the index <i>val_var</i>.
+	 */
+	double GetSecondary(unsigned short val_var);
+  
+  /*!
+	 * \brief Set the value of the primitive variables.
+	 * \param[in] val_var - Index of the variable.
+   * \param[in] val_var - Index of the variable.
+	 * \return Set the value of the primitive variable for the index <i>val_var</i>.
+	 */
+	void SetSecondary(unsigned short val_var, double val_secondary);
+  
+  /*!
+	 * \brief Set the value of the primitive variables.
+	 * \param[in] val_prim - Primitive variables.
+	 * \return Set the value of the primitive variable for the index <i>val_var</i>.
+	 */
+	void SetSecondary(double *val_secondary);
+  
+	/*!
+	 * \brief Get the primitive variables of the problem.
+	 * \return Pointer to the primitive variable vector.
+	 */
+	double *GetSecondary(void);
+  
 	/*!
 	 * \brief Set the value of the density for the incompressible flows.
 	 */
@@ -2142,12 +2394,6 @@ public:
 	void SetPreconditioner_Beta(double val_Beta);
 
 	/*!
-	 * \brief Get the value of the magnetic field
-	 * \param[out] Value of the magnetic field
-	 */
-	double* GetMagneticField();
-
-	/*!
 	 * \brief Set the value of the magnetic field
 	 * \param[in] Value of the magnetic field
 	 */
@@ -2183,7 +2429,7 @@ public:
  * \brief Main class for defining the variables of the Navier-Stokes' solver.
  * \ingroup Navier_Stokes_Equations
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CNSVariable : public CEulerVariable {
 private:
@@ -2206,21 +2452,21 @@ public:
 	 * \param[in] val_density - Value of the flow density (initialization value).
 	 * \param[in] val_velocity - Value of the flow velocity (initialization value).
 	 * \param[in] val_energy - Value of the flow energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.		 
 	 * \param[in] config - Definition of the particular problem.
 	 */
 	CNSVariable(double val_density, double *val_velocity, 
-			double val_energy, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+			double val_energy, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the flow value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	
 	 */
-	CNSVariable(double *val_solution, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CNSVariable(double *val_solution, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -2230,7 +2476,7 @@ public:
 	/*!
 	 * \brief Set the laminar viscosity.
 	 */
-	void SetLaminarViscosity(CConfig *config);
+	void SetLaminarViscosity(double laminarViscosity);
 
 	/*!
 	 * \overload
@@ -2302,16 +2548,46 @@ public:
 	 */
 	double GetStrainMag(void);
 
-	/*!
-	 * \brief Set the value of pressure.
-	 */
-	bool SetPressure(double Gamma, double turb_ke);
+//	/*!
+//	 * \brief Set the value of pressure.
+//	 */
+//	bool SetPressure(double Gamma, double turb_ke);
 	
+//	/*!
+//	 * \brief Set all the primitive variables for compressible flows
+//	 */
+//	bool SetPrimVar_Compressible(double eddy_visc, double turb_ke, CConfig *config);
+
+   /*!
+	* \brief Set the derivative of temperature with respect to density (at constant internal energy).
+	*/
+    void SetdTdrho_e(double dTdrho_e);
+
+   /*!
+    * \brief Set the derivative of temperature with respect to internal energy (at constant density).
+    */
+    void SetdTde_rho(double dTde_rho);
+
+     /*!
+      * \brief Set the derivative of laminar viscosity with respect to density (at constant temperature).
+      */
+    void Setdmudrho_T(double Setdmudrho_T);
+
+   /*!
+    * \brief Set the derivative of laminar viscosity with respect to temperature (at constant density).
+    */
+    void SetdmudT_rho(double SetdmudT_rho);
+
 	/*!
 	 * \brief Set all the primitive variables for compressible flows
 	 */
-	bool SetPrimVar_Compressible(double eddy_visc, double turb_ke, CConfig *config);
-	
+	bool SetPrimVar_Compressible(double eddy_visc, double turb_ke, CFluidModel *FluidModel);
+
+	/*!
+	 * \brief Set all the secondary variables (partial derivatives) for compressible flows
+	 */
+	void SetSecondaryVar_Compressible(CFluidModel *FluidModel);
+
 	/*!
 	 * \brief Set all the primitive variables for incompressible flows
 	 */
@@ -2328,7 +2604,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CTurbVariable : public CVariable {
 protected:
@@ -2343,11 +2619,11 @@ public:
 
 	/*!
 	 * \overload
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	CTurbVariable(unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CTurbVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class.
@@ -2372,7 +2648,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 
 class CTurbSAVariable : public CTurbVariable {
@@ -2386,11 +2662,11 @@ public:
 	 * \overload
 	 * \param[in] val_nu_tilde - Turbulent variable value (initialization value).
 	 * \param[in] val_muT  - The eddy viscosity
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CTurbSAVariable(double val_nu_tilde, double val_muT, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CTurbSAVariable(double val_nu_tilde, double val_muT, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -2419,7 +2695,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 
 class CTurbMLVariable : public CTurbVariable {
@@ -2433,11 +2709,11 @@ public:
 	 * \overload
 	 * \param[in] val_nu_tilde - Turbulent variable value (initialization value).
 	 * \param[in] val_muT  - The eddy viscosity
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	CTurbMLVariable(double val_nu_tilde, double val_muT, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CTurbMLVariable(double val_nu_tilde, double val_muT, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
   
 	/*!
 	 * \brief Destructor of the class.
@@ -2465,7 +2741,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 
 class CTransLMVariable : public CTurbVariable {
@@ -2483,11 +2759,11 @@ public:
 	 * \overload
 	 * \param[in] val_nu_tilde - Turbulent variable value (initialization value).
 	 * \param[in] val_muT  - The eddy viscosity
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CTransLMVariable(double val_nu_tilde, double val_intermittency, double val_REth, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CTransLMVariable(double val_nu_tilde, double val_intermittency, double val_REth, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -2506,7 +2782,7 @@ public:
  * \brief Main class for defining the variables of the turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 
 class CTurbSSTVariable : public CTurbVariable {
@@ -2527,11 +2803,11 @@ public:
 	 * \overload
 	 * \param[in] val_rho_kine - Turbulent variable value (initialization value).
 	 * \param[in] val_rho_omega - Turbulent variable value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	CTurbSSTVariable(double val_rho_kine, double val_rho_omega, double val_muT, unsigned short val_ndim, unsigned short val_nvar,
+	CTurbSSTVariable(double val_rho_kine, double val_rho_omega, double val_muT, unsigned short val_nDim, unsigned short val_nvar,
 			double *constants, CConfig *config);
 
 	/*!
@@ -2568,7 +2844,7 @@ public:
  * \brief Main class for defining the variables of the adjoint potential solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjPotentialVariable : public CVariable {
 private:
@@ -2585,11 +2861,11 @@ public:
 	/*!
 	 * \overload
 	 * \param[in] val_psi - Potential adjoint variable value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CAdjPotentialVariable(double val_psi, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjPotentialVariable(double val_psi, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -2603,7 +2879,7 @@ public:
  * \brief Main class for defining the variables of the adjoint Euler solver.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjEulerVariable : public CVariable {
 protected:
@@ -2625,20 +2901,20 @@ public:
 	 * \param[in] val_psirho - Value of the adjoint density (initialization value).
 	 * \param[in] val_phi - Value of the adjoint velocity (initialization value).
 	 * \param[in] val_psie - Value of the adjoint energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */		
-	CAdjEulerVariable(double val_psirho, double *val_phi, double val_psie, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjEulerVariable(double val_psirho, double *val_phi, double val_psie, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the adjoint value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */		
-	CAdjEulerVariable(double *val_solution, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjEulerVariable(double *val_solution, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -2722,7 +2998,7 @@ public:
  * \brief Main class for defining the variables of the adjoint Navier-Stokes solver.
  * \ingroup Navier_Stokes_Equations
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjNSVariable : public CAdjEulerVariable {	
 private:
@@ -2739,20 +3015,20 @@ public:
 	 * \param[in] val_psirho - Value of the adjoint density (initialization value).
 	 * \param[in] val_phi - Value of the adjoint velocity (initialization value).
 	 * \param[in] val_psie - Value of the adjoint energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CAdjNSVariable(double val_psirho, double *val_phi, double val_psie, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjNSVariable(double val_psirho, double *val_phi, double val_psie, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the adjoint value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */
-	CAdjNSVariable(double *val_solution, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjNSVariable(double *val_solution, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -2794,7 +3070,7 @@ public:
  * \brief Main class for defining the variables of the adjoint turbulence model.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjTurbVariable : public CVariable {
 protected:
@@ -2815,11 +3091,11 @@ public:
 	/*!
 	 * \overload
 	 * \param[in] val_psinu_inf - Value of the adjoint turbulence variable at the infinity (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */		
-	CAdjTurbVariable(double val_psinu_inf, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjTurbVariable(double val_psinu_inf, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -2844,7 +3120,7 @@ public:
  * \brief Main class for defining the variables of the linearized potential equation.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CLinPotentialVariable : public CVariable {
 public:	
@@ -2855,7 +3131,7 @@ public:
  * \brief Main class for defining the variables of the linearized Euler's equations.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CLinEulerVariable : public CVariable {
 private:
@@ -2875,20 +3151,20 @@ public:
 	 * \param[in] val_deltarho - Value of the linearized density (initialization value).
 	 * \param[in] val_deltavel - Value of the linearized velocity (initialization value).
 	 * \param[in] val_deltae - Value of the linearized energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.	
 	 * \param[in] config - Definition of the particular problem.
 	 */		
-	CLinEulerVariable(double val_deltarho, double *val_deltavel, double val_deltae, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CLinEulerVariable(double val_deltarho, double *val_deltavel, double val_deltae, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the linearized value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */	
-	CLinEulerVariable(double *val_solution, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CLinEulerVariable(double *val_solution, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 
@@ -2932,7 +3208,7 @@ public:
  * \brief Main class for defining the variables of the linearized Navier-Stokes' equations.
  * \ingroup Navier_Stokes_Equations
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CLinNSVariable : public CLinEulerVariable {
 public:
@@ -2943,7 +3219,7 @@ public:
  * \brief Main class for defining the variables of the Level Set.
  * \ingroup LevelSet_Model
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjLevelSetVariable : public CVariable {
 public:
@@ -2954,20 +3230,20 @@ public:
 
 	/*!
 	 * \overload
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	CAdjLevelSetVariable(unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjLevelSetVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \overload
 	 * \param[in] val_levelset - Level set variable value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CAdjLevelSetVariable(double val_levelset, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjLevelSetVariable(double val_levelset, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class.
@@ -3012,7 +3288,7 @@ public:
   /*!
 	 * \brief Constructor of the class.
 	 */
-  CTNE2EulerVariable(unsigned short val_ndim, unsigned short val_nVar,
+  CTNE2EulerVariable(unsigned short val_nDim, unsigned short val_nVar,
                      unsigned short val_nPrimVar,
                      unsigned short val_nPrimVarGrad,
                      CConfig *config);
@@ -3022,7 +3298,7 @@ public:
 	 * \param[in] val_density - Value of the flow density (initialization value).
 	 * \param[in] val_velocity - Value of the flow velocity (initialization value).
 	 * \param[in] val_energy - Value of the flow energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of conserved variables.
    * \param[in] val_nvarprim - Number of primitive variables.
    * \param[in] val_nvarprimgrad - Number of primitive gradient variables.
@@ -3030,18 +3306,18 @@ public:
 	 */
 	CTNE2EulerVariable(double val_pressure, double *val_massfrac,
                      double *val_mach, double val_temperature,
-                     double val_temperature_ve, unsigned short val_ndim,
+                     double val_temperature_ve, unsigned short val_nDim,
                      unsigned short val_nvar, unsigned short val_nvarprim,
                      unsigned short val_nvarprimgrad, CConfig *config);
   
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the flow value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	CTNE2EulerVariable(double *val_solution, unsigned short val_ndim,
+	CTNE2EulerVariable(double *val_solution, unsigned short val_nDim,
                      unsigned short val_nvar, unsigned short val_nvarprim,
                      unsigned short val_nvarprimgrad, CConfig *config);
   
@@ -3202,7 +3478,7 @@ public:
 	 * \param[in] val_var - Index of the variable.
 	 * \return Value of the primitive variable for the index <i>val_var</i>.
 	 */
-	double GetPrimVar(unsigned short val_var);
+	double GetPrimitive(unsigned short val_var);
   
   /*!
 	 * \brief Set the value of the primitive variables.
@@ -3210,20 +3486,20 @@ public:
    * \param[in] val_var - Index of the variable.
 	 * \return Set the value of the primitive variable for the index <i>val_var</i>.
 	 */
-	void SetPrimVar(unsigned short val_var, double val_prim);
+	void SetPrimitive(unsigned short val_var, double val_prim);
   
   /*!
 	 * \brief Set the value of the primitive variables.
 	 * \param[in] val_prim - Primitive variables.
 	 * \return Set the value of the primitive variable for the index <i>val_var</i>.
 	 */
-	void SetPrimVar(double *val_prim);
+	void SetPrimitive(double *val_prim);
   
 	/*!
 	 * \brief Get the primitive variables of the problem.
 	 * \return Pointer to the primitive variable vector.
 	 */
-	double *GetPrimVar(void);
+	double *GetPrimitive(void);
   
   /*!
 	 * \brief A virtual member.
@@ -3455,13 +3731,13 @@ public:
   
   /*!
 	 * \overload
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of conserved variables.
    * \param[in] val_nvarprim - Number of primitive variables.
    * \param[in] val_nvarprimgrad - Number of primitive gradient variables.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-  CTNE2NSVariable(unsigned short val_ndim, unsigned short val_nvar,
+  CTNE2NSVariable(unsigned short val_nDim, unsigned short val_nvar,
                   unsigned short val_nprimvar, unsigned short val_nprimvargrad,
                   CConfig *config);
   
@@ -3470,27 +3746,27 @@ public:
 	 * \param[in] val_density - Value of the flow density (initialization value).
 	 * \param[in] val_velocity - Value of the flow velocity (initialization value).
 	 * \param[in] val_energy - Value of the flow energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of conserved variables.
    * \param[in] val_nvarprim - Number of primitive variables.
    * \param[in] val_nvarprimgrad - Number of primitive gradient variables.
 	 * \param[in] config - Definition of the particular problem.
 	 */
 	CTNE2NSVariable(double val_density, double *val_massfrac, double *val_velocity,
-                  double val_temperature, double val_temperature_ve, unsigned short val_ndim,
+                  double val_temperature, double val_temperature_ve, unsigned short val_nDim,
                   unsigned short val_nvar, unsigned short val_nvarprim,
                   unsigned short val_nvarprimgrad, CConfig *config);
   
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the flow value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of conserved variables.
    * \param[in] val_nvarprim - Number of primitive variables.
    * \param[in] val_nvarprimgrad - Number of primitive gradient variables.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	CTNE2NSVariable(double *val_solution, unsigned short val_ndim, unsigned short val_nvar,
+	CTNE2NSVariable(double *val_solution, unsigned short val_nDim, unsigned short val_nvar,
                   unsigned short val_nvarprim, unsigned short val_nvarprimgrad,
                   CConfig *config);
   
@@ -3594,23 +3870,23 @@ public:
 	 * \param[in] val_phi - Value of the adjoint velocity (initialization value).
 	 * \param[in] val_psie - Value of the adjoint energy (initialization value).
    * \param[in] val_psieve - Value of the adjoint vibrational energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
 	CAdjTNE2EulerVariable(double *val_psirho, double *val_phi,
                         double val_psie, double val_psieve,
-                        unsigned short val_ndim, unsigned short val_nvar,
+                        unsigned short val_nDim, unsigned short val_nvar,
                         CConfig *config);
   
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the adjoint value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	CAdjTNE2EulerVariable(double *val_solution, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjTNE2EulerVariable(double *val_solution, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
   
 	/*!
 	 * \brief Destructor of the class.
@@ -3683,23 +3959,23 @@ public:
 	 * \param[in] val_psirho - Value of the adjoint density (initialization value).
 	 * \param[in] val_phi - Value of the adjoint velocity (initialization value).
 	 * \param[in] val_psie - Value of the adjoint energy (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
 	CAdjTNE2NSVariable(double *val_psirho, double *val_phi,
                      double val_psie, double val_psieve,
-                     unsigned short val_ndim, unsigned short val_nvar,
+                     unsigned short val_nDim, unsigned short val_nvar,
                      CConfig *config);
   
 	/*!
 	 * \overload
 	 * \param[in] val_solution - Pointer to the adjoint value (initialization value).
-	 * \param[in] val_ndim - Number of dimensions of the problem.
+	 * \param[in] val_nDim - Number of dimensions of the problem.
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	CAdjTNE2NSVariable(double *val_solution, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CAdjTNE2NSVariable(double *val_solution, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
   
 	/*!
 	 * \brief Destructor of the class.
@@ -3747,7 +4023,7 @@ public:
  * \brief Main class for defining the variables of the potential solver.
  * \ingroup Potential_Flow_Equation
  * \author F. Palacios.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CTemplateVariable : public CVariable {
 public:
@@ -3760,11 +4036,11 @@ public:
 	/*!
 	 * \overload
 	 * \param[in] val_potential - Value of the potential solution (initialization value).		 
-	 * \param[in] val_ndim - Number of dimensions of the problem.		 
+	 * \param[in] val_nDim - Number of dimensions of the problem.		 
 	 * \param[in] val_nvar - Number of variables of the problem.
 	 * \param[in] config - Definition of the particular problem.	 
 	 */	
-	CTemplateVariable(double val_potential, unsigned short val_ndim, unsigned short val_nvar, CConfig *config);
+	CTemplateVariable(double val_potential, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
 
 	/*!
 	 * \brief Destructor of the class. 

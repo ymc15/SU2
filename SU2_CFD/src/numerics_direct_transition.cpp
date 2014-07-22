@@ -2,7 +2,7 @@
  * \file numerics_direct_transition.cpp
  * \brief This file contains all the convective term discretization.
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.1.0 "eagle"
+ * \version 3.2.0 "eagle"
  *
  * SU2, Copyright (C) 2012-2014 Aerospace Design Laboratory (ADL).
  *
@@ -548,7 +548,7 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 	bool debug=true;
 
 	rey  = config->GetReynolds();
-	mach = config->GetMach_FreeStreamND();
+	mach = config->GetMach();
   turb_model = config->GetKind_Turb_Model();
 	/*--- Compute vorticity and strain ---*/
 	Vorticity = (PrimVar_Grad_i[2][0]-PrimVar_Grad_i[1][1])*(PrimVar_Grad_i[2][0]-PrimVar_Grad_i[1][1]);
@@ -874,7 +874,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
 void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM_d(double *TransVar_i, double *TransVar_id, double *val_residual, double *val_residuald, CConfig *config, bool boundary)
 {
-    double re_theta_c, flen, re_v, f_onset1, f_onset2, f_onset3, f_onset, 
+    double re_theta_c, flen, re_v, f_onset1, f_onset2, f_onset3, f_onset,
     f_turb;
     double re_theta_cd, flend, f_onset1d, f_onset2d, f_onsetd;
     double prod, des;
