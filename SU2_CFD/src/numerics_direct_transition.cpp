@@ -742,14 +742,16 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	//SU2_CPP2C COMMENT START
   double val_residuald[2], TransVar_id[2];
 
-  if (boundary) {
-    for (int i=0; i<nDim; i++) {
-      for(int j=0; j<nDim; j++) {
-        PrimVar_Grad_i[i+1][j] = 1e-5;
-      }
-    }
-  }
+  //if (boundary) {
+  //  for (int i=0; i<nDim; i++) {
+  //    for(int j=0; j<nDim; j++) {
+  //      /* --- Assign small values to d(u,v,w)/d(x,y,z) ---*/
+  //      PrimVar_Grad_i[i+1][j] = 1e-5;
+  //    }
+  //  }
+  //}
 
+  /* -- Initialize Jacobian to zero -- */
 	implicit = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
 	if (implicit) {
 		val_Jacobian_i[0][0] = 0.0;
@@ -758,7 +760,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 		val_Jacobian_i[1][1] = 0.0;
 	}
 
-	/* -- Compute intermediate correlations/expressions. These quantities which do not depend on TransVar are isolated to simplify the differentiated version of this routine.--*/
+	/* -- Compute intermediate correlations/expressions. These quantities, which do not depend on TransVar, are isolated to simplify the differentiated version of this routine.--*/
 	translm_helper(config);
   
 	//SU2_CPP2C COMMENT END

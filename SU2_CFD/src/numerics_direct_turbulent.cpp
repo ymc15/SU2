@@ -246,8 +246,7 @@ CSourcePieceWise_TurbSA::CSourcePieceWise_TurbSA(unsigned short val_nDim, unsign
                                                  CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
   
   incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
-  //transition     = (config->GetKind_Trans_Model() == LM);
-  transition = false; // Debugging, -AA
+  transition     = (config->GetKind_Trans_Model() == LM);
   rotating_frame = config->GetRotating_Frame();
   
   /*--- Spalart-Allmaras closure constants ---*/
@@ -720,6 +719,8 @@ CSourcePieceWise_TurbSST::CSourcePieceWise_TurbSST(unsigned short val_nDim, unsi
                                                    CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
   
   transition     = (config->GetKind_Trans_Model() == LM);
+  // AA, debug, ERASEME
+  transition = false;
   incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
   
   /*--- Closure constants ---*/
@@ -740,6 +741,10 @@ void CSourcePieceWise_TurbSST::ComputeResidual(double *val_residual, double **va
   unsigned short iDim;
   double alfa_blended, beta_blended;
   double diverg, pk, pw, dk, zeta;
+  double Ry, F3;
+
+  // ERASEME
+  transition = false;
   
   if (incompressible) {
     Density_i = V_i[nDim+1];
@@ -756,6 +761,13 @@ void CSourcePieceWise_TurbSST::ComputeResidual(double *val_residual, double **va
   val_Jacobian_i[0][0] = 0.0;		val_Jacobian_i[0][1] = 0.0;
   val_Jacobian_i[1][0] = 0.0;		val_Jacobian_i[1][1] = 0.0;
   
+  /*--- Modification of F1 for transition model (Langtry eq. 41)---*/
+  if (transition) {
+    Ry = Density_i*dist_i*pow(TurbVar_i[0],0.5)/Laminar_Viscosity_i;
+    F3 = exp(-pow(Ry/120.,8));
+    F1_i = max(F1_i,F3);
+  }
+
   /*--- Computation of blended constants for the source terms---*/
   
   alfa_blended = F1_i*alfa_1 + (1.0 - F1_i)*alfa_2;

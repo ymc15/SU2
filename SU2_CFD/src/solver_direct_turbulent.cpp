@@ -3417,6 +3417,8 @@ void CTurbSSTSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
   
   unsigned long iPoint;
   bool transition = (config->GetKind_Trans_Model() == LM);
+  // AA, debug ERASEME
+  transition = false;
   
   for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
     
