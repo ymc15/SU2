@@ -2,7 +2,7 @@
  * \file solution_direct_turbulent.cpp
  * \brief Main subrotuines for solving direct problems (Euler, Navier-Stokes, etc.).
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  *
  * SU2, Copyright (C) 2012-2014 Aerospace Design Laboratory (ADL).
  *
@@ -33,12 +33,8 @@ CTransLMSolver::CTransLMSolver(CGeometry *geometry, CConfig *config, unsigned sh
   string text_line;
 
   int rank = MASTER_NODE;
-#ifndef NO_MPI
-#ifdef WINDOWS
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-#else
-  rank = MPI::COMM_WORLD.Get_rank();
-#endif
+#ifdef HAVE_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
 
   bool restart = (config->GetRestart() || config->GetRestart_Flow());
@@ -125,7 +121,7 @@ CTransLMSolver::CTransLMSolver(CGeometry *geometry, CConfig *config, unsigned sh
     REth_Inf = 331.5*pow(tu_Inf-0.5658,-0.671);
   }
   rey = config->GetReynolds();
-  mach = config->GetMach_FreeStreamND();
+  mach = config->GetMach();
 
   //  REth_Inf *= mach/rey;
   cout << "tu_Inf = " << tu_Inf << endl;
@@ -273,12 +269,12 @@ void CTransLMSolver::Set_MPI_Solution(CGeometry *geometry, CConfig *config) {
 
 	for (iMarker = 0; iMarker < config->GetnMarker_All(); iMarker++) {
 
-		if ((config->GetMarker_All_Boundary(iMarker) == SEND_RECEIVE) &&
+		if ((config->GetMarker_All_KindBC(iMarker) == SEND_RECEIVE) &&
             (config->GetMarker_All_SendRecv(iMarker) > 0)) {
 
 			MarkerS = iMarker;  MarkerR = iMarker+1;
 
-            send_to = config->GetMarker_All_SendRecv(MarkerS)-1;
+      send_to = config->GetMarker_All_SendRecv(MarkerS)-1;
 			receive_from = abs(config->GetMarker_All_SendRecv(MarkerR))-1;
 
 			nVertexS = geometry->nVertex[MarkerS];  nVertexR = geometry->nVertex[MarkerR];
@@ -360,7 +356,7 @@ void CTransLMSolver::Set_MPI_Solution_Old(CGeometry *geometry, CConfig *config) 
 
 	for (iMarker = 0; iMarker < config->GetnMarker_All(); iMarker++) {
 
-		if ((config->GetMarker_All_Boundary(iMarker) == SEND_RECEIVE) &&
+		if ((config->GetMarker_All_KindBC(iMarker) == SEND_RECEIVE) &&
             (config->GetMarker_All_SendRecv(iMarker) > 0)) {
 
 			MarkerS = iMarker;  MarkerR = iMarker+1;
@@ -442,7 +438,7 @@ void CTransLMSolver::Set_MPI_Solution_Limiter(CGeometry *geometry, CConfig *conf
 
 	for (iMarker = 0; iMarker < config->GetnMarker_All(); iMarker++) {
 
-		if ((config->GetMarker_All_Boundary(iMarker) == SEND_RECEIVE) &&
+		if ((config->GetMarker_All_KindBC(iMarker) == SEND_RECEIVE) &&
             (config->GetMarker_All_SendRecv(iMarker) > 0)) {
 
 			MarkerS = iMarker;  MarkerR = iMarker+1;
@@ -568,7 +564,7 @@ void CTransLMSolver::Set_MPI_Solution_Gradient(CGeometry *geometry, CConfig *con
 
 	for (iMarker = 0; iMarker < config->GetnMarker_All(); iMarker++) {
 
-		if ((config->GetMarker_All_Boundary(iMarker) == SEND_RECEIVE) &&
+		if ((config->GetMarker_All_KindBC(iMarker) == SEND_RECEIVE) &&
             (config->GetMarker_All_SendRecv(iMarker) > 0)) {
 
 			MarkerS = iMarker;  MarkerR = iMarker+1;
@@ -764,10 +760,11 @@ void CTransLMSolver::ImplicitEuler_Iteration(CGeometry *geometry, CSolver **solv
   
 	/*--- Update solution (system written in terms of increments) ---*/
 	for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
-        for (iVar = 0; iVar < nVar; iVar++)
-            node[iPoint]->AddSolution(iVar, config->GetLinear_Solver_Relax()*LinSysSol[iPoint*nVar+iVar]);
+    for (iVar = 0; iVar < nVar; iVar++) {
+      node[iPoint]->AddClippedSolution(iVar, config->GetLinear_Solver_Relax()*LinSysSol[iPoint*nVar+iVar], 0.0, 1E10);
     }
-    
+  }
+  
     /*--- MPI solution ---*/
     Set_MPI_Solution(geometry, config);
     
@@ -797,8 +794,8 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
     
     /*--- Conservative variables w/o reconstruction ---*/
     
-    V_i = solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar();
-    V_j = solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar();
+    V_i = solver_container[FLOW_SOL]->node[iPoint]->GetPrimitive();
+    V_j = solver_container[FLOW_SOL]->node[jPoint]->GetPrimitive();
     numerics->SetPrimitive(V_i, V_j);
     
     /*--- Transulent variables w/o reconstruction ---*/
@@ -812,68 +809,68 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
     if (grid_movement)
       numerics->SetGridVel(geometry->node[iPoint]->GetGridVel(), geometry->node[jPoint]->GetGridVel());
     
-    if (high_order_diss) {
-      
-      for (iDim = 0; iDim < nDim; iDim++) {
-        Vector_i[iDim] = 0.5*(geometry->node[jPoint]->GetCoord(iDim) - geometry->node[iPoint]->GetCoord(iDim));
-        Vector_j[iDim] = 0.5*(geometry->node[iPoint]->GetCoord(iDim) - geometry->node[jPoint]->GetCoord(iDim));
-      }
-      
-      /*--- Mean flow primitive variables using gradient reconstruction and limiters ---*/
-      
-      Gradient_i = solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive();
-      Gradient_j = solver_container[FLOW_SOL]->node[jPoint]->GetGradient_Primitive();
-      if (limiter) {
-        Limiter_i = solver_container[FLOW_SOL]->node[iPoint]->GetLimiter_Primitive();
-        Limiter_j = solver_container[FLOW_SOL]->node[jPoint]->GetLimiter_Primitive();
-      }
-      
-      for (iVar = 0; iVar < solver_container[FLOW_SOL]->GetnPrimVarGrad(); iVar++) {
-        Project_Grad_i = 0.0; Project_Grad_j = 0.0;
-        for (iDim = 0; iDim < nDim; iDim++) {
-          Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
-          Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
-        }
-        if (limiter) {
-          FlowPrimVar_i[iVar] = V_i[iVar] + Limiter_i[iVar]*Project_Grad_i;
-          FlowPrimVar_j[iVar] = V_j[iVar] + Limiter_j[iVar]*Project_Grad_j;
-        }
-        else {
-          FlowPrimVar_i[iVar] = V_i[iVar] + Project_Grad_i;
-          FlowPrimVar_j[iVar] = V_j[iVar] + Project_Grad_j;
-        }
-      }
-      
-      numerics->SetPrimitive(FlowPrimVar_i, FlowPrimVar_j);
-      
-      /*--- Transition variables using gradient reconstruction and limiters ---*/
-      
-      Gradient_i = node[iPoint]->GetGradient();
-      Gradient_j = node[jPoint]->GetGradient();
-//      if (limiter) {
-//        Limiter_i = node[iPoint]->GetLimiter();
-//        Limiter_j = node[jPoint]->GetLimiter();
+//    if (high_order_diss) {
+//      
+//      for (iDim = 0; iDim < nDim; iDim++) {
+//        Vector_i[iDim] = 0.5*(geometry->node[jPoint]->GetCoord(iDim) - geometry->node[iPoint]->GetCoord(iDim));
+//        Vector_j[iDim] = 0.5*(geometry->node[iPoint]->GetCoord(iDim) - geometry->node[jPoint]->GetCoord(iDim));
 //      }
-      
-      for (iVar = 0; iVar < nVar; iVar++) {
-        Project_Grad_i = 0.0; Project_Grad_j = 0.0;
-        for (iDim = 0; iDim < nDim; iDim++) {
-          Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
-          Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
-        }
+//      
+//      /*--- Mean flow primitive variables using gradient reconstruction and limiters ---*/
+//      
+//      Gradient_i = solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive();
+//      Gradient_j = solver_container[FLOW_SOL]->node[jPoint]->GetGradient_Primitive();
+//      if (limiter) {
+//        Limiter_i = solver_container[FLOW_SOL]->node[iPoint]->GetLimiter_Primitive();
+//        Limiter_j = solver_container[FLOW_SOL]->node[jPoint]->GetLimiter_Primitive();
+//      }
+//      
+//      for (iVar = 0; iVar < solver_container[FLOW_SOL]->GetnPrimVarGrad(); iVar++) {
+//        Project_Grad_i = 0.0; Project_Grad_j = 0.0;
+//        for (iDim = 0; iDim < nDim; iDim++) {
+//          Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
+//          Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
+//        }
 //        if (limiter) {
-//          Solution_i[iVar] = Trans_i[iVar] + Limiter_i[iVar]*Project_Grad_i;
-//          Solution_j[iVar] = Trans_j[iVar] + Limiter_j[iVar]*Project_Grad_j;
+//          FlowPrimVar_i[iVar] = V_i[iVar] + Limiter_i[iVar]*Project_Grad_i;
+//          FlowPrimVar_j[iVar] = V_j[iVar] + Limiter_j[iVar]*Project_Grad_j;
 //        }
 //        else {
-          Solution_i[iVar] = Trans_i[iVar] + Project_Grad_i;
-          Solution_j[iVar] = Trans_j[iVar] + Project_Grad_j;
+//          FlowPrimVar_i[iVar] = V_i[iVar] + Project_Grad_i;
+//          FlowPrimVar_j[iVar] = V_j[iVar] + Project_Grad_j;
 //        }
-      }
-      
-      numerics->SetTransVar(Solution_i, Solution_j);
-      
-    }
+//      }
+//      
+//      numerics->SetPrimitive(FlowPrimVar_i, FlowPrimVar_j);
+//      
+//      /*--- Transition variables using gradient reconstruction and limiters ---*/
+//      
+//      Gradient_i = node[iPoint]->GetGradient();
+//      Gradient_j = node[jPoint]->GetGradient();
+////      if (limiter) {
+////        Limiter_i = node[iPoint]->GetLimiter();
+////        Limiter_j = node[jPoint]->GetLimiter();
+////      }
+//      
+//      for (iVar = 0; iVar < nVar; iVar++) {
+//        Project_Grad_i = 0.0; Project_Grad_j = 0.0;
+//        for (iDim = 0; iDim < nDim; iDim++) {
+//          Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
+//          Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
+//        }
+////        if (limiter) {
+////          Solution_i[iVar] = Trans_i[iVar] + Limiter_i[iVar]*Project_Grad_i;
+////          Solution_j[iVar] = Trans_j[iVar] + Limiter_j[iVar]*Project_Grad_j;
+////        }
+////        else {
+//          Solution_i[iVar] = Trans_i[iVar] + Project_Grad_i;
+//          Solution_j[iVar] = Trans_j[iVar] + Project_Grad_j;
+////        }
+//      }
+//      
+//      numerics->SetTransVar(Solution_i, Solution_j);
+//      
+//    }
     
     /*--- Add and subtract residual ---*/
     
@@ -914,8 +911,8 @@ void CTransLMSolver::Viscous_Residual(CGeometry *geometry, CSolver **solver_cont
     
     /*--- Conservative variables w/o reconstruction ---*/
     
-    numerics->SetPrimitive(solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar(),
-                           solver_container[FLOW_SOL]->node[jPoint]->GetPrimVar());
+    numerics->SetPrimitive(solver_container[FLOW_SOL]->node[iPoint]->GetPrimitive(),
+                           solver_container[FLOW_SOL]->node[jPoint]->GetPrimitive());
     numerics->SetPrimVarGradient(solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive(),
                                  solver_container[FLOW_SOL]->node[jPoint]->GetGradient_Primitive());
     
@@ -959,13 +956,13 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
     //cout << "Setting Trans residual -AA " << endl;
     //cout << "\nBeginAA" << endl;
 
-   static int start_counter=0;
-   if (start_counter < 10) {
-     cout << "Skipping source term" << endl;
-     start_counter += 1;
-     return;
-   } 
-   
+//   static int start_counter=0;
+//   if (start_counter < 10) {
+//     cout << "Skipping source term" << endl;
+//     start_counter += 1;
+//     return;
+//   } 
+  
 
   // DEBUG
   sagt_debug.open("sagt_debug.plt");
@@ -1014,7 +1011,16 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
 	  LinSysRes.SubtractBlock(iPoint, Residual);
 	  Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
 
+    if (Residual[0] != Residual[0]) cout << "Residual[0]" <<endl;
+    if (Residual[1] != Residual[1]) cout << "Residual[1]" <<endl;
+    if (Jacobian_i[0][0] != Jacobian_i[0][0]) cout << "Jacobian_i[0][0]" <<endl;
+    if (Jacobian_i[1][1] != Jacobian_i[1][1]) cout << "Jacobian_i[1][1]" <<endl;
+    if (Jacobian_i[1][0] != Jacobian_i[1][0]) cout << "Jacobian_i[1][0]" <<endl;
+    if (Jacobian_i[0][1] != Jacobian_i[0][1]) cout << "Jacobian_i[0][1]" <<endl;
+
+    
   }
+  
   sagt_debug.close();
   
 }
@@ -1071,7 +1077,7 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       V_infty = solver_container[FLOW_SOL]->GetCharacPrimVar(val_marker, iVertex);
       
       /*--- Retrieve solution at the farfield boundary node ---*/
-      V_domain = solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar();
+      V_domain = solver_container[FLOW_SOL]->node[iPoint]->GetPrimitive();
       
       conv_numerics->SetPrimitive(V_domain, V_infty);
       
@@ -1116,9 +1122,7 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
   Normal = new double[nDim];
   
   bool grid_movement  = config->GetGrid_Movement();
-  
-  string Marker_Tag = config->GetMarker_All_Tag(val_marker);
-  
+    
   /*--- Loop over all the vertices on this boundary marker ---*/
   for (iVertex = 0; iVertex < geometry->nVertex[val_marker]; iVertex++) {
     
@@ -1138,7 +1142,7 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       V_inlet = solver_container[FLOW_SOL]->GetCharacPrimVar(val_marker, iVertex);
       
       /*--- Retrieve solution at the farfield boundary node ---*/
-      V_domain = solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar();
+      V_domain = solver_container[FLOW_SOL]->node[iPoint]->GetPrimitive();
       
       /*--- Set various quantities in the solver class ---*/
       conv_numerics->SetPrimitive(V_domain, V_inlet);
@@ -1201,7 +1205,7 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       V_outlet = solver_container[FLOW_SOL]->GetCharacPrimVar(val_marker, iVertex);
       
       /*--- Retrieve solution at the farfield boundary node ---*/
-      V_domain = solver_container[FLOW_SOL]->node[iPoint]->GetPrimVar();
+      V_domain = solver_container[FLOW_SOL]->node[iPoint]->GetPrimitive();
       
       /*--- Set various quantities in the solver class ---*/
       conv_numerics->SetPrimitive(V_domain, V_outlet);

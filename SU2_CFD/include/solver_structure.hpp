@@ -5,7 +5,7 @@
  *        <i>solution_direct.cpp</i>, <i>solution_adjoint.cpp</i>, and
  *        <i>solution_linearized.cpp</i> files.
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  *
  * SU2, Copyright (C) 2012-2014 Aerospace Design Laboratory (ADL).
  *
@@ -25,14 +25,9 @@
 
 #pragma once
 
-#ifndef NO_MPI
-#include <mpi.h>
+#ifdef HAVE_MPI
+  #include "mpi.h"
 #endif
-
-#ifndef NO_MUTATIONPP
-#include "mutation++.h"
-#endif
-
 #include <cmath>
 #include <string>
 #include <fstream>
@@ -42,6 +37,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "fluid_model.hpp"
 #include "numerics_structure.hpp"
 #include "variable_structure.hpp"
 #include "../../Common/include/geometry_structure.hpp"
@@ -52,7 +48,6 @@
 #include "../../Common/include/grid_movement_structure.hpp"
 #include "numerics_machine_learning.hpp"
 
-
 using namespace std;
 
 /*!
@@ -60,7 +55,7 @@ using namespace std;
  * \brief Main class for defining the PDE solution, it requires
  * a child class for each particular solver (Euler, Navier-Stokes, etc.)
  * \author F. Palacios.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CSolver {
 protected:
@@ -68,6 +63,8 @@ protected:
 	unsigned short nVar,					/*!< \brief Number of variables of the problem. */
   nPrimVar,                     /*!< \brief Number of primitive variables of the problem. */
   nPrimVarGrad,                 /*!< \brief Number of primitive variables of the problem in the gradient computation. */
+  nSecondaryVar,                     /*!< \brief Number of primitive variables of the problem. */
+  nSecondaryVarGrad,                 /*!< \brief Number of primitive variables of the problem in the gradient computation. */
 	nDim;													/*!< \brief Number of dimensions of the problem. */
 	unsigned long nPoint;					/*!< \brief Number of points of the computational grid. */
   unsigned long nPointDomain; 	/*!< \brief Number of points of the computational grid. */
@@ -146,7 +143,13 @@ public:
 	 * \param[in] val_iterlinsolver - Number of linear iterations.
 	 */
 	virtual void Set_MPI_Primitive(CGeometry *geometry, CConfig *config);
-    
+  
+  /*!
+	 * \brief Set number of linear solver iterations.
+	 * \param[in] val_iterlinsolver - Number of linear iterations.
+	 */
+	virtual void Set_MPI_Secondary(CGeometry *geometry, CConfig *config);
+
     /*!
 	 * \brief Set the value of the max residual and RMS residual.
 	 * \param[in] val_iterlinsolver - Number of linear iterations.
@@ -172,6 +175,20 @@ public:
 	 * \param[in] config - Definition of the particular problem.
 	 */
   virtual void Set_MPI_Primitive_Limiter(CGeometry *geometry, CConfig *config);
+ 
+  /*!
+	 * \brief Impose the send-receive boundary condition.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+  virtual void Set_MPI_Secondary_Limiter(CGeometry *geometry, CConfig *config);
+
+  /*!
+	 * \brief Set the fluid solver nondimensionalization.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+  virtual void SetNondimensionalization(CGeometry *geometry, CConfig *config, unsigned short iMesh);
   
 	/*!
 	 * \brief Get number of linear solver iterations.
@@ -217,6 +234,16 @@ public:
 	 * \brief Get the number of variables of the problem.
 	 */
 	unsigned short GetnPrimVarGrad(void);
+  
+  /*!
+	 * \brief Get the number of variables of the problem.
+	 */
+	unsigned short GetnSecondaryVar(void);
+  
+  /*!
+	 * \brief Get the number of variables of the problem.
+	 */
+	unsigned short GetnSecondaryVarGrad(void);
   
   /*!
 	 * \brief Get the number of variables of the problem.
@@ -324,12 +351,12 @@ public:
 	 */
 	void SetSolution_Gradient_LS(CGeometry *geometry, CConfig *config);
     
-    /*!
+  /*!
 	 * \brief MPI gradients.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-    virtual void Set_MPI_Solution_Gradient(CGeometry *geometry, CConfig *config);
+  virtual void Set_MPI_Solution_Gradient(CGeometry *geometry, CConfig *config);
     
     /*!
 	 * \brief Compute the Least Squares gradient of the grid velocity.
@@ -337,13 +364,6 @@ public:
 	 * \param[in] config - Definition of the particular problem.
 	 */
 	void SetGridVel_Gradient(CGeometry *geometry, CConfig *config);
-    
-	/*!
-	 * \brief Compute the Least Squares gradient of the solution on the profile surface.
-	 * \param[in] geometry - Geometrical definition of the problem.
-	 * \param[in] config - Definition of the particular problem.
-	 */
-	void SetSurface_Gradient(CGeometry *geometry, CConfig *config);
     
 	/*!
 	 * \brief Compute slope limiter.
@@ -357,8 +377,15 @@ public:
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	virtual void SetPrimVar_Limiter(CGeometry *geometry, CConfig *config);
-    
+	virtual void SetPrimitive_Limiter(CGeometry *geometry, CConfig *config);
+  
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	virtual void SetSecondary_Limiter(CGeometry *geometry, CConfig *config);
+  
 	/*!
 	 * \brief Compute the pressure laplacian using in a incompressible solver.
 	 * \param[in] geometry - Geometrical definition of the problem.
@@ -546,7 +573,17 @@ public:
 	 */
 	virtual void BC_NearField_Boundary(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics, CConfig *config,
                                        unsigned short val_marker);
-    
+  
+  /*!
+	 * \brief A virtual member.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] solver_container - Container vector with all the solutions.
+	 * \param[in] solver - Description of the numerical method.
+	 * \param[in] config - Definition of the particular problem.
+	 * \param[in] val_marker - Surface marker where the boundary condition is applied.
+	 */
+	virtual void BC_ActDisk_Boundary(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics, CConfig *config);
+  
 	/*!
 	 * \brief A virtual member.
 	 * \param[in] geometry - Geometrical definition of the problem.
@@ -679,6 +716,18 @@ public:
 	 */
 	virtual void BC_Sym_Plane(CGeometry *geometry, CSolver **solver_container, CNumerics *conv_numerics, CNumerics *visc_numerics, CConfig *config, unsigned short val_marker);
     
+
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] solver_container - Container vector with all the solutions.
+	 * \param[in] solver - Description of the numerical method.
+	 * \param[in] config - Definition of the particular problem.
+	 * \param[in] val_marker - Surface marker where the boundary condition is applied.
+	 */
+	virtual void BC_Riemann(CGeometry *geometry, CSolver **solver_container,
+                            CNumerics *conv_numerics, CNumerics *visc_numerics, CConfig *config, unsigned short val_marker);
+		
 	/*!
 	 * \brief A virtual member.
 	 * \param[in] geometry - Geometrical definition of the problem.
@@ -850,29 +899,57 @@ public:
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	virtual void SetPrimVar_Gradient_GG(CGeometry *geometry, CConfig *config);
+	virtual void SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config);
     
 	/*!
 	 * \brief A virtual member.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	virtual void SetPrimVar_Gradient_LS(CGeometry *geometry, CConfig *config);
-    
+	virtual void SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config);
+  
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	virtual void SetSecondary_Gradient_GG(CGeometry *geometry, CConfig *config);
+  
+	/*!
+	 * \brief A virtual member.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	virtual void SetSecondary_Gradient_LS(CGeometry *geometry, CConfig *config);
+  
     /*!
 	 * \brief A virtual member.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
 	virtual void Set_MPI_Primitive_Gradient(CGeometry *geometry, CConfig *config);
-    
-    /*!
+  
+  /*!
 	 * \brief A virtual member.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	virtual void SetPrimVar_Limiter_MPI(CGeometry *geometry, CConfig *config);
-    
+	virtual void Set_MPI_Secondary_Gradient(CGeometry *geometry, CConfig *config);
+  
+  /*!
+	 * \brief A virtual member.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	virtual void SetPrimitive_Limiter_MPI(CGeometry *geometry, CConfig *config);
+  
+  /*!
+	 * \brief A virtual member.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	virtual void SetSecondary_Limiter_MPI(CGeometry *geometry, CConfig *config);
+  
 	/*!
 	 * \brief A virtual member.
 	 * \param[in] iPoint - Index of the grid point.
@@ -1650,6 +1727,47 @@ public:
   virtual void SetOneD_T(double AverageTemperature);
 
   /*!
+     * \brief A virtual member.
+   * \ Get the flux averaged pressure at a marker.(same as area averaged pressure)
+     */
+  virtual double GetOneD_fluxavgP(void);
+  /*!
+     * \brief A virtual member.
+   * \ Set the flux averaged pressure at a marker. (same as area averaged pressure)
+     */
+  virtual void SetOneD_fluxavgP(double PressureRef);
+  /*!
+     * \brief A virtual member.
+   * \ Get the flux averaged density at a marker. ( = (gamma/(gamma-1)) / ( Pref*(href-1/2 uref^2) )
+     */
+  virtual double GetOneD_fluxavgRho(void);
+  /*!
+     * \brief A virtual member.
+   * \ Set the flux averaged density at a marker.( = (gamma/(gamma-1)) / ( Pref*(href-1/2 uref^2) )
+     */
+  virtual void SetOneD_fluxavgRho(double DensityRef);
+  /*!
+     * \brief A virtual member.
+   * \ Get the flux averaged velocity at a marker. = sqrt ( \int((rho*u)*u^2dA)/\int(rho*u*dA) )
+     */
+  virtual double GetOneD_fluxavgU(void);
+  /*!
+     * \brief A virtual member.
+   * \ Set the flux averaged velocity at a marker. = sqrt ( \int((rho*u)*u^2dA)/\int(rho*u*dA) )
+     */
+  virtual void SetOneD_fluxavgU(double VelocityRef);
+  /*!
+     * \brief A virtual member.
+   * \ Get the flux averaged enthalpy at a marker. = \int(rho*u*h dA) / \int(rho *u *dA )
+     */
+  virtual double GetOneD_fluxavgH(void);
+  /*!
+     * \brief A virtual member.
+   * \ Set the flux averaged enthalpy at a marker. = \int(rho*u*h dA) / \int(rho *u *dA )
+     */
+  virtual void SetOneD_fluxavgH(double EnthalpyRef);
+
+  /*!
 	 * \brief A virtual member.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
@@ -1734,7 +1852,18 @@ public:
   * \param[in] solution - Container vector with all the solutions.
   */
 	virtual void GetNacelle_Properties(CGeometry *geometry, CConfig *config, unsigned short iMesh, bool Output);
-    
+  
+  /*!
+   * \brief A virtual member.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] solver_container - Container vector with all the solutions.
+	 * \param[in] config - Definition of the particular problem.
+	 * \param[in] iMesh - current mesh level for the multigrid.
+   * \param[in] Output - boolean to determine whether to print output.
+	 */
+  virtual void SetFarfield_AoA(CGeometry *geometry, CSolver **solver_container,
+                               CConfig *config, unsigned short iMesh, bool Output);
+  
   /*!
   * \brief Prepares and solves the aeroelastic equations.
   * \param[in] surface_movement - Surface movement classes of the problem.
@@ -1770,7 +1899,7 @@ public:
  * \class CBaselineSolver
  * \brief Main class for defining a baseline solution from a restart file (for output).
  * \author F. Palacios, T. Economon.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CBaselineSolver : public CSolver {
 public:
@@ -1815,7 +1944,7 @@ public:
  * \brief Main class for defining the Euler's flow solver.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CEulerSolver : public CSolver {
 protected:
@@ -1889,6 +2018,10 @@ protected:
   OneD_Pt, /*!< \brief average total pressure evaluated at an exit */
   OneD_M, /*!< \brief area average Mach evaluated at an exit */
   OneD_T, /*!< \brief area average Temperature evaluated at an exit */
+  OneD_PressureRef, /*!< \brief area average Pressure evaluated at an exit */
+  OneD_DensityRef, /*!< \brief flux average density evaluated at an exit */
+  OneD_EnthalpyRef, /*!< \brief flux average enthalpy evaluated at an exit */
+  OneD_VelocityRef, /*!< \brief flux average velocity evaluated at an exit */
   Total_CDrag, /*!< \brief Total drag coefficient for all the boundaries. */
 	Total_CLift,		/*!< \brief Total lift coefficient for all the boundaries. */
 	Total_CSideForce,		/*!< \brief Total sideforce coefficient for all the boundaries. */
@@ -1916,6 +2049,8 @@ protected:
   *Surface_CMz;            /*!< \brief z Moment coefficient for each monitoring surface. */
 	double *iPoint_UndLapl,	/*!< \brief Auxiliary variable for the undivided Laplacians. */
 	*jPoint_UndLapl;			/*!< \brief Auxiliary variable for the undivided Laplacians. */
+	double *SecondaryVar_i,	/*!< \brief Auxiliary vector for storing the solution at point i. */
+	*SecondaryVar_j;			/*!< \brief Auxiliary vector for storing the solution at point j. */
 	double *PrimVar_i,	/*!< \brief Auxiliary vector for storing the solution at point i. */
 	*PrimVar_j;			/*!< \brief Auxiliary vector for storing the solution at point j. */
 	double **LowMach_Precontioner; /*!< \brief Auxiliary vector for storing the inverse of Roe-turkel preconditioner. */
@@ -1930,6 +2065,20 @@ protected:
 	*Primitive_i,				/*!< \brief Auxiliary nPrimVar vector for storing the primitive at point i. */
 	*Primitive_j;				/*!< \brief Auxiliary nPrimVar vector for storing the primitive at point j. */
   
+  double *Secondary,		/*!< \brief Auxiliary nPrimVar vector. */
+	*Secondary_i,				/*!< \brief Auxiliary nPrimVar vector for storing the primitive at point i. */
+	*Secondary_j;				/*!< \brief Auxiliary nPrimVar vector for storing the primitive at point j. */
+
+  double Cauchy_Value,	/*!< \brief Summed value of the convergence indicator. */
+	Cauchy_Func;			/*!< \brief Current value of the convergence indicator at one iteration. */
+	unsigned short Cauchy_Counter;	/*!< \brief Number of elements of the Cauchy serial. */
+	double *Cauchy_Serie;			/*!< \brief Complete Cauchy serial. */
+	double Old_Func,	/*!< \brief Old value of the objective function (the function which is monitored). */
+	New_Func;			/*!< \brief Current value of the objective function (the function which is monitored). */
+  double AoA_old;  /*!< \brief Old value of the angle of attack (monitored). */
+
+  CFluidModel  *FluidModel;  /*!< \brief fluid model used in the solver */
+
 public:
     
 	/*!
@@ -1983,7 +2132,21 @@ public:
 	 * \param[in] config - Definition of the particular problem.
 	 */
   void Set_MPI_Primitive_Limiter(CGeometry *geometry, CConfig *config);
-    
+  
+  /*!
+	 * \brief Impose the send-receive boundary condition.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+  void Set_MPI_Secondary_Limiter(CGeometry *geometry, CConfig *config);
+
+  /*!
+	 * \brief Set the fluid solver nondimensionalization.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+  void SetNondimensionalization(CGeometry *geometry, CConfig *config, unsigned short iMesh);
+  
 	/*!
 	 * \brief Compute the density at the infinity.
 	 * \return Value of the density at the infinity.
@@ -2125,7 +2288,7 @@ public:
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	void SetPrimVar_Gradient_GG(CGeometry *geometry, CConfig *config);
+	void SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config);
     
 	/*!
 	 * \brief Compute the gradient of the primitive variables using a Least-Squares method,
@@ -2133,19 +2296,25 @@ public:
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	void SetPrimVar_Gradient_LS(CGeometry *geometry, CConfig *config);
+	void SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config);
   
   /*!
+	 * \brief Compute the gradient of the primitive variables using Green-Gauss method,
+	 *        and stores the result in the <i>Gradient_Primitive</i> variable.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	void SetSecondary_Gradient_GG(CGeometry *geometry, CConfig *config);
+  
+	/*!
 	 * \brief Compute the gradient of the primitive variables using a Least-Squares method,
 	 *        and stores the result in the <i>Gradient_Primitive</i> variable.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
-   * \param[in] val_Point - ID of desired point to update gradient
 	 */
-	void SetPrimVar_Gradient_LS(CGeometry *geometry, CConfig *config,
-                              unsigned long val_Point);
+	void SetSecondary_Gradient_LS(CGeometry *geometry, CConfig *config);
     
-    /*!
+  /*!
 	 * \brief Compute the gradient of the primitive variables using a Least-Squares method,
 	 *        and stores the result in the <i>Gradient_Primitive</i> variable.
 	 * \param[in] geometry - Geometrical definition of the problem.
@@ -2158,8 +2327,23 @@ public:
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	void SetPrimVar_Limiter(CGeometry *geometry, CConfig *config);
-    
+	void SetPrimitive_Limiter(CGeometry *geometry, CConfig *config);
+  
+  /*!
+	 * \brief Compute the gradient of the primitive variables using a Least-Squares method,
+	 *        and stores the result in the <i>Gradient_Primitive</i> variable.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	void Set_MPI_Secondary_Gradient(CGeometry *geometry, CConfig *config);
+  
+	/*!
+	 * \brief Compute the limiter of the primitive variables.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+	void SetSecondary_Limiter(CGeometry *geometry, CConfig *config);
+  
 	/*!
 	 * \brief Compute the preconditioner for convergence acceleration by Roe-Turkel method.
 	 * \param[in] iPoint - Index of the grid point
@@ -2196,6 +2380,8 @@ public:
 	void Set_MPI_MaxEigenvalue(CGeometry *geometry, CConfig *config);
     
 	/*!
+	 * \author: G.Gori, S.Vitale, M.Pini, A.Guardone, P.Colonna
+	 *
 	 * \brief Impose via the residual the Euler wall boundary condition.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] solver_container - Container vector with all the solutions.
@@ -2248,7 +2434,18 @@ public:
 	 */
 	void BC_NearField_Boundary(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics,
                                CConfig *config, unsigned short val_marker);
-    
+  
+  /*!
+	 * \brief Impose the actuator disk boundary condition using the residual.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] solver_container - Container vector with all the solutions.
+	 * \param[in] solver - Description of the numerical method.
+	 * \param[in] config - Definition of the particular problem.
+	 * \param[in] val_marker - Surface marker where the boundary condition is applied.
+	 */
+	void BC_ActDisk_Boundary(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics,
+                                 CConfig *config);
+  
 	/*!
 	 * \brief Impose the dirichlet boundary condition using the residual.
 	 * \param[in] geometry - Geometrical definition of the problem.
@@ -2259,6 +2456,19 @@ public:
 	void BC_Dirichlet(CGeometry *geometry, CSolver **solver_container, CConfig *config,
                       unsigned short val_marker);
     
+	/*!
+	 * \author: G.Gori, S.Vitale, M.Pini, A.Guardone, P.Colonna
+	 *
+	 * \brief Impose the boundary condition using characteristic recostruction.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] solver_container - Container vector with all the solutions.
+	 * \param[in] solver - Description of the numerical method.
+	 * \param[in] config - Definition of the particular problem.
+	 * \param[in] val_marker - Surface marker where the boundary condition is applied.
+	 */
+	void BC_Riemann(CGeometry *geometry, CSolver **solver_container,
+                            CNumerics *conv_numerics, CNumerics *visc_numerics, CConfig *config, unsigned short val_marker);
+
 	/*!
 	 * \brief Impose a subsonic inlet boundary condition.
 	 * \param[in] geometry - Geometrical definition of the problem.
@@ -2342,7 +2552,18 @@ public:
 	 * \param[in] solution - Container vector with all the solutions.
 	 */
 	void GetNacelle_Properties(CGeometry *geometry, CConfig *config, unsigned short iMesh, bool Output);
-    
+  
+  /*!
+	 * \brief Update the AoA and freestream velocity at the farfield.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] solver_container - Container vector with all the solutions.
+	 * \param[in] config - Definition of the particular problem.
+	 * \param[in] iMesh - current mesh level for the multigrid.
+   * \param[in] Output - boolean to determine whether to print output.
+	 */
+  void SetFarfield_AoA(CGeometry *geometry, CSolver **solver_container,
+                                     CConfig *config, unsigned short iMesh, bool Output);
+  
 	/*!
 	 * \brief Update the solution using the explicit Euler scheme.
 	 * \param[in] geometry - Geometrical definition of the problem.
@@ -2733,10 +2954,42 @@ public:
   double GetOneD_T(void);
 
   /*!
-     * \brief Set the averaged Temperature number at a marker.
+     * \brief Set the averaged Temperature at a marker.
      */
   void SetOneD_T(double AverageTemperature);
 
+  /*!
+     * \brief Get the flux averaged pressure at a marker.(same as area averaged pressure)
+     */
+  double GetOneD_fluxavgP(void);
+  /*!
+     * \brief Set the flux averaged pressure at a marker. (same as area averaged pressure)
+     */
+  void SetOneD_fluxavgP(double PressureRef);
+  /*!
+     * \brief Get the flux averaged density at a marker. ( = (gamma/(gamma-1)) / ( Pref*(href-1/2 uref^2) )
+     */
+  double GetOneD_fluxavgRho(void);
+  /*!
+     * \brief Set the flux averaged density at a marker.( = (gamma/(gamma-1)) / ( Pref*(href-1/2 uref^2) )
+     */
+  void SetOneD_fluxavgRho(double DensityRef);
+  /*!
+     * \brief Get the flux averaged velocity at a marker. = sqrt ( \int((rho*u)*u^2dA)/\int(rho*u*dA) )
+     */
+  double GetOneD_fluxavgU(void);
+  /*!
+     * \brief Set the flux averaged velocity at a marker. = sqrt ( \int((rho*u)*u^2dA)/\int(rho*u*dA) )
+     */
+  void SetOneD_fluxavgU(double VelocityRef);
+  /*!
+     * \brief Get the flux averaged enthalpy at a marker. = \int(rho*u*h dA) / \int(rho *u *dA )
+     */
+  double GetOneD_fluxavgH(void);
+  /*!
+     * \brief Set the flux averaged enthalpy at a marker. = \int(rho*u*h dA) / \int(rho *u *dA )
+     */
+  void SetOneD_fluxavgH(double EnthalpyRef);
 
 	/*!
 	 * \brief Set the total residual adding the term that comes from the Dual Time Strategy.
@@ -2778,7 +3031,6 @@ public:
 	 */
 	void SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter);
   
-  
 	/*!
 	 * \brief Recompute distance to the level set 0.
 	 * \param[in] geometry - Geometrical definition of the problem.
@@ -2793,7 +3045,7 @@ public:
  * \brief Main class for defining the Navier-Stokes flow solver.
  * \ingroup Navier_Stokes_Equations
  * \author F. Palacios.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CNSSolver : public CEulerSolver {
 private:
@@ -2821,7 +3073,6 @@ private:
 	*CQ_Visc,		/*!< \brief Torque coefficient (viscous contribution) for each boundary. */
   *Heat_Visc,		/*!< \brief Heat load (viscous contribution) for each boundary. */
   *MaxHeatFlux_Visc, /*!< \brief Maximum heat flux (viscous contribution) for each boundary. */
-  
 	**CSkinFriction;	/*!< \brief Skin friction coefficient for each boundary and vertex. */
 	double *ForceViscous,	/*!< \brief Viscous force for each boundary. */
 	*MomentViscous;			/*!< \brief Inviscid moment for each boundary. */
@@ -3025,7 +3276,7 @@ public:
  * \brief Main class for defining the turbulence model solver.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CTurbSolver : public CSolver {
 protected:
@@ -3053,7 +3304,7 @@ public:
 	 */
 	CTurbSolver(CConfig *config);
     
-    /*!
+  /*!
 	 * \brief Impose the send-receive boundary condition.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
@@ -3153,7 +3404,7 @@ public:
  * \brief Main class for defining the turbulence model solver.
  * \ingroup Turbulence_Model
  * \author A. Bueno.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 
 class CTurbSASolver: public CTurbSolver {
@@ -3337,7 +3588,7 @@ public:
  * \brief Main class for defining the turbulence model solver.
  * \ingroup Turbulence_Model
  * \author B. Tracey.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 
 class CTurbMLSolver: public CTurbSolver {
@@ -3479,7 +3730,7 @@ public:
  * \brief Main class for defining the turbulence model solver.
  * \ingroup Turbulence_Model
  * \author A. Aranake.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 
 class CTransLMSolver: public CTurbSolver {
@@ -3685,7 +3936,7 @@ public:
  * \brief Main class for defining the turbulence model solver.
  * \ingroup Turbulence_Model
  * \author A. Campos, F. Palacios, T. Economon
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 
 class CTurbSSTSolver: public CTurbSolver {
@@ -3823,7 +4074,7 @@ public:
  * \brief Main class for defining the Euler's adjoint flow solver.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjEulerSolver : public CSolver {
 protected:
@@ -4248,7 +4499,7 @@ public:
  * \brief Main class for defining the Navier-Stokes' adjoint flow solver.
  * \ingroup Navier_Stokes_Equations
  * \author F. Palacios.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjNSSolver : public CAdjEulerSolver {
 public:
@@ -4341,7 +4592,7 @@ public:
  * \brief Main class for defining the adjoint turbulence model solver.
  * \ingroup Turbulence_Model
  * \author F. Palacios, A. Bueno.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjTurbSolver : public CSolver {
 private:
@@ -4484,7 +4735,7 @@ public:
  * \brief Main class for defining the linearized Euler solver.
  * \ingroup Euler_Equations
  * \author F. Palacios.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CLinEulerSolver : public CSolver {
 private:
@@ -4607,7 +4858,7 @@ public:
 /*! \class CPoissonSolver
  *  \brief Main class for defining the poisson potential solver.
  *  \author F. Palacios.
- *  \version 3.0.1 "eagle"
+ *  \version 3.2.0 "eagle"
  *  \date May 3, 2010.
  */
 class CPoissonSolver : public CSolver {
@@ -4744,7 +4995,7 @@ public:
 /*! \class CWaveSolver
  *  \brief Main class for defining the wave solver.
  *  \author F. Palacios.
- *  \version 3.0.1 "eagle"
+ *  \version 3.2.0 "eagle"
  *  \date May 3, 2010.
  */
 class CWaveSolver : public CSolver {
@@ -4899,7 +5150,7 @@ public:
 /*! \class CHeatSolver
  *  \brief Main class for defining the heat solver.
  *  \author F. Palacios.
- *  \version 3.0.1 "eagle"
+ *  \version 3.2.0 "eagle"
  *  \date May 3, 2010.
  */
 class CHeatSolver : public CSolver {
@@ -5017,7 +5268,7 @@ public:
 /*! \class CFEASolver
  *  \brief Main class for defining the FEA solver.
  *  \author F. Palacios.
- *  \version 3.0.1 "eagle"
+ *  \version 3.2.0 "eagle"
  *  \date May 3, 2010.
  */
 class CFEASolver : public CSolver {
@@ -5197,7 +5448,7 @@ public:
  * \brief Main class for defining the level set solver.
  * \ingroup LevelSet_Model
  * \author F. Palacios.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CAdjLevelSetSolver : public CSolver {
 protected:
@@ -5376,7 +5627,7 @@ public:
  * \brief Main class for defining the template model solver.
  * \ingroup Template_Flow_Equation
  * \author F. Palacios.
- * \version 3.0.1 "eagle"
+ * \version 3.2.0 "eagle"
  */
 class CTemplateSolver : public CSolver {
 private:
@@ -5743,6 +5994,13 @@ public:
 	 * \param[in] config - Definition of the particular problem.
 	 */
   void Set_MPI_Primitive_Gradient(CGeometry *geometry, CConfig *config);
+  
+  /*!
+	 * \brief Set the fluid solver nondimensionalization.
+	 * \param[in] geometry - Geometrical definition of the problem.
+	 * \param[in] config - Definition of the particular problem.
+	 */
+  void SetNondimensionalization(CGeometry *geometry, CConfig *config, unsigned short iMesh);
 
   /*!
 	 * \brief Set the maximum value of the eigenvalue.
@@ -5850,7 +6108,7 @@ public:
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	void SetPrimVar_Gradient_GG(CGeometry *geometry, CConfig *config);
+	void SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config);
   
 	/*!
 	 * \brief Compute the gradient of the primitive variables using a Least-Squares method,
@@ -5858,7 +6116,7 @@ public:
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	void SetPrimVar_Gradient_LS(CGeometry *geometry, CConfig *config);
+	void SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config);
   
   /*!
 	 * \brief Compute the gradient of the primitive variables using a Least-Squares method,
@@ -5866,14 +6124,14 @@ public:
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	void SetPrimVar_Gradient_LS(CGeometry *geometry, CConfig *config, unsigned long val_Point);
+	void SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config, unsigned long val_Point);
   
 	/*!
 	 * \brief Compute the limiter of the primitive variables.
 	 * \param[in] geometry - Geometrical definition of the problem.
 	 * \param[in] config - Definition of the particular problem.
 	 */
-	void SetPrimVar_Limiter(CGeometry *geometry, CConfig *config);
+	void SetPrimitive_Limiter(CGeometry *geometry, CConfig *config);
   
   /*!
 	 * \brief Compute slope limiter.
