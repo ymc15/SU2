@@ -24,7 +24,7 @@ autom4te.cache
 
 # Mac files
 *.DS_Store
-*.xcuserdatad
+#*.xcuserdatad
 
 # Compiled Makefiles
 Makefile

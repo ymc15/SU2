@@ -56,7 +56,9 @@ protected:
   double *Vector; /*!< \brief Auxiliary vector. */
   double *Enthalpy_formation;
 	unsigned short nDiatomics, nMonatomics;
-    
+	double Prandtl_Lam;				/*!< \brief Laminar Prandtl's number. */
+	double Prandtl_Turb;		/*!< \brief Turbulent Prandtl's number. */
+  
 public:
 	
   double
@@ -127,6 +129,8 @@ public:
 	*U_3;				/*!< \brief Vector of conservative variables at node 3. */
 	double *V_i,		/*!< \brief Vector of primitive variables at point i. */
 	*V_j;				/*!< \brief Vector of primitive variables at point j. */
+	double *S_i,		/*!< \brief Vector of secondary variables at point i. */
+	*S_j;				/*!< \brief Vector of secondary variables at point j. */
 	double *Psi_i,		/*!< \brief Vector of adjoint variables at point i. */
 	*Psi_j;				/*!< \brief Vector of adjoint variables at point j. */
 	double *DeltaU_i,	/*!< \brief Vector of linearized variables at point i. */
@@ -278,6 +282,13 @@ public:
 	 * \param[in] val_v_j - Value of the primitive variable at point j.
 	 */
 	void SetPrimitive(double *val_v_i, double *val_v_j);
+
+	/*!
+	 * \brief Set the value of the primitive variables.
+	 * \param[in] val_v_i - Value of the primitive variable at point i.
+	 * \param[in] val_v_j - Value of the primitive variable at point j.
+	 */
+	void SetSecondary(double *val_s_i, double *val_s_j);
     
 	/*!
 	 * \brief Set the value of the conservative variables.
