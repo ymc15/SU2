@@ -98,11 +98,11 @@ void MeanFlowIteration(COutput *output, CIntegration ***integration_container, C
       
 			/*--- Solve transition model ---*/
       
-			// if (config_container[iZone]->GetKind_Trans_Model() == LM) {
-			// 	config_container[iZone]->SetGlobalParam(RANS, RUNTIME_TRANS_SYS, ExtIter);
-			// 	integration_container[iZone][TRANS_SOL]->SingleGrid_Iteration(geometry_container, solver_container, numerics_container,
-      //                                                                 config_container, RUNTIME_TRANS_SYS, IntIter, iZone);
-			// }
+			if (config_container[iZone]->GetKind_Trans_Model() == LM) {
+				config_container[iZone]->SetGlobalParam(RANS, RUNTIME_TRANS_SYS, ExtIter);
+				integration_container[iZone][TRANS_SOL]->SingleGrid_Iteration(geometry_container, solver_container, numerics_container,
+                                                                      config_container, RUNTIME_TRANS_SYS, IntIter, iZone);
+			}
       
 		}
     

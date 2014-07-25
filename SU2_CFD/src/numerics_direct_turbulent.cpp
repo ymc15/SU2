@@ -719,8 +719,6 @@ CSourcePieceWise_TurbSST::CSourcePieceWise_TurbSST(unsigned short val_nDim, unsi
                                                    CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
   
   transition     = (config->GetKind_Trans_Model() == LM);
-  // AA, debug, ERASEME
-  transition = false;
   incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
   
   /*--- Closure constants ---*/
@@ -743,8 +741,6 @@ void CSourcePieceWise_TurbSST::ComputeResidual(double *val_residual, double **va
   double diverg, pk, pw, dk, zeta;
   double Ry, F3;
 
-  // ERASEME
-  transition = false;
   
   if (incompressible) {
     Density_i = V_i[nDim+1];

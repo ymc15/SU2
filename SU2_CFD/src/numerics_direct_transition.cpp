@@ -573,7 +573,7 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
   if (turb_model==SST) {
     tu = pow(2*TurbVar_i[0]/3.,0.5)/Velocity_Mag;
   } else if (turb_model==SA) {
-	  tu   = config->GetTurbulenceIntensity_FreeStream();
+	  tu   = config->GetTurbulenceIntensity_FreeStream()*100;
   }
   tu = max(tu,0.027); // Tu limit, after eq. 38
 
@@ -600,8 +600,6 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 
 	/*-- Begin iterations to solve REth correlation --*/
 	f_lambda = 1.;
-  if (turb_model==SA)
-  	tu = tu*100.;
 
 	/*-- Initial bracket for lambda --*/
 	if (du_ds>=0) {
