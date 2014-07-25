@@ -2,7 +2,7 @@
  * \file option_structure.hpp
  * \brief Defines classes for referencing options for easy input in CConfig
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.0.0 "eagle"
+ * \version 3.0.1 "eagle"
  *
  * Many of the classes in this file are templated, and therefore must
  * be declared and defined here; to keep all elements together, there
@@ -376,7 +376,7 @@ static const map<string, ENUM_GUST_TYPE> Gust_Type_Map = CCreateMap<string, ENUM
  * \brief type of wind direction
  */
 enum ENUM_GUST_DIR {
-    X_DIR = 0,        /*!< \brief _______. */
+  X_DIR = 0,        /*!< \brief _______. */
 	Y_DIR = 1, 		 /*!< \brief _______. */
 };
 static const map<string, ENUM_GUST_DIR> Gust_Dir_Map = CCreateMap<string, ENUM_GUST_DIR>
@@ -387,10 +387,10 @@ static const map<string, ENUM_GUST_DIR> Gust_Dir_Map = CCreateMap<string, ENUM_G
  * \brief types of centered spatial discretizations
  */
 enum ENUM_CENTERED {
-	NO_CENTERED = 0,               /*!< \brief No centered scheme is used. */
-	JST = 1,			/*!< \brief Jameson-Smith-Turkel centered numerical method. */
-	LAX = 2,			/*!< \brief Lax-Friedrich centered numerical method. */
-        JST_KE = 3                     /*!< \brief . */
+	NO_CENTERED = 0,    /*!< \brief No centered scheme is used. */
+	JST = 1,            /*!< \brief Jameson-Smith-Turkel centered numerical method. */
+	LAX = 2,            /*!< \brief Lax-Friedrich centered numerical method. */
+  JST_KE = 4          /*!< \brief Kinetic Energy preserving Jameson-Smith-Turkel centered numerical method. */
 };
 static const map<string, ENUM_CENTERED> Centered_Map = CCreateMap<string, ENUM_CENTERED>
 ("NONE", NO_CENTERED)
@@ -402,57 +402,53 @@ static const map<string, ENUM_CENTERED> Centered_Map = CCreateMap<string, ENUM_C
  * \brief types of upwind spatial discretizations
  */
 enum ENUM_UPWIND {
-	NO_UPWIND = 0,                /*!< \brief No upwind scheme is used. */
-	ROE_1ST = 1,			/*!< \brief First order Roe's upwind numerical method. */
-	ROE_2ND = 2,			/*!< \brief Second order Roe's upwind numerical method. */
-	SCALAR_UPWIND_1ST = 3,	/*!< \brief First order scalar upwind numerical method. */
-	SCALAR_UPWIND_2ND = 4,	/*!< \brief Second order scalar upwind numerical method. */
-	CONVECTIVE_TEMPLATE = 5,       /*!< \brief Template for new numerical method . */
-	AUSM_1ST = 6,			/*!< \brief First order AUSM numerical method. */
-	AUSM_2ND = 7,			/*!< \brief Second order AUSM numerical method. */
-	HLLC_1ST = 8,			/*!< \brief First order HLLC numerical method. */
-	HLLC_2ND = 9,			/*!< \brief Second order HLLC numerical method. */
-	SW_1ST = 10,			/*!< \brief First order Steger-Warming method. */
-	SW_2ND = 11,      /*!< \brief Second order Steger-Warming method. */
-  MSW_1ST = 12,     /*!< \brief First order Modified Steger-Warming method. */
-  MSW_2ND = 13,     /*!< \brief Second order Modified Steger-Warming method. */
-	TURKEL_1ST = 14,			/*!< \brief First order Roe-Turkel's upwind numerical method. */
-	TURKEL_2ND = 15,			/*!< \brief Second order Roe-Turkel's upwind numerical method. */
-  AUSMPWPLUS_1ST = 16,  /*!< \brief First order AUSMPW+ numerical method. */
-  AUSMPWPLUS_2ND = 17   /*!< \brief Second order AUSMPW+ numerical method. */
-  
+	NO_UPWIND = 0,              /*!< \brief No upwind scheme is used. */
+	ROE = 1,                    /*!< \brief Roe's upwind numerical method. */
+	SCALAR_UPWIND = 2,          /*!< \brief Scalar upwind numerical method. */
+	AUSM = 3,                   /*!< \brief AUSM numerical method. */
+	HLLC = 4,                   /*!< \brief HLLC numerical method. */
+	SW = 5,                     /*!< \brief Steger-Warming method. */
+  MSW = 6,                    /*!< \brief Modified Steger-Warming method. */
+	TURKEL = 7,                 /*!< \brief Roe-Turkel's upwind numerical method. */
+  AUSMPWPLUS = 8,             /*!< \brief AUSMPW+ numerical method. */
+  CUSP = 9,                   /*!< \brief Convective upwind and split pressure numerical method. */
+  CONVECTIVE_TEMPLATE = 10    /*!< \brief Template for new numerical method . */
 };
 static const map<string, ENUM_UPWIND> Upwind_Map = CCreateMap<string, ENUM_UPWIND>
 ("NONE", NO_UPWIND)
-("ROE-1ST_ORDER", ROE_1ST)
-("ROE-2ND_ORDER", ROE_2ND)
-("TURKEL_PREC-1ST_ORDER", TURKEL_1ST)
-("TURKEL_PREC-2ND_ORDER", TURKEL_2ND)
-("AUSM-1ST_ORDER", AUSM_1ST)
-("AUSM-2ND_ORDER", AUSM_2ND)
-("AUSMPW+-1ST_ORDER", AUSMPWPLUS_1ST)
-("AUSMPW+-2ND_ORDER", AUSMPWPLUS_2ND)
-("HLLC-1ST_ORDER", HLLC_1ST)
-("HLLC-2ND_ORDER", HLLC_2ND)
-("SW-1ST_ORDER", SW_1ST)
-("SW-2ND_ORDER", SW_2ND)
-("MSW-1ST_ORDER", MSW_1ST)
-("MSW-2ND_ORDER", MSW_2ND)
-("SCALAR_UPWIND-1ST_ORDER", SCALAR_UPWIND_1ST)
-("SCALAR_UPWIND-2ND_ORDER", SCALAR_UPWIND_2ND)
+("ROE", ROE)
+("TURKEL_PREC", TURKEL)
+("AUSM", AUSM)
+("AUSMPW+", AUSMPWPLUS)
+("HLLC", HLLC)
+("SW", SW)
+("MSW", MSW)
+("CUSP", CUSP)
+("SCALAR_UPWIND", SCALAR_UPWIND)
 ("CONVECTIVE_TEMPLATE", CONVECTIVE_TEMPLATE);
+
+/*!
+ * \brief Spatial numerical order integration
+ */
+enum ENUM_SPATIAL_ORDER {
+	FIRST_ORDER = 0,        /*!< \brief First order */
+	SECOND_ORDER = 1,        /*!< \brief Second order. */
+  SECOND_ORDER_LIMITER = 2 /*!< \brief Second order with limiter. */
+};
+static const map<string, ENUM_SPATIAL_ORDER> SpatialOrder_Map = CCreateMap<string, ENUM_SPATIAL_ORDER>
+("1ST_ORDER", FIRST_ORDER)
+("2ND_ORDER", SECOND_ORDER)
+("2ND_ORDER_LIMITER", SECOND_ORDER_LIMITER);
 
 /*!
  * \brief types of slope limiters
  */
 enum ENUM_LIMITER {
-	NO_LIMITER = 0,       /*!< \brief No slope limiter */
-	VENKATAKRISHNAN = 1,	/*!< \brief Slope limiter using Venkatakrisnan method. */
-  MINMOD = 2,           /*!< \brief Slope limiter using minmod method. */
-  SHARP_EDGES = 3       /*!< \brief Slope limiter using sharp edges. */
+	VENKATAKRISHNAN = 0,	/*!< \brief Slope limiter using Venkatakrisnan method. */
+  MINMOD = 1,           /*!< \brief Slope limiter using minmod method. */
+  SHARP_EDGES = 2       /*!< \brief Slope limiter using sharp edges. */
 };
 static const map<string, ENUM_LIMITER> Limiter_Map = CCreateMap<string, ENUM_LIMITER>
-("NONE", NO_LIMITER)
 ("VENKATAKRISHNAN", VENKATAKRISHNAN)
 ("MINMOD", MINMOD)
 ("SHARP_EDGES", SHARP_EDGES);
@@ -597,6 +593,10 @@ enum BC_TYPE {
   ISOTHERMAL = 28,      /*!< \brief No slip isothermal wall boundary condition. */
   HEAT_FLUX  = 29,      /*!< \brief No slip constant heat flux wall boundary condition. */
   PRESSURE_BOUNDARY = 30,   	/*!< \brief Pressure boundary condition. */
+  HEAT_FLUX_NONCATALYTIC = 31, /*!< \brief No-slip, constant heat flux, noncatalytic bc. */
+  HEAT_FLUX_CATALYTIC= 32, /*!< \brief No-slip, constant heat flux, catalytic bc. */
+  ISOTHERMAL_NONCATALYTIC = 33, /*!< \brief No-slip, constant temperature, noncatalytic bc. */
+  ISOTHERMAL_CATALYTIC = 34, /*!< \brief No-slip, constant temperature, catalytic bc. */
 	SEND_RECEIVE = 99		/*!< \brief Boundary send-receive definition. */
 };
 
@@ -629,42 +629,41 @@ enum GEO_TYPE {
  * \brief types of objective functions
  */
 enum ENUM_OBJECTIVE {
-	DRAG_COEFFICIENT = 1, 	/*!< \brief Drag objective function definition. */
-	LIFT_COEFFICIENT = 2, 	/*!< \brief Lift objective function definition. */
-	SIDEFORCE_COEFFICIENT = 3,	/*!< \brief Side force objective function definition. */
-	EFFICIENCY = 4,		/*!< \brief Efficiency objective function definition. */
-	PRESSURE_COEFFICIENT = 5,	/*!< \brief Pressure objective function definition. */
-	MOMENT_X_COEFFICIENT = 6,	/*!< \brief Pitching moment objective function definition. */
-	MOMENT_Y_COEFFICIENT = 7,	/*!< \brief Rolling moment objective function definition. */
-	MOMENT_Z_COEFFICIENT = 8,	/*!< \brief Yawing objective function definition. */
-	EQUIVALENT_AREA = 9,		/*!< \brief Equivalent area objective function definition. */
-	NEARFIELD_PRESSURE = 10,	/*!< \brief NearField Pressure objective function definition. */
-	FORCE_X_COEFFICIENT = 12,	/*!< \brief X-direction force objective function definition. */
-	FORCE_Y_COEFFICIENT = 13,	/*!< \brief Y-direction force objective function definition. */
-	FORCE_Z_COEFFICIENT = 14,	/*!< \brief Z-direction force objective function definition. */
-	THRUST_COEFFICIENT = 15,		/*!< \brief Thrust objective function definition. */
-	TORQUE_COEFFICIENT = 16,		/*!< \brief Torque objective function definition. */
-	FIGURE_OF_MERIT = 17,		/*!< \brief Rotor Figure of Merit objective function definition. */
-	FREE_SURFACE = 18,				/*!< \brief Free Surface objective function definition. */
-	MAX_THICKNESS = 20,       /*!< \brief Maximum thickness. */
-	TOTAL_VOLUME = 21,       /*!< \brief Total volume. */
-  CLEARANCE = 22,       /*!< \brief Clearance. */
-  MIN_THICKNESS = 23,       /*!< \brief Minimum thickness. */
-  NORM_HEAT = 25,    /*!< \brief Norm heat flux. */
-  HEAT = 31,    /*!< \brief Norm heat flux. */
-  MAX_THICK_SEC1 = 26,       /*!< \brief Maximum thickness in section 1. */
-	MAX_THICK_SEC2 = 27,       /*!< \brief Maximum thickness in section 2. */
-	MAX_THICK_SEC3 = 28,       /*!< \brief Maximum thickness in section 3. */
-	MAX_THICK_SEC4 = 29,       /*!< \brief Maximum thickness in section 4. */
-	MAX_THICK_SEC5 = 30       /*!< \brief Maximum thickness in section 5. */
+	DRAG_COEFFICIENT = 1, 	      /*!< \brief Drag objective function definition. */
+	LIFT_COEFFICIENT = 2, 	      /*!< \brief Lift objective function definition. */
+	SIDEFORCE_COEFFICIENT = 3,	  /*!< \brief Side force objective function definition. */
+	EFFICIENCY = 4,		            /*!< \brief Efficiency objective function definition. */
+	INVERSE_DESIGN_PRESSURE = 5,	/*!< \brief Pressure objective function definition (inverse design). */
+  INVERSE_DESIGN_HEATFLUX = 6,  /*!< \brief Heat flux objective function definition (inverse design). */
+  TOTAL_HEATFLUX = 7,           /*!< \brief Total heat flux. */
+  MAXIMUM_HEATFLUX = 8,         /*!< \brief Maximum heat flux. */
+	MOMENT_X_COEFFICIENT = 9,	    /*!< \brief Pitching moment objective function definition. */
+	MOMENT_Y_COEFFICIENT = 10,    /*!< \brief Rolling moment objective function definition. */
+	MOMENT_Z_COEFFICIENT = 11,    /*!< \brief Yawing objective function definition. */
+	EQUIVALENT_AREA = 12,		      /*!< \brief Equivalent area objective function definition. */
+	NEARFIELD_PRESSURE = 13,	    /*!< \brief NearField Pressure objective function definition. */
+	FORCE_X_COEFFICIENT = 14,	    /*!< \brief X-direction force objective function definition. */
+	FORCE_Y_COEFFICIENT = 15,	    /*!< \brief Y-direction force objective function definition. */
+	FORCE_Z_COEFFICIENT = 16,	    /*!< \brief Z-direction force objective function definition. */
+	THRUST_COEFFICIENT = 17,		  /*!< \brief Thrust objective function definition. */
+	TORQUE_COEFFICIENT = 18,		  /*!< \brief Torque objective function definition. */
+	FIGURE_OF_MERIT = 19,		      /*!< \brief Rotor Figure of Merit objective function definition. */
+	FREE_SURFACE = 20,				    /*!< \brief Free Surface objective function definition. */
+	MAX_THICKNESS = 21,           /*!< \brief Maximum thickness. */
+  MIN_THICKNESS = 22,           /*!< \brief Minimum thickness. */
+  MAX_THICK_SEC1 = 23,          /*!< \brief Maximum thickness in section 1. */
+	MAX_THICK_SEC2 = 24,          /*!< \brief Maximum thickness in section 2. */
+	MAX_THICK_SEC3 = 25,          /*!< \brief Maximum thickness in section 3. */
+	MAX_THICK_SEC4 = 26,          /*!< \brief Maximum thickness in section 4. */
+	MAX_THICK_SEC5 = 27           /*!< \brief Maximum thickness in section 5. */
 };
-
 static const map<string, ENUM_OBJECTIVE> Objective_Map = CCreateMap<string, ENUM_OBJECTIVE>
 ("DRAG", DRAG_COEFFICIENT)
 ("LIFT", LIFT_COEFFICIENT)
 ("SIDEFORCE", SIDEFORCE_COEFFICIENT)
 ("EFFICIENCY", EFFICIENCY)
-("PRESSURE", PRESSURE_COEFFICIENT)
+("INVERSE_DESIGN_PRESSURE", INVERSE_DESIGN_PRESSURE)
+("INVERSE_DESIGN_HEATFLUX", INVERSE_DESIGN_HEATFLUX)
 ("MOMENT_X", MOMENT_X_COEFFICIENT)
 ("MOMENT_Y", MOMENT_Y_COEFFICIENT)
 ("MOMENT_Z", MOMENT_Z_COEFFICIENT)
@@ -675,13 +674,11 @@ static const map<string, ENUM_OBJECTIVE> Objective_Map = CCreateMap<string, ENUM
 ("FORCE_Z", FORCE_Z_COEFFICIENT)
 ("THRUST", THRUST_COEFFICIENT)
 ("TORQUE", TORQUE_COEFFICIENT)
-("NORM_HEAT", NORM_HEAT)
-("HEAT", HEAT)
+("TOTAL_HEATFLUX", TOTAL_HEATFLUX)
+("MAXIMUM_HEATFLUX", MAXIMUM_HEATFLUX)
 ("FIGURE_OF_MERIT", FIGURE_OF_MERIT)
 ("FREE_SURFACE", FREE_SURFACE)
-("TOTAL_VOLUME", TOTAL_VOLUME)
 ("MAX_THICKNESS", MAX_THICKNESS)
-("CLEARANCE", CLEARANCE)
 ("MIN_THICKNESS", MIN_THICKNESS)
 ("MAX_THICK_SEC1", MAX_THICK_SEC1)
 ("MAX_THICK_SEC2", MAX_THICK_SEC2)
@@ -695,9 +692,7 @@ static const map<string, ENUM_OBJECTIVE> Objective_Map = CCreateMap<string, ENUM
 enum ENUM_CONTINUOUS_EQNS {
 	EULER_EQNS= 1, 	/*!< \brief Euler equations. */
 	NAVIER_STOKES_EQNS = 2 	/*!< \brief Navier Stokes equations. */
-
 };
-
 static const map<string, ENUM_CONTINUOUS_EQNS> ContinuousEqns_Map = CCreateMap<string, ENUM_CONTINUOUS_EQNS>
 ("EULER", EULER_EQNS)
 ("NAVIER_STOKES", NAVIER_STOKES_EQNS);
@@ -709,14 +704,11 @@ enum ENUM_DISCRETE_EQNS {
 	NONE_EQNS= 1, 	/*!< \brief No equations. */
 	SA_EQNS = 2, 	/*!< \brief Spallart-Almaras equations. */
 	SST_EQNS = 2 	/*!< \brief SST equations. */
-
 };
-
 static const map<string, ENUM_DISCRETE_EQNS> DiscreteEqns_Map = CCreateMap<string, ENUM_DISCRETE_EQNS>
 ("NONE", NONE_EQNS)
 ("SA", SA_EQNS)
 ("SST", SST_EQNS);
-
 
 /*!
  * \brief types of sensitivities to compute
@@ -2091,6 +2083,7 @@ public:
 		} else {
 			cerr << "Error in CConvOptionRef::SetValue(): "
 					<< value[0] << " is an invalid space discretization" << endl;
+      cerr << "Please, check that the config file is compatible with SU2 3.0.1 \"eagle\"" << endl;
 			throw(-1);
 		}
 	}

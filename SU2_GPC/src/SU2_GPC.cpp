@@ -2,7 +2,7 @@
  * \file SU2_GPC.cpp
  * \brief Main file of the Gradient Projection Code (SU2_GPC).
  * \author Aerospace Design Laboratory (Stanford University) <http://su2.stanford.edu>.
- * \version 3.0.0 "eagle"
+ * \version 3.0.1 "eagle"
  *
  * SU2, Copyright (C) 2012-2014 Aerospace Design Laboratory (ADL).
  *
@@ -363,6 +363,18 @@ int main(int argc, char *argv[]) {
 				case SIDEFORCE_COEFFICIENT :
 					if (iDV == 0) Gradient_file << "Sideforce coeff. grad. using cont. adj." << endl;
 					cout << "Sideforce coefficient gradient: "<< Gradient << "." << endl; break;
+        case INVERSE_DESIGN_PRESSURE :
+					if (iDV == 0) Gradient_file << "Pressure inverse design using cont. adj."<< endl;
+					cout << "Pressure inverse design gradient: "<< Gradient << "." << endl; break;
+        case INVERSE_DESIGN_HEATFLUX :
+					if (iDV == 0) Gradient_file << "Heat inverse design using cont. adj."<< endl;
+					cout << "Heat flux inverse design gradient: "<< Gradient << "." << endl; break;
+        case TOTAL_HEATFLUX :
+					if (iDV == 0) Gradient_file << "Integrated surface heat flux. using cont. adj."<< endl;
+					cout << "Total heat flux gradient: "<< Gradient << "." << endl; break;
+        case MAXIMUM_HEATFLUX :
+					if (iDV == 0) Gradient_file << "Integrated surface heat flux. using cont. adj."<< endl;
+					cout << "Maximum heat flux gradient: "<< Gradient << "." << endl; break;
 				case MOMENT_X_COEFFICIENT :
 					if (iDV == 0) Gradient_file << "Moment x coeff. grad. using cont. adj." << endl;
 					cout << "Moment x coefficient gradient: "<< Gradient << "." << endl; break;
@@ -402,13 +414,6 @@ int main(int argc, char *argv[]) {
 				case FREE_SURFACE :
 					if (iDV == 0) Gradient_file << "Free-Surface grad. using cont. adj."<< endl;
 					cout << "Free-surface gradient: "<< Gradient << "." << endl; break;
-        case HEAT :
-					if (iDV == 0) Gradient_file << "Integrated surface heat flux. using cont. adj."<< endl;
-					cout << "Heat load gradient: "<< Gradient << "." << endl; break;
-        case NORM_HEAT :
-					if (iDV == 0) Gradient_file << "Integrated surface heat flux. using cont. adj."<< endl;
-					cout << "Heat load gradient: "<< Gradient << "." << endl; break;
-          
 			}
 			
 			Gradient_file << Gradient << endl;
