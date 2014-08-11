@@ -1039,8 +1039,7 @@ CSourcePieceWise_TurbML::CSourcePieceWise_TurbML(unsigned short val_nDim, unsign
   uInfinity = sqrt(uInfinity);
   
   incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
-  //transition     = (config->GetKind_Trans_Model() == LM);
-  transition = false; // Debugging, -AA
+  transition     = (config->GetKind_Trans_Model() == LM);
   rotating_frame = config->GetRotating_Frame();
   
   /* Create values for interfacing with the functions */

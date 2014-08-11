@@ -779,7 +779,7 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
   unsigned long iEdge, iPoint, jPoint;
   unsigned short iDim, iVar;
   
-  // bool high_order_diss = (config->GetKind_Upwind_Trans() == SCALAR_UPWIND_2ND);
+  bool second_order  = ((config->GetSpatialOrder() == SECOND_ORDER) || (config->GetSpatialOrder() == SECOND_ORDER_LIMITER));
   bool high_order_diss = true;
   bool grid_movement = config->GetGrid_Movement();
   bool limiter = (config->GetKind_SlopeLimit() != NONE);
@@ -809,68 +809,58 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
     if (grid_movement)
       numerics->SetGridVel(geometry->node[iPoint]->GetGridVel(), geometry->node[jPoint]->GetGridVel());
     
-//    if (high_order_diss) {
-//      
-//      for (iDim = 0; iDim < nDim; iDim++) {
-//        Vector_i[iDim] = 0.5*(geometry->node[jPoint]->GetCoord(iDim) - geometry->node[iPoint]->GetCoord(iDim));
-//        Vector_j[iDim] = 0.5*(geometry->node[iPoint]->GetCoord(iDim) - geometry->node[jPoint]->GetCoord(iDim));
-//      }
-//      
-//      /*--- Mean flow primitive variables using gradient reconstruction and limiters ---*/
-//      
-//      Gradient_i = solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive();
-//      Gradient_j = solver_container[FLOW_SOL]->node[jPoint]->GetGradient_Primitive();
-//      if (limiter) {
-//        Limiter_i = solver_container[FLOW_SOL]->node[iPoint]->GetLimiter_Primitive();
-//        Limiter_j = solver_container[FLOW_SOL]->node[jPoint]->GetLimiter_Primitive();
-//      }
-//      
-//      for (iVar = 0; iVar < solver_container[FLOW_SOL]->GetnPrimVarGrad(); iVar++) {
-//        Project_Grad_i = 0.0; Project_Grad_j = 0.0;
-//        for (iDim = 0; iDim < nDim; iDim++) {
-//          Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
-//          Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
-//        }
-//        if (limiter) {
-//          FlowPrimVar_i[iVar] = V_i[iVar] + Limiter_i[iVar]*Project_Grad_i;
-//          FlowPrimVar_j[iVar] = V_j[iVar] + Limiter_j[iVar]*Project_Grad_j;
-//        }
-//        else {
-//          FlowPrimVar_i[iVar] = V_i[iVar] + Project_Grad_i;
-//          FlowPrimVar_j[iVar] = V_j[iVar] + Project_Grad_j;
-//        }
-//      }
-//      
-//      numerics->SetPrimitive(FlowPrimVar_i, FlowPrimVar_j);
-//      
-//      /*--- Transition variables using gradient reconstruction and limiters ---*/
-//      
-//      Gradient_i = node[iPoint]->GetGradient();
-//      Gradient_j = node[jPoint]->GetGradient();
-////      if (limiter) {
-////        Limiter_i = node[iPoint]->GetLimiter();
-////        Limiter_j = node[jPoint]->GetLimiter();
-////      }
-//      
-//      for (iVar = 0; iVar < nVar; iVar++) {
-//        Project_Grad_i = 0.0; Project_Grad_j = 0.0;
-//        for (iDim = 0; iDim < nDim; iDim++) {
-//          Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
-//          Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
-//        }
-////        if (limiter) {
-////          Solution_i[iVar] = Trans_i[iVar] + Limiter_i[iVar]*Project_Grad_i;
-////          Solution_j[iVar] = Trans_j[iVar] + Limiter_j[iVar]*Project_Grad_j;
-////        }
-////        else {
-//          Solution_i[iVar] = Trans_i[iVar] + Project_Grad_i;
-//          Solution_j[iVar] = Trans_j[iVar] + Project_Grad_j;
-////        }
-//      }
-//      
-//      numerics->SetTransVar(Solution_i, Solution_j);
-//      
-//    }
+    if (second_order) {
+      
+      for (iDim = 0; iDim < nDim; iDim++) {
+        Vector_i[iDim] = 0.5*(geometry->node[jPoint]->GetCoord(iDim) - geometry->node[iPoint]->GetCoord(iDim));
+        Vector_j[iDim] = 0.5*(geometry->node[iPoint]->GetCoord(iDim) - geometry->node[jPoint]->GetCoord(iDim));
+      }
+      
+      /*--- Mean flow primitive variables using gradient reconstruction and limiters ---*/
+      
+      Gradient_i = solver_container[FLOW_SOL]->node[iPoint]->GetGradient_Primitive();
+      Gradient_j = solver_container[FLOW_SOL]->node[jPoint]->GetGradient_Primitive();
+      if (limiter) {
+        Limiter_i = solver_container[FLOW_SOL]->node[iPoint]->GetLimiter_Primitive();
+        Limiter_j = solver_container[FLOW_SOL]->node[jPoint]->GetLimiter_Primitive();
+      }
+      
+      for (iVar = 0; iVar < solver_container[FLOW_SOL]->GetnPrimVarGrad(); iVar++) {
+        Project_Grad_i = 0.0; Project_Grad_j = 0.0;
+        for (iDim = 0; iDim < nDim; iDim++) {
+          Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
+          Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
+        }
+        if (limiter) {
+          FlowPrimVar_i[iVar] = V_i[iVar] + Limiter_i[iVar]*Project_Grad_i;
+          FlowPrimVar_j[iVar] = V_j[iVar] + Limiter_j[iVar]*Project_Grad_j;
+        }
+        else {
+          FlowPrimVar_i[iVar] = V_i[iVar] + Project_Grad_i;
+          FlowPrimVar_j[iVar] = V_j[iVar] + Project_Grad_j;
+        }
+      }
+      
+      numerics->SetPrimitive(FlowPrimVar_i, FlowPrimVar_j);
+      
+      /*--- Turbulent variables using gradient reconstruction and limiters ---*/
+      
+      Gradient_i = node[iPoint]->GetGradient();
+      Gradient_j = node[jPoint]->GetGradient();
+      
+      for (iVar = 0; iVar < nVar; iVar++) {
+        Project_Grad_i = 0.0; Project_Grad_j = 0.0;
+        for (iDim = 0; iDim < nDim; iDim++) {
+          Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
+          Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
+        }
+        Trans_i[iVar] = Trans_i[iVar] + Project_Grad_i;
+        Trans_j[iVar] = Trans_j[iVar] + Project_Grad_j;
+      }
+      
+      numerics->SetTransVar(Trans_i,Trans_j);
+      
+    }
     
     /*--- Add and subtract residual ---*/
     
@@ -968,9 +958,9 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
   sagt_debug.open("sagt_debug.plt");
   sagt_debug << "TITLE = \"SAGT (Langtry+Menter) Transition model debug file \" " << endl;
   sagt_debug << "VARIABLES = \"iPoint\" \"itmc\" \"Re_th_bar\" \"re_theta_t\" \"flen\" \"re_theta_c\" "; 
-  sagt_debug << "\"val_resid[0]\" \"val_resid[1]\" \"strain\" \"vorticity\" \"tu\" \"f_lambda\" ";
+  sagt_debug << "\"val_resid[0]\" \"val_resid[1]\" \"strain\" \"vorticity\" \"tu\" \"lambda\" \"f_lambda\" ";
   sagt_debug << "\"time_scale\" \"f_theta\" \"du_ds\" \"dist_i\" \"Volume\" \"delta\" \"var1\" ";
-  sagt_debug << "\"dv_dx\" \"du_dy\"" << endl;
+  sagt_debug << "\"dv_dx\" \"du_dy\" \"f_onset\" \"f_onset1\" \"f_onset2\" \"f_onset3\" " << endl;
   sagt_debug << "ZONE DATAPACKING=POINT" << endl;
 
   for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
@@ -1003,25 +993,60 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
 	  /*--- Compute the source term ---*/
     sagt_debug << iPoint << " "; 
 	  numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
+    node[iPoint]->SetGammaEff(gamma_eff);
+    
+    // DEBUG: AA, check the derivatives against finite differencing
+    // if (iPoint==9801 && config->GetExtIter()==5) {
 
-	  /*-- Store gamma_eff in variable class, where CTurbSASolver can access it --*/
-	  node[iPoint]->SetGammaEff(gamma_eff);
+    //   ofstream jac_check; 
+    //   jac_check.open("jac_check.txt");
+
+    //   double TransVar_i[2];
+    //   TransVar_i[0] = 0.5; TransVar_i[1] = 200;
+	  //   numerics->SetTransVar(TransVar_i, NULL);
+	  //   numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
+
+    //   jac_check << endl << endl;
+    //   jac_check << "0.0 " << "\t";
+    //   jac_check << Jacobian_i[0][0] << "\t " << Jacobian_i[0][1] << "\t";
+    //   jac_check << Jacobian_i[1][0] << "\t " << Jacobian_i[1][1] << endl;
+
+    //   for (int j=-4; j<10; j++) {
+    //     double delta_u = pow(10,-1.0*j);
+    //     double TransVar_i_plus[2], Residual_plus[2], Jacobian_fd[2][2];
+    //     //double *TransVar_i;
+    //     //TransVar_i = node[iPoint]->GetSolution();
+
+    //     // Perturb TransVar_i[0]
+    //     TransVar_i_plus[0] = TransVar_i[0] + delta_u;
+    //     TransVar_i_plus[1] = TransVar_i[1];
+	  //     numerics->SetTransVar(TransVar_i_plus, NULL);
+    //     numerics->ComputeResidual_TransLM(Residual_plus, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
+    //     Jacobian_fd[0][0] = (Residual_plus[0]-Residual[0])/delta_u;
+    //     Jacobian_fd[1][0] = (Residual_plus[1]-Residual[1])/delta_u;
+
+    //     // Perturb TransVar_i[1]
+    //     TransVar_i_plus[0] = TransVar_i[0];
+    //     TransVar_i_plus[1] = TransVar_i[1]+delta_u;
+	  //     numerics->SetTransVar(TransVar_i_plus, NULL);
+    //     numerics->ComputeResidual_TransLM(Residual_plus, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
+    //     Jacobian_fd[0][1] = (Residual_plus[0]-Residual[0])/delta_u;
+    //     Jacobian_fd[1][1] = (Residual_plus[1]-Residual[1])/delta_u;
+
+    //     jac_check << delta_u << " " ;
+    //     jac_check << Jacobian_fd[0][0] << "\t " << Jacobian_fd[0][1] << "\t";
+    //     jac_check << Jacobian_fd[1][0] << "\t " << Jacobian_fd[1][1] << endl;
+    //   }
+    //   exit(1); 
+    //} 
 
 	  /*--- Subtract residual and the jacobian ---*/
 	  LinSysRes.SubtractBlock(iPoint, Residual);
 	  Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
 
-    if (Residual[0] != Residual[0]) cout << "Residual[0]" <<endl;
-    if (Residual[1] != Residual[1]) cout << "Residual[1]" <<endl;
-    if (Jacobian_i[0][0] != Jacobian_i[0][0]) cout << "Jacobian_i[0][0]" <<endl;
-    if (Jacobian_i[1][1] != Jacobian_i[1][1]) cout << "Jacobian_i[1][1]" <<endl;
-    if (Jacobian_i[1][0] != Jacobian_i[1][0]) cout << "Jacobian_i[1][0]" <<endl;
-    if (Jacobian_i[0][1] != Jacobian_i[0][1]) cout << "Jacobian_i[0][1]" <<endl;
-
-    
   }
   
-  sagt_debug.close();
+   sagt_debug.close();
   
 }
 
