@@ -75,18 +75,19 @@ CTransLMSolver::CTransLMSolver(CGeometry *geometry, CConfig *config, unsigned sh
     LinSysSol.Initialize(nPoint, nPointDomain, nVar, 0.0);
     LinSysRes.Initialize(nPoint, nPointDomain, nVar, 0.0);
 
-    /*--- Jacobians and vector structures for implicit computations ---*/
-    if (config->GetKind_TimeIntScheme_Turb() == EULER_IMPLICIT) {
+		/*--- Jacobians and vector structures for implicit computations ---*/
+		if (config->GetKind_TimeIntScheme_Turb() == EULER_IMPLICIT) {
 
-      /*--- Point to point Jacobians ---*/
-      Jacobian_i = new double* [nVar];
-      Jacobian_j = new double* [nVar];
-      for (iVar = 0; iVar < nVar; iVar++) {
-        Jacobian_i[iVar] = new double [nVar];
-        Jacobian_j[iVar] = new double [nVar];
-      }
-      /*--- Initialization of the structure of the whole Jacobian ---*/
-      Jacobian.Initialize(nPoint, nPointDomain, nVar, nVar, true, geometry);
+			/*--- Point to point Jacobians ---*/
+			Jacobian_i = new double* [nVar];
+			Jacobian_j = new double* [nVar];
+			for (iVar = 0; iVar < nVar; iVar++) {
+				Jacobian_i[iVar] = new double [nVar];
+				Jacobian_j[iVar] = new double [nVar];
+			}
+			/*--- Initialization of the structure of the whole Jacobian ---*/
+			Jacobian.Initialize(nPoint, nPointDomain, nVar, nVar, true, geometry, config);
+      
 
       if (config->GetKind_Linear_Solver_Prec() == LINELET) {
         nLineLets = Jacobian.BuildLineletPreconditioner(geometry, config);
@@ -738,6 +739,10 @@ void CTransLMSolver::ImplicitEuler_Iteration(CGeometry *geometry, CSolver **solv
   if (config->GetKind_Linear_Solver_Prec() == JACOBI) {
     Jacobian.BuildJacobiPreconditioner();
     precond = new CJacobiPreconditioner(Jacobian, geometry, config);
+  }
+  else if (config->GetKind_Linear_Solver_Prec() == ILU) {
+    Jacobian.BuildILUPreconditioner();
+    precond = new CILUPreconditioner(Jacobian, geometry, config);
   }
   else if (config->GetKind_Linear_Solver_Prec() == LU_SGS) {
     precond = new CLU_SGSPreconditioner(Jacobian, geometry, config);
