@@ -1955,8 +1955,11 @@ void CEulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *config
     		Energy_FreeStream = Pressure_FreeStream/(Density_FreeStream*Gamma_Minus_One) + 0.5*ModVel_FreeStream*ModVel_FreeStream;
         
     	} else {
+        cout << "Setting viscosity model -AA" << endl;
     		FluidModel->SetViscosityModel(config);
+        cout << "Getting laminar viscosity -AA" << endl;
     		Viscosity_FreeStream = FluidModel->GetLaminarViscosity(Temperature_FreeStream, Density_FreeStream);
+        cout << "Laminar Viscosity: " << FluidModel->GetLaminarViscosity(Temperature_FreeStream, Density_FreeStream) << "-AA" << endl;
     		Energy_FreeStream = FluidModel->GetStaticEnergy() + 0.5*ModVel_FreeStream*ModVel_FreeStream;
     	}
       

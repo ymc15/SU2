@@ -728,26 +728,9 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 
   double re_tilda, R_omega, f_sublayer;
 
+  /*-- Initialize residual to zero -- */
 	val_residual[0] = 0.0;
 	val_residual[1] = 0.0;
-
-	/*-- Quit now if we're at the wall  --*/
-	if (dist_i<1e-12) {
-    sagt_debug << "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl;
-    return;
-  }
-
-	//SU2_CPP2C COMMENT START
-  double val_residuald[2], TransVar_id[2];
-
-  //if (boundary) {
-  //  for (int i=0; i<nDim; i++) {
-  //    for(int j=0; j<nDim; j++) {
-  //      /* --- Assign small values to d(u,v,w)/d(x,y,z) ---*/
-  //      PrimVar_Grad_i[i+1][j] = 1e-5;
-  //    }
-  //  }
-  //}
 
   /* -- Initialize Jacobian to zero -- */
 	implicit = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
@@ -758,9 +741,18 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 		val_Jacobian_i[1][1] = 0.0;
 	}
 
-	/* -- Compute intermediate correlations/expressions. These quantities, which do not depend on TransVar, are isolated to simplify the differentiated version of this routine.--*/
+	/*-- Quit now if we're at the wall  --*/
+	if (dist_i<1e-12) {
+    sagt_debug << "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl;
+    return;
+  }
+
+	//SU2_CPP2C COMMENT START
+  double val_residuald[2], TransVar_id[2];
+
+	/* -- Compute intermediate correlations/expressions. These quantities, which do not 
+   *    depend on TransVar, are isolated to simplify the differentiated version of this routine. --*/
 	translm_helper(config);
-  
 	//SU2_CPP2C COMMENT END
 
   if (turb_model==SST) {
@@ -842,19 +834,19 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(double *val_residual, dou
 	val_residual[1] = c_theta*U_i[0]/time_scale *  (1.-f_theta) * (re_theta_t-TransVar_i[1]/U_i[0]);
 	val_residual[1] *= Volume;
 
+	/*-- Calculate term for separation correction --*/
+	f_reattach = exp(-pow(0.05*r_t,4));
+	gamma_sep = s1*max(0.,re_v/(3.235*re_theta_c)-1.)*f_reattach;
+	gamma_sep = min(gamma_sep,2.0)*f_theta;
+	gamma_eff = max(gamma_sep, TransVar_i[0]/U_i[0]);
+
 	//SU2_CPP2C COMMENT START
 	sagt_debug << TransVar_i[0]/U_i[0] << " " << TransVar_i[1]/U_i[0] << " "
 			<< re_theta_t << " " << flen << " " << re_theta_c << " " << val_residual[0] << " " << val_residual[1] << " " 
       << strain << "  " << Vorticity << " " << tu << " " << lambda << " " << f_lambda << " "
       << time_scale << " " << f_theta << " " << du_ds << " " << dist_i << " " << Volume <<  " " << delta 
       << " " << var1 << " " << PrimVar_Grad_i[2][0] << " " << PrimVar_Grad_i[1][1] << " "
-      << f_onset << " " << f_onset1 << " " << f_onset2 << " " << f_onset3 << endl;
-
-	/*-- Calculate term for separation correction --*/
-	f_reattach = exp(-pow(0.05*r_t,4));
-	gamma_sep = s1*max(0.,re_v/(3.235*re_theta_c)-1.)*f_reattach;
-	gamma_sep = min(gamma_sep,2.0)*f_theta;
-	gamma_eff = max(gamma_sep, TransVar_i[0]/U_i[0]);
+      << re_v << " " << f_onset << " " << f_onset1 << " " << f_onset2 << " " << f_onset3 << " " << gamma_eff << endl;
 
 	/*--- Implicit part ---*/
 	TransVar_id[0] = 1.0; TransVar_id[1] = 0.0;

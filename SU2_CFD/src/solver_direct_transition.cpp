@@ -965,7 +965,7 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
   sagt_debug << "VARIABLES = \"iPoint\" \"itmc\" \"Re_th_bar\" \"re_theta_t\" \"flen\" \"re_theta_c\" "; 
   sagt_debug << "\"val_resid[0]\" \"val_resid[1]\" \"strain\" \"vorticity\" \"tu\" \"lambda\" \"f_lambda\" ";
   sagt_debug << "\"time_scale\" \"f_theta\" \"du_ds\" \"dist_i\" \"Volume\" \"delta\" \"var1\" ";
-  sagt_debug << "\"dv_dx\" \"du_dy\" \"f_onset\" \"f_onset1\" \"f_onset2\" \"f_onset3\" " << endl;
+  sagt_debug << "\"dv_dx\" \"du_dy\" \"re_v\" \"f_onset\" \"f_onset1\" \"f_onset2\" \"f_onset3\" \"gamma_eff\" " << endl;
   sagt_debug << "ZONE DATAPACKING=POINT" << endl;
 
   for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
