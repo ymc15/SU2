@@ -765,8 +765,16 @@ void CTransLMSolver::ImplicitEuler_Iteration(CGeometry *geometry, CSolver **solv
   
 	/*--- Update solution (system written in terms of increments) ---*/
 	for (iPoint = 0; iPoint < geometry->GetnPointDomain(); iPoint++) {
+    if (iPoint==99) {
+      double *sol = node[iPoint]->GetSolution();
+
+    }
     for (iVar = 0; iVar < nVar; iVar++) {
       node[iPoint]->AddClippedSolution(iVar, config->GetLinear_Solver_Relax()*LinSysSol[iPoint*nVar+iVar], 0.0, 1E10);
+    }
+    if (iPoint==99) {
+      double *sol = node[iPoint]->GetSolution();
+
     }
   }
   
@@ -775,6 +783,9 @@ void CTransLMSolver::ImplicitEuler_Iteration(CGeometry *geometry, CSolver **solv
     
     /*--- Compute the root mean square residual ---*/
     SetResidual_RMS(geometry, config);
+
+    iPoint=99;
+    double *sol = node[iPoint]->GetSolution();
 
 }
 
@@ -796,7 +807,7 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
     iPoint = geometry->edge[iEdge]->GetNode(0);
     jPoint = geometry->edge[iEdge]->GetNode(1);
     numerics->SetNormal(geometry->edge[iEdge]->GetNormal());
-    
+
     /*--- Conservative variables w/o reconstruction ---*/
     
     V_i = solver_container[FLOW_SOL]->node[iPoint]->GetPrimitive();
@@ -859,11 +870,11 @@ void CTransLMSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_conta
           Project_Grad_i += Vector_i[iDim]*Gradient_i[iVar][iDim];
           Project_Grad_j += Vector_j[iDim]*Gradient_j[iVar][iDim];
         }
-        Trans_i[iVar] = Trans_i[iVar] + Project_Grad_i;
-        Trans_j[iVar] = Trans_j[iVar] + Project_Grad_j;
+        Solution_i[iVar] = Trans_i[iVar] + Project_Grad_i;
+        Solution_j[iVar] = Trans_j[iVar] + Project_Grad_j;
       }
       
-      numerics->SetTransVar(Trans_i,Trans_j);
+      numerics->SetTransVar(Solution_i,Solution_j);
       
     }
     
@@ -951,12 +962,12 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
     //cout << "Setting Trans residual -AA " << endl;
     //cout << "\nBeginAA" << endl;
 
-//   static int start_counter=0;
-//   if (start_counter < 10) {
-//     cout << "Skipping source term" << endl;
-//     start_counter += 1;
-//     return;
-//   } 
+   //static int start_counter=0;
+   //if (start_counter < 100) {
+   //  cout << "Skipping source term" << endl;
+   //  start_counter += 1;
+   //  return;
+   //} 
   
 
   // DEBUG
@@ -998,6 +1009,8 @@ void CTransLMSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
 	  /*--- Compute the source term ---*/
     sagt_debug << iPoint << " "; 
 	  numerics->ComputeResidual_TransLM(Residual, Jacobian_i, gamma_eff, config, boundary, sagt_debug);
+
+    /*--- Store gamma_eff (eq. 19) in CVariable so it can be accessed by the turbulent solver --- */
     node[iPoint]->SetGammaEff(gamma_eff);
     
     // DEBUG: AA, check the derivatives against finite differencing
@@ -1111,12 +1124,13 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       
       conv_numerics->SetPrimitive(V_domain, V_infty);
       
-      /*--- Set turbulent variable at the wall, and at infinity ---*/
+      /*--- Set transition variable at the wall, and at infinity ---*/
       for (iVar = 0; iVar < nVar; iVar++)
         Solution_i[iVar] = node[iPoint]->GetSolution(iVar);
       
       Solution_j[0] = Intermittency_Inf*Density_Inf;
-      Solution_j[1] = REth_Inf*Density_Inf;
+      //Solution_j[1] = REth_Inf*Density_Inf;
+      Solution_j[1] = Solution_i[1]; 
 
       conv_numerics->SetTransVar(Solution_i, Solution_j);
       
@@ -1125,7 +1139,7 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       for (iDim = 0; iDim < nDim; iDim++)
         Normal[iDim] = -Normal[iDim];
       conv_numerics->SetNormal(Normal);
-      
+
       /*--- Grid Movement ---*/
       if (grid_movement)
         conv_numerics->SetGridVel(geometry->node[iPoint]->GetGridVel(), geometry->node[iPoint]->GetGridVel());
@@ -1136,6 +1150,7 @@ void CTransLMSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_containe
       /*--- Add residuals and jacobians ---*/
       LinSysRes.AddBlock(iPoint, Residual);
       Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);
+
     }
   }
   

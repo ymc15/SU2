@@ -51,7 +51,7 @@ void CIntegration::Space_Integration(CGeometry *geometry,
                     (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
   
 	/*--- Compute inviscid residuals ---*/
-  
+ 
 	switch (config->GetKind_ConvNumScheme()) {
 		case SPACE_CENTERED:
 			solver_container[MainSolver]->Centered_Residual(geometry, solver_container, numerics[CONV_TERM], config, iMesh, iRKStep);

@@ -1290,6 +1290,8 @@ void CTurbSASolver::Source_Residual(CGeometry *geometry, CSolver **solver_contai
     /*--- Set intermittency ---*/
     if (transition) {
       numerics->SetGammaEff(solver_container[TRANS_SOL]->node[iPoint]->GetGammaEff());
+      // AA - DEBUG
+      // numerics->SetGammaEff(1.0);
     }
     
     /*--- Turbulent variables w/o reconstruction, and its gradient ---*/
@@ -3739,7 +3741,7 @@ void CTurbSSTSolver::BC_Inlet(CGeometry *geometry, CSolver **solver_container, C
       /*--- Compute the residual using an upwind scheme ---*/
       conv_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
       LinSysRes.AddBlock(iPoint, Residual);
-      
+
       /*--- Jacobian contribution for implicit integration ---*/
       Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);
       

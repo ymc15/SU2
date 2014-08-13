@@ -118,6 +118,9 @@ void CUpwSca_TransLM::ComputeResidual(double *val_residual, double **val_Jacobia
   val_residual[0] = a0*TransVar_i[0]+a1*TransVar_j[0];
   val_residual[1] = a0*TransVar_i[1]+a1*TransVar_j[1];
 
+//  cout << endl << "CUpwSca_TransLM::ComputeResidual" << endl;
+//  cout << "q_ij, a0, a1: " << q_ij << ", " << a0 << ", " << a1 << endl;
+
   if (implicit) {
     val_Jacobian_i[0][0] = a0;		val_Jacobian_i[0][1] = 0.0;
     val_Jacobian_i[1][0] = 0.0;		val_Jacobian_i[1][1] = a0;
@@ -551,9 +554,11 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 	mach = config->GetMach();
   turb_model = config->GetKind_Turb_Model();
 	/*--- Compute vorticity and strain ---*/
+  // omega_z = dv/dx-du/dy
 	Vorticity = (PrimVar_Grad_i[2][0]-PrimVar_Grad_i[1][1])*(PrimVar_Grad_i[2][0]-PrimVar_Grad_i[1][1]);
 	if (nDim == 3) Vorticity += ( (PrimVar_Grad_i[3][1]-PrimVar_Grad_i[2][2])*(PrimVar_Grad_i[3][1]-PrimVar_Grad_i[2][2]) +
                                 (PrimVar_Grad_i[1][2]-PrimVar_Grad_i[3][0])*(PrimVar_Grad_i[1][2]-PrimVar_Grad_i[3][0]) );
+  Vorticity = pow(Vorticity,0.5);
 
 	/*-- Strain = sqrt(2*Sij*Sij) --*/
 	strain = 0.0;
@@ -571,7 +576,7 @@ void CSourcePieceWise_TransLM::translm_helper(CConfig *config) {
 	}
 
   if (turb_model==SST) {
-    tu = pow(2*TurbVar_i[0]/3.,0.5)/Velocity_Mag;
+    tu = pow(2*TurbVar_i[0]/3.,0.5)/Velocity_Mag*100;
   } else if (turb_model==SA) {
 	  tu   = config->GetTurbulenceIntensity_FreeStream()*100;
   }
