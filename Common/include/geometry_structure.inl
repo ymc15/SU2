@@ -196,7 +196,14 @@ inline void CGeometry::FindNormal_Neighbor(CConfig *config) { }
 
 inline void CGeometry::SetBoundSensitivity(CConfig *config) { }
 
+<<<<<<< HEAD
 inline void CPhysicalGeometry::SetPoint_Connectivity(CGeometry *geometry) { CGeometry::SetPoint_Connectivity(geometry); } 
+=======
+inline void CGeometry::ComputeAirfoil_Section(double *Plane_P0, double *Plane_Normal, unsigned short iSection, CConfig *config,
+                                              vector<double> &Xcoord_Airfoil, vector<double> &Ycoord_Airfoil, vector<double> &Zcoord_Airfoil, vector<unsigned long> &point1_Airfoil, vector<unsigned long> &point2_Airfoil, vector<double> &weight1_Airfoil, bool original_surface, bool CCW_orientation) { }
+
+inline void CPhysicalGeometry::SetPsuP(CGeometry *geometry) { CGeometry::SetPsuP(geometry); } 
+>>>>>>> e6f3b80c1acdb786bb23da99b04abbb1982dc15b
 
 inline void CMultiGridGeometry::SetPoint_Connectivity(void) { CGeometry::SetPoint_Connectivity(); }
 
