@@ -49,3 +49,7 @@ endif
 if BUILD_GEO
 SUBDIRS +=SU2_GEO/obj
 endif
+
+if BUILD_UMC
+SUBDIRS +=SU2_UMC/obj
+endif
