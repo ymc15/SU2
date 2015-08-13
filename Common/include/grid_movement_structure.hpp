@@ -1124,7 +1124,7 @@ public:
 	 * \param[in] iter - Current physical time iteration.
    * \param[in] iZone - Zone number in the mesh.
 	 */
-	void Surface_Translating(CGeometry *geometry, CConfig *config,
+	void Surface_Translation(CGeometry *geometry, CConfig *config,
                         unsigned long iter, unsigned short iZone);
   
   /*!
@@ -1154,7 +1154,7 @@ public:
 	 * \param[in] iter - Current physical time iteration.
    * \param[in] iZone - Zone number in the mesh.
 	 */
-	void Surface_Rotating(CGeometry *geometry, CConfig *config,
+	void Surface_Rotation(CGeometry *geometry, CConfig *config,
                         unsigned long iter, unsigned short iZone);
 
     /*!
@@ -1166,7 +1166,9 @@ public:
    * \param[in] iMarker_Monitoring - Marker we are monitoring.
    * \param[in] displacements - solution of typical section wing model.
 	 */
-    void AeroelasticDeform(CGeometry *geometry, CConfig *config, unsigned long ExtIter, unsigned short iMarker, unsigned short iMarker_Monitoring, vector<su2double>& displacements);
+    void AeroelasticDeform(CGeometry *geometry, CConfig *config, unsigned long ExtIter,
+                           unsigned short iMarker, unsigned short iMarker_Monitoring,
+                           vector<su2double>& displacements);
     
    /*!
 	 * \brief Deforms a 3-D flutter/pitching surface during an unsteady simulation.

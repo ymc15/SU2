@@ -4690,7 +4690,7 @@ void CSurfaceMovement::Moving_Walls(CGeometry *geometry, CConfig *config,
 	}
 }
 
-void CSurfaceMovement::Surface_Translating(CGeometry *geometry, CConfig *config,
+void CSurfaceMovement::Surface_Translation(CGeometry *geometry, CConfig *config,
                                         unsigned long iter, unsigned short iZone) {
   
 	su2double deltaT, time_new, time_old;
@@ -4706,7 +4706,8 @@ void CSurfaceMovement::Surface_Translating(CGeometry *geometry, CConfig *config,
 	rank = MASTER_NODE;
 #endif
 	
-  /*--- Initialize the delta variation in coordinates ---*/
+  /*--- Initialize the delta variation in coordinates. ---*/
+  
   VarCoord[0] = 0.0; VarCoord[1] = 0.0; VarCoord[2] = 0.0;
   
   /*--- Retrieve values from the config file ---*/
@@ -4761,7 +4762,10 @@ void CSurfaceMovement::Surface_Translating(CGeometry *geometry, CConfig *config,
           
           for (iVertex = 0; iVertex < geometry->nVertex[iMarker]; iVertex++) {
             
-            /*--- Set node displacement for volume deformation ---*/
+            /*--- Set node displacement for volume deformation Note that we only
+             "set' this in the translation routine. Those that follow are additive,
+             so we will use the "AddVarCoord" routine for the displacements. ---*/
+            
             geometry->vertex[iMarker][iVertex]->SetVarCoord(VarCoord);
             
           }
@@ -4869,9 +4873,9 @@ void CSurfaceMovement::Surface_Plunging(CGeometry *geometry, CConfig *config,
             if (iter == 0) {
               cout << " Plunging frequency: (" << Omega[0] << ", " << Omega[1];
               cout << ", " << Omega[2] << ") rad/s." << endl;
-              cout << " Plunging amplitude: (" << Ampl[0]/DEG2RAD;
-              cout << ", " << Ampl[1]/DEG2RAD << ", " << Ampl[2]/DEG2RAD;
-              cout << ") degrees."<< endl;
+              cout << " Plunging amplitude: (" << Ampl[0];
+              cout << ", " << Ampl[1] << ", " << Ampl[2];
+              cout << ") grid units."<< endl;
             }
           }
           
@@ -4883,8 +4887,10 @@ void CSurfaceMovement::Surface_Plunging(CGeometry *geometry, CConfig *config,
           
           for (iVertex = 0; iVertex < geometry->nVertex[iMarker]; iVertex++) {
             
-            /*--- Set node displacement for volume deformation ---*/
-            geometry->vertex[iMarker][iVertex]->SetVarCoord(VarCoord);
+            /*--- Set node displacement for volume deformation. Note the
+             initial VarCoord was set previously in the translation routine. ---*/
+            
+            geometry->vertex[iMarker][iVertex]->AddVarCoord(VarCoord);
             
           }
         }
@@ -5071,8 +5077,10 @@ void CSurfaceMovement::Surface_Pitching(CGeometry *geometry, CConfig *config,
               VarCoord[iDim] = (rotCoord[iDim]-Coord[iDim])/Lref;
             if (nDim == 2) VarCoord[nDim] = 0.0;
             
-            /*--- Set node displacement for volume deformation ---*/
-            geometry->vertex[iMarker][iVertex]->SetVarCoord(VarCoord);
+            /*--- Set node displacement for volume deformation. Note the
+             initial VarCoord was set previously in the translation routine. ---*/
+            
+            geometry->vertex[iMarker][iVertex]->AddVarCoord(VarCoord);
             
           }
         }
@@ -5082,7 +5090,7 @@ void CSurfaceMovement::Surface_Pitching(CGeometry *geometry, CConfig *config,
   /*--- For pitching we don't update the motion origin and moment reference origin. ---*/
 }
 
-void CSurfaceMovement::Surface_Rotating(CGeometry *geometry, CConfig *config,
+void CSurfaceMovement::Surface_Rotation(CGeometry *geometry, CConfig *config,
                                         unsigned long iter, unsigned short iZone) {
 	
 	su2double deltaT, time_new, time_old, Lref, *Coord;
@@ -5196,24 +5204,26 @@ void CSurfaceMovement::Surface_Rotating(CGeometry *geometry, CConfig *config,
             /*--- Compute transformed point coordinates ---*/
             
             rotCoord[0] = rotMatrix[0][0]*r[0]
-            + rotMatrix[0][1]*r[1]
-            + rotMatrix[0][2]*r[2] + Center[0];
+                        + rotMatrix[0][1]*r[1]
+                        + rotMatrix[0][2]*r[2] + Center[0];
             
             rotCoord[1] = rotMatrix[1][0]*r[0]
-            + rotMatrix[1][1]*r[1]
-            + rotMatrix[1][2]*r[2] + Center[1];
+                        + rotMatrix[1][1]*r[1]
+                        + rotMatrix[1][2]*r[2] + Center[1];
             
             rotCoord[2] = rotMatrix[2][0]*r[0]
-            + rotMatrix[2][1]*r[1]
-            + rotMatrix[2][2]*r[2] + Center[2];
+                        + rotMatrix[2][1]*r[1]
+                        + rotMatrix[2][2]*r[2] + Center[2];
             
             /*--- Calculate delta change in the x, y, & z directions ---*/
             for (iDim = 0; iDim < nDim; iDim++)
               VarCoord[iDim] = (rotCoord[iDim]-Coord[iDim])/Lref;
             if (nDim == 2) VarCoord[nDim] = 0.0;
             
-            /*--- Set node displacement for volume deformation ---*/
-            geometry->vertex[iMarker][iVertex]->SetVarCoord(VarCoord);
+            /*--- Set node displacement for volume deformation. Note the
+             initial VarCoord was set previously in the translation routine. ---*/
+            
+            geometry->vertex[iMarker][iVertex]->AddVarCoord(VarCoord);
             
           }
         }
