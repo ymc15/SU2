@@ -321,6 +321,13 @@ void Geometrical_Preprocessing(CGeometry ***geometry, CConfig **config, unsigned
     }
   }
   
+  /*--- Pre-compute any rotation matrices for periodic transformations ---*/
+  for (iZone = 0; iZone < val_nZone; iZone++) {
+    config[iZone]->AllocateRotationMatrix();
+    for (unsigned short iPeriodic = 0; iPeriodic < config[iZone]->GetnPeriodicIndex(); iPeriodic++)
+      config[iZone]->SetRotationMatrix(iPeriodic);
+  }
+  
 }
 
 void Solver_Preprocessing(CSolver ***solver_container, CGeometry **geometry,

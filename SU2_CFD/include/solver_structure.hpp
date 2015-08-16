@@ -2194,6 +2194,14 @@ public:
 	 * \param[in] nVar - Number of variables.
 	 */
 	void Gauss_Elimination(su2double** A, su2double* rhs, unsigned short nVar);
+  
+  /*!
+   * \brief Method for applying a rotation matrix to a vector (periodic rotations).
+   * \param[in] rotMatrix - Rotation matrix in a 3x3 format.
+   * \param[in] vec - Vector to be rotated.
+   * \param[in] index - Index position of first entry that should be rotated in vec.
+   */
+  void Rotate_Vector(su2double** rotMatrix, su2double* vec, unsigned short index);
     
   /*!
   * \brief Get the number of Species present in the flow.

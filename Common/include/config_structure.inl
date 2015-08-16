@@ -1085,6 +1085,8 @@ inline void CConfig::SetPeriodicCenter(unsigned short val_index, su2double* cent
 
 inline su2double* CConfig::GetPeriodicRotation(unsigned short val_index) { return Periodic_Rotation[val_index]; }
 
+inline su2double** CConfig::GetRotationMatrix(unsigned short val_index) { return Rotation_Matrix[val_index]; }
+
 inline void CConfig::SetPeriodicRotation(unsigned short val_index, su2double* rotation) { Periodic_Rotation[val_index] = rotation; }
 
 inline su2double* CConfig::GetPeriodicTranslate(unsigned short val_index) { return Periodic_Translate[val_index]; }

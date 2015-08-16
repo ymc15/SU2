@@ -1308,6 +1308,35 @@ void CSolver::Gauss_Elimination(su2double** A, su2double* rhs, unsigned short nV
   
 }
 
+void CSolver::Rotate_Vector(su2double** rotMatrix, su2double* vec, unsigned short index) {
+  
+  unsigned short iDim;
+  su2double aux_vec[3];
+  
+  /*--- Rotate the vector components by applying rotation matrix. ---*/
+  if (nDim == 2) {
+    aux_vec[0] = rotMatrix[0][0]*vec[index+0]+
+                 rotMatrix[0][1]*vec[index+1];
+    aux_vec[1] = rotMatrix[1][0]*vec[index+0]+
+                 rotMatrix[1][1]*vec[index+1];
+  } else {
+    aux_vec[0] = rotMatrix[0][0]*vec[index+0]+
+                 rotMatrix[0][1]*vec[index+1]+
+                 rotMatrix[0][2]*vec[index+2];
+    aux_vec[1] = rotMatrix[1][0]*vec[index+0]+
+                 rotMatrix[1][1]*vec[index+1]+
+                 rotMatrix[1][2]*vec[index+2];
+    aux_vec[2] = rotMatrix[2][0]*vec[index+0]+
+                 rotMatrix[2][1]*vec[index+1]+
+                 rotMatrix[2][2]*vec[index+2];
+  }
+  
+  /*--- Copy the result fro the aux vector back to vec before exit ---*/
+  for (iDim = 0; iDim < nDim; iDim++)
+    vec[index+iDim] = aux_vec[iDim];
+  
+}
+
 void CSolver::Aeroelastic(CSurfaceMovement *surface_movement, CGeometry *geometry, CConfig *config, unsigned long ExtIter) {
   
   /*--- Variables used for Aeroelastic case ---*/
