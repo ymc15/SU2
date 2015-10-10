@@ -1302,7 +1302,8 @@ void COutput::MergeVolumetricConnectivity(CConfig *config, CGeometry *geometry, 
                 Buffer_Recv_AddedPeriodic, maxAddedPeriodic, MPI_UNSIGNED_LONG,
                 MPI_COMM_WORLD);
 #else
-  for (iPoint = 0; iPoint < maxAddedPeriodic; iPoint++) Buffer_Recv_AddedPeriodic[iPoint] = Buffer_Send_AddedPeriodic[iPoint];
+  for (iPoint = 0; iPoint < maxAddedPeriodic; iPoint++)
+    Buffer_Recv_AddedPeriodic[iPoint] = Buffer_Send_AddedPeriodic[iPoint];
 #endif
   
   /*--- Search all send/recv boundaries on this partition for halo cells. In

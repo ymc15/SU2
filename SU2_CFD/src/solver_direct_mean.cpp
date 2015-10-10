@@ -86,6 +86,12 @@ CEulerSolver::CEulerSolver(void) : CSolver() {
 	New_Func = 0;
 	Cauchy_Counter = 0;
   Cauchy_Serie = NULL;
+  
+  /*--- MPI buffers ---*/
+  
+  Buffer_Recv = NULL;
+  Buffer_Send = NULL;
+  Buffer_Vert = NULL;
 
 }
 
@@ -442,6 +448,46 @@ CEulerSolver::CEulerSolver(CGeometry *geometry, CConfig *config, unsigned short 
     Bleed_Area[iMarker]          = 0.0;
   }
 
+  /*--- Persistent memory for MPI communications. ---*/
+  int max_per_node = nPrimVarGrad*nDim;
+  Buffer_Vert = new su2double[max_per_node];
+  
+  /*--- MPI memory (WARNING: size is hard-coded!). ---*/
+  Buffer_Recv = new su2double*[nMarker];
+  Buffer_Send = new su2double*[nMarker];
+  unsigned short MarkerS, MarkerR;
+  unsigned long  nVertexS, nVertexR, nBufferS_Vector, nBufferR_Vector;
+  for (iMarker = 0; iMarker < nMarker; iMarker++) {
+    
+    Buffer_Recv[iMarker] = NULL;
+    Buffer_Send[iMarker] = NULL;
+    
+    if ((config->GetMarker_All_KindBC(iMarker) == SEND_RECEIVE) &&
+        (config->GetMarker_All_SendRecv(iMarker) > 0)) {
+      
+      MarkerS = iMarker;
+      MarkerR = iMarker+1;
+      
+      nVertexS = geometry->nVertex[MarkerS];
+      nVertexR = geometry->nVertex[MarkerR];
+      
+      nBufferS_Vector = nVertexS*nPrimVarGrad*nDim;
+      nBufferR_Vector = nVertexR*nPrimVarGrad*nDim;
+      
+      /*--- Allocate Receive and send buffers  ---*/
+      Buffer_Recv[iMarker] = new su2double[nBufferR_Vector];
+      Buffer_Send[iMarker] = new su2double[nBufferS_Vector];
+      
+    }
+  }
+  
+#ifdef HAVE_MPI
+  send_stat_nn = new MPI_Status[nMarker];
+  recv_stat_nn = new MPI_Status[nMarker];
+  send_req_nn = new MPI_Request[nMarker];
+  recv_req_nn = new MPI_Request[nMarker];
+#endif
+  
   /*--- Initialize the cauchy critera array for fixed CL mode ---*/
 
   if (config->GetFixed_CL_Mode())
@@ -762,55 +808,33 @@ CEulerSolver::~CEulerSolver(void) {
   if (Cauchy_Serie != NULL)
     delete [] Cauchy_Serie;
 
+  /*--- Delete buffers after completing MPI communication. ---*/
+  for (unsigned short iMarker = 0; iMarker < nMarker; iMarker++) {
+    if (Buffer_Recv[iMarker] != NULL) delete [] Buffer_Recv[iMarker];
+    if (Buffer_Send[iMarker] != NULL) delete [] Buffer_Send[iMarker];
+  }
+  if (Buffer_Recv != NULL) delete [] Buffer_Recv;
+  if (Buffer_Send != NULL) delete [] Buffer_Send;
+  if (Buffer_Vert != NULL) delete [] Buffer_Vert;
+#ifdef HAVE_MPI
+  if (send_stat_nn != NULL) delete [] send_stat_nn;
+  if (recv_stat_nn != NULL) delete [] recv_stat_nn;
+  if (send_req_nn != NULL)  delete [] send_req_nn;
+  if (recv_req_nn != NULL)  delete [] recv_req_nn;
+#endif
+  
 }
 
 void CEulerSolver::Set_MPI_Solution(CGeometry *geometry, CConfig *config) {
   
   unsigned short iVar, iMarker, iPeriodic_Index;
   unsigned long iVertex, iPoint, total_index;
-  su2double **Rotation_Matrix = NULL, **Buffer_Recv = NULL, **Buffer_Send = NULL;
-  su2double *Buffer_Vert = NULL;
-  
-  int max_per_node = nPrimVarGrad*nDim;
-  Buffer_Vert = new su2double[max_per_node];
-  
-  /*--- MPI memory (WARNING: size is hard-coded!). This will be moved to
-   the solution constructor soon to have persisten memory for the MPI. ---*/
-  Buffer_Recv = new su2double*[nMarker];
-  Buffer_Send = new su2double*[nMarker];
   unsigned short MarkerS, MarkerR;
   unsigned long  nVertexS, nVertexR, nBufferS_Vector, nBufferR_Vector;
-  for (iMarker = 0; iMarker < nMarker; iMarker++) {
-    
-    Buffer_Recv[iMarker] = NULL;
-    Buffer_Send[iMarker] = NULL;
-    
-    if ((config->GetMarker_All_KindBC(iMarker) == SEND_RECEIVE) &&
-        (config->GetMarker_All_SendRecv(iMarker) > 0)) {
-      
-      MarkerS = iMarker;
-      MarkerR = iMarker+1;
-      
-      nVertexS = geometry->nVertex[MarkerS];
-      nVertexR = geometry->nVertex[MarkerR];
-      
-      nBufferS_Vector = nVertexS*nPrimVarGrad*nDim;
-      nBufferR_Vector = nVertexR*nPrimVarGrad*nDim;
-      
-      /*--- Allocate Receive and send buffers  ---*/
-      Buffer_Recv[iMarker] = new su2double[nBufferR_Vector];
-      Buffer_Send[iMarker] = new su2double[nBufferS_Vector];
-      
-    }
-  }
   
-#ifdef HAVE_MPI
-  int send_rank, recv_rank;
-  MPI_Status *send_stat = new MPI_Status[nMarker];
-  MPI_Status *recv_stat = new MPI_Status[nMarker];
-  MPI_Request *send_req = new MPI_Request[nMarker];
-  MPI_Request *recv_req = new MPI_Request[nMarker];
-#endif
+  su2double **Rotation_Matrix = NULL;
+  //su2double **Buffer_Recv = NULL, **Buffer_Send = NULL;
+  //su2double *Buffer_Vert = NULL;
   
   /*--- Count the number of messages that we communicate. ---*/
   int comm_counter = 0;
@@ -843,14 +867,15 @@ void CEulerSolver::Set_MPI_Solution(CGeometry *geometry, CConfig *config) {
       
 #ifdef HAVE_MPI
       /*--- Get the ranks that we will send to and receive from ---*/
+      int send_rank, recv_rank;
       send_rank = config->GetMarker_All_SendRecv(MarkerS)-1;
       recv_rank = abs(config->GetMarker_All_SendRecv(MarkerR))-1;
       
       /*--- Post the non-blocking send and receive for this marker. ---*/
       SU2_MPI::Isend(Buffer_Send[iMarker], nBufferS_Vector, MPI_DOUBLE,
-                     send_rank, 0, MPI_COMM_WORLD, &send_req[comm_counter]);
+                     send_rank, 0, MPI_COMM_WORLD, &send_req_nn[comm_counter]);
       SU2_MPI::Irecv(Buffer_Recv[iMarker], nBufferR_Vector, MPI_DOUBLE,
-                     recv_rank, 0, MPI_COMM_WORLD, &recv_req[comm_counter]);
+                     recv_rank, 0, MPI_COMM_WORLD, &recv_req_nn[comm_counter]);
 #else
       /*--- Receive information without MPI by copying values into place. ---*/
       for (iVertex = 0; iVertex < nVertexR; iVertex++) {
@@ -872,7 +897,7 @@ void CEulerSolver::Set_MPI_Solution(CGeometry *geometry, CConfig *config) {
     
     /*--- Wait for any one of the Irecv messages to complete and get the index. ---*/
 #ifdef HAVE_MPI
-    SU2_MPI::Waitany(nComm, &recv_req[0], &index, &recv_stat[0]);
+    SU2_MPI::Waitany(nComm, &recv_req_nn[0], &index, &recv_stat_nn[0]);
 #else
     index = comm; // double-check this for periodic in serial
 #endif
@@ -924,22 +949,7 @@ void CEulerSolver::Set_MPI_Solution(CGeometry *geometry, CConfig *config) {
   
   /*--- Wait for all non-blocking comms. to complete. ---*/
 #ifdef HAVE_MPI
-  SU2_MPI::Waitall(nComm, &send_req[0], &send_stat[0]);
-#endif
-  
-  /*--- Delete buffers after completing communication. ---*/
-  for (iMarker = 0; iMarker < nMarker; iMarker++) {
-    if (Buffer_Recv[iMarker] != NULL) delete [] Buffer_Recv[iMarker];
-    if (Buffer_Send[iMarker] != NULL) delete [] Buffer_Send[iMarker];
-  }
-  delete [] Buffer_Recv;
-  delete [] Buffer_Send;
-  delete [] Buffer_Vert;
-#ifdef HAVE_MPI
-  delete [] send_stat;
-  delete [] recv_stat;
-  delete [] send_req;
-  delete [] recv_req;
+  SU2_MPI::Waitall(nComm, &send_req_nn[0], &send_stat_nn[0]);
 #endif
   
 }

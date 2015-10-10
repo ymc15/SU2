@@ -107,7 +107,7 @@ protected:
 	**cvector;			 /*!< \brief Auxiliary structure for computing gradients by least-squares */
 
     unsigned short nOutputVariables;  /*!< \brief Number of variables to write. */
-
+  
 public:
   
   CSysVector LinSysSol;		/*!< \brief vector to store iterative solution of implicit linear system. */
@@ -2609,7 +2609,18 @@ protected:
   su2double AoA_old;  /*!< \brief Old value of the angle of attack (monitored). */
 
   CFluidModel  *FluidModel;  /*!< \brief fluid model used in the solver */
-
+  
+  su2double **Buffer_Recv, /*!< \brief Buffer for nearest neighbor receive. */
+  **Buffer_Send, /*!< \brief Buffer for nearest neighbor send. */
+  *Buffer_Vert; /*!< \brief Buffer for recv at a vertex before storing. */
+  
+#ifdef HAVE_MPI
+  MPI_Status *send_stat_nn;
+  MPI_Status *recv_stat_nn;
+  MPI_Request *send_req_nn;
+  MPI_Request *recv_req_nn;
+#endif
+  
 public:
 
 
