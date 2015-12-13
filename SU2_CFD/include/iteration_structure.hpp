@@ -283,7 +283,7 @@ public:
    * \param[in] output - Definition of the output for the particular problem.
    * \param[in] iZone - zone of the problem.
    */
-  void SetMPITurboPerformance(CGeometry ***geometry_container, CSolver ****solver_container, CConfig **config_container, COutput *output, unsigned short iZone);
+  void SetMPITurboPerformance(CGeometry ***geometry_container, CSolver ****solver_container, CConfig **config_container, unsigned short iZone);
 
 
 };
@@ -772,9 +772,10 @@ private:
     FLOW_VARIABLES = 1, /*!< \brief Indicates that the current recording
                                     can be used to compute the gradients with respect
                                     to the conservative flow variables. */
-    GEOMETRY_VARIABLES = 2 /*!< \brief Indicates that the current recording
+    GEOMETRY_VARIABLES = 2, /*!< \brief Indicates that the current recording
                                        can be used to compute the gradients with respect
                                        to the geometry variables. */
+    ALL_VARIABLES = 3,
   };
 
 
@@ -916,6 +917,9 @@ public:
                       CFreeFormDefBox*** FFDBox,
                       unsigned short val_iZone,
                       unsigned short kind_recording);
+
+  void SetDependencies(CSolver ****solver_container, CGeometry ***geometry_container, CConfig **config_container, unsigned short iZone, unsigned short kind_recording);
+
 };
 
 
