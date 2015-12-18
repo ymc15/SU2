@@ -543,6 +543,11 @@ void CVertex::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_
   su2double vec_a[3] = {0.0,0.0,0.0}, vec_b[3] = {0.0,0.0,0.0}, Dim_Normal[3] = {0.0,0.0,0.0};
 	unsigned short iDim;
 
+  AD::StartPreacc(AD::Vec(val_coord_Edge_CG, nDim),
+                  AD::Vec(val_coord_Elem_CG, nDim),
+                  AD::Vec(val_coord_FaceElem_CG, nDim),
+                  AD::Vec(Normal, nDim));
+
 	for (iDim = 0; iDim < nDim; iDim++) {
 		vec_a[iDim] = val_coord_Elem_CG[iDim]-val_coord_Edge_CG[iDim];
 		vec_b[iDim] = val_coord_FaceElem_CG[iDim]-val_coord_Edge_CG[iDim];
@@ -556,17 +561,25 @@ void CVertex::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_
 	Normal[1] += Dim_Normal[1];	
 	Normal[2] += Dim_Normal[2];
   
+  AD::EndPreacc(AD::Vec(Normal, nDim));
+
 }
 
 void CVertex::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_Elem_CG) {
 	su2double Dim_Normal[2];
+
+  AD::StartPreacc(AD::Vec(val_coord_Elem_CG, nDim),
+                  AD::Vec(val_coord_Edge_CG, nDim),
+                  AD::Vec(Normal, nDim));
 
 	Dim_Normal[0] = val_coord_Elem_CG[1]-val_coord_Edge_CG[1];
 	Dim_Normal[1] = -(val_coord_Elem_CG[0]-val_coord_Edge_CG[0]);
 
 	Normal[0] += Dim_Normal[0]; 
 	Normal[1] += Dim_Normal[1];
-  
+
+  AD::EndPreacc(AD::Vec(Normal, nDim));
+
 }
 
 void CVertex::AddNormal(su2double *val_face_normal) {

@@ -5200,13 +5200,21 @@ void CEulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config
     
     r11 = 0.0; r12 = 0.0;   r13 = 0.0;    r22 = 0.0;
     r23 = 0.0; r23_a = 0.0; r23_b = 0.0;  r33 = 0.0;
+
+    AD::StartPreacc(r11, r12, r22, r13, r23_a, r23_b, r33,
+                    AD::Mat(cvector, nPrimVarGrad, nDim),
+                    AD::Vec(PrimVar_i, nPrimVarGrad),
+                    AD::Vec(Coord_i, nDim));
     
     for (iNeigh = 0; iNeigh < geometry->node[iPoint]->GetnPoint(); iNeigh++) {
       jPoint = geometry->node[iPoint]->GetPoint(iNeigh);
       Coord_j = geometry->node[jPoint]->GetCoord();
-      
+
       PrimVar_j = node[jPoint]->GetPrimitive();
-      
+
+      AD::SetLocalInput_Object(AD::Vec(Coord_j, nDim));
+      AD::SetLocalInput_Object(AD::Vec(PrimVar_j, nPrimVarGrad));
+
       weight = 0.0;
       for (iDim = 0; iDim < nDim; iDim++)
         weight += (Coord_j[iDim]-Coord_i[iDim])*(Coord_j[iDim]-Coord_i[iDim]);
@@ -5234,8 +5242,6 @@ void CEulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config
         
       }
     }
-
-    AD::StartPreacc(r11, r12, r22, r13, r23_a, r23_b, r33, AD::Mat(cvector, nPrimVarGrad, nDim));
 
     /*--- Entries of upper triangular matrix R ---*/
     
@@ -5313,7 +5319,7 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
   unsigned long iEdge, iPoint, jPoint;
   unsigned short iVar, iDim;
   su2double **Gradient_i, **Gradient_j, *Coord_i, *Coord_j, *Primitive_i, *Primitive_j,
-  dave, LimK, eps2, eps1, dm, dp, du, y, limiter, limiter_i, limiter_j;
+  dave, LimK, eps2, eps1, dm, dp, du, y, limiter;
   
   /*--- Initialize solution max and solution min and the limiter in the entire domain --*/
   
@@ -5433,12 +5439,17 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
       Coord_i    = geometry->node[iPoint]->GetCoord();
       Coord_j    = geometry->node[jPoint]->GetCoord();
 
+
+      AD::StartPreacc(AD::Mat(Gradient_i, nPrimVarGrad, nDim), AD::Mat(Gradient_j, nPrimVarGrad, nDim),
+                      AD::Vec(Coord_i, nDim), AD::Vec(Coord_j, nDim));
+
+
       for (iVar = 0; iVar < nPrimVarGrad; iVar++) {
 
-        AD::StartPreacc(AD::Vec(Gradient_i[iVar], nDim), AD::Vec(Gradient_j[iVar], nDim),
-                        AD::Vec(Coord_i, nDim), AD::Vec(Coord_j, nDim),
-                        node[iPoint]->GetSolution_Max(iVar),  node[iPoint]->GetSolution_Min(iVar),
-                        node[jPoint]->GetSolution_Max(iVar),  node[jPoint]->GetSolution_Min(iVar));
+        AD::SetLocalInput_Object(node[iPoint]->GetSolution_Max(iVar));
+        AD::SetLocalInput_Object(node[iPoint]->GetSolution_Min(iVar));
+        AD::SetLocalInput_Object(node[jPoint]->GetSolution_Max(iVar));
+        AD::SetLocalInput_Object(node[jPoint]->GetSolution_Min(iVar));
 
         /*--- Calculate the interface left gradient, delta- (dm) ---*/
         
@@ -5451,8 +5462,12 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
         if ( dm > 0.0 ) dp = node[iPoint]->GetSolution_Max(iVar);
         else dp = node[iPoint]->GetSolution_Min(iVar);
 
-        limiter_i = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
+        limiter = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
 
+        if (limiter < node[iPoint]->GetLimiter_Primitive(iVar)){
+          node[iPoint]->SetLimiter_Primitive(iVar, limiter);
+          AD::SetLocalOutput_Object(node[iPoint]->GetLimiter_Primitive()[iVar]);
+        }
 
         /*-- Repeat for point j on the edge ---*/
         
@@ -5463,21 +5478,15 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
         if ( dm > 0.0 ) dp = node[jPoint]->GetSolution_Max(iVar);
         else dp = node[jPoint]->GetSolution_Min(iVar);
 
-        limiter_j = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
+        limiter = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
 
-
-        AD::EndPreacc(limiter_i, limiter_j);
-
-        if (limiter_i < node[iPoint]->GetLimiter_Primitive(iVar)){
-          node[iPoint]->SetLimiter_Primitive(iVar, limiter_i);
+        if (limiter < node[jPoint]->GetLimiter_Primitive(iVar)){
+          node[jPoint]->SetLimiter_Primitive(iVar, limiter);
+          AD::SetLocalOutput_Object(node[jPoint]->GetLimiter_Primitive()[iVar]);
         }
-
-        if (limiter_j < node[jPoint]->GetLimiter_Primitive(iVar)){
-          node[jPoint]->SetLimiter_Primitive(iVar, limiter_j);
-        }
-
-
       }
+
+      AD::EndPreacc();
 
     }
     
