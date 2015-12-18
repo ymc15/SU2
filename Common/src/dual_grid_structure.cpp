@@ -423,7 +423,12 @@ su2double CEdge::GetVolume(su2double *val_coord_Edge_CG, su2double *val_coord_Fa
 	unsigned short iDim;
   su2double vec_a[3] = {0.0,0.0,0.0}, vec_b[3] = {0.0,0.0,0.0}, vec_c[3] = {0.0,0.0,0.0}, vec_d[3] = {0.0,0.0,0.0}, Local_Volume;
 
-	for (iDim = 0; iDim < nDim; iDim++) {
+  AD::StartPreacc(AD::Vec(val_coord_Edge_CG, nDim),
+                  AD::Vec(val_coord_Elem_CG, nDim),
+                  AD::Vec(val_coord_FaceElem_CG, nDim),
+                  AD::Vec(val_coord_Point, nDim));
+
+  for (iDim = 0; iDim < nDim; iDim++) {
 		vec_a[iDim] = val_coord_Edge_CG[iDim]-val_coord_Point[iDim];
 		vec_b[iDim] = val_coord_FaceElem_CG[iDim]-val_coord_Point[iDim];
 		vec_c[iDim] = val_coord_Elem_CG[iDim]-val_coord_Point[iDim];
@@ -434,27 +439,42 @@ su2double CEdge::GetVolume(su2double *val_coord_Edge_CG, su2double *val_coord_Fa
 	vec_d[2] = vec_a[0]*vec_b[1]-vec_a[1]*vec_b[0];
 
 	Local_Volume = fabs(vec_c[0]*vec_d[0] + vec_c[1]*vec_d[1] + vec_c[2]*vec_d[2])/6.0;
-	
-	return Local_Volume;
+
+  AD::EndPreacc(Local_Volume);
+
+  return Local_Volume;
 }
 
 su2double CEdge::GetVolume(su2double *val_coord_Edge_CG, su2double *val_coord_Elem_CG, su2double *val_coord_Point) {
 	unsigned short iDim;
 	su2double vec_a[2] = {0.0,0.0}, vec_b[2] = {0.0,0.0}, Local_Volume;
 
+  AD::StartPreacc(AD::Vec(val_coord_Edge_CG, nDim),
+                  AD::Vec(val_coord_Elem_CG, nDim),
+                  AD::Vec(val_coord_Point, nDim));
+
+
 	for (iDim = 0; iDim < nDim; iDim++) {
 		vec_a[iDim] = val_coord_Elem_CG[iDim]-val_coord_Point[iDim];
 		vec_b[iDim] = val_coord_Edge_CG[iDim]-val_coord_Point[iDim];
 	}
 
+
 	Local_Volume = 0.5*fabs(vec_a[0]*vec_b[1]-vec_a[1]*vec_b[0]);
 	
+  AD::EndPreacc(Local_Volume);
+
 	return Local_Volume;
 }
 
 void CEdge::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_FaceElem_CG, su2double *val_coord_Elem_CG) {
 	unsigned short iDim;
 	su2double vec_a[3] = {0.0,0.0,0.0}, vec_b[3] = {0.0,0.0,0.0}, Dim_Normal[3];
+
+  AD::StartPreacc(AD::Vec(val_coord_Edge_CG, nDim),
+                  AD::Vec(val_coord_Elem_CG, nDim),
+                  AD::Vec(val_coord_FaceElem_CG, nDim),
+                  AD::Vec(Normal, nDim));
 
 	for (iDim = 0; iDim < nDim; iDim++) {
 		vec_a[iDim] = val_coord_Elem_CG[iDim]-val_coord_Edge_CG[iDim];
@@ -464,22 +484,28 @@ void CEdge::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_Fa
 	Dim_Normal[0] = 0.5*(vec_a[1]*vec_b[2]-vec_a[2]*vec_b[1]);
 	Dim_Normal[1] = -0.5*(vec_a[0]*vec_b[2]-vec_a[2]*vec_b[0]);
 	Dim_Normal[2] = 0.5*(vec_a[0]*vec_b[1]-vec_a[1]*vec_b[0]);
-	
+
 	Normal[0] += Dim_Normal[0]; 
 	Normal[1] += Dim_Normal[1];		
 	Normal[2] += Dim_Normal[2];
   
+  AD::EndPreacc(AD::Vec(Normal, nDim));
 }
 
 void CEdge::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_Elem_CG) {
 	su2double Dim_Normal[2];
+
+  AD::StartPreacc(AD::Vec(val_coord_Elem_CG, nDim),
+                  AD::Vec(val_coord_Edge_CG, nDim),
+                  AD::Vec(Normal, nDim));
 
 	Dim_Normal[0] = val_coord_Elem_CG[1]-val_coord_Edge_CG[1];
 	Dim_Normal[1] = -(val_coord_Elem_CG[0]-val_coord_Edge_CG[0]);
 	
 	Normal[0] += Dim_Normal[0]; 
 	Normal[1] += Dim_Normal[1];
-  
+
+  AD::EndPreacc(AD::Vec(Normal, nDim));
 }
 
 CVertex::CVertex(unsigned long val_point, unsigned short val_nDim) : CDualGrid(val_nDim) {

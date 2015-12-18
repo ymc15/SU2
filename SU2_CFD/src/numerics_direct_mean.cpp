@@ -70,6 +70,11 @@ void CCentJST_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jac
   
   su2double U_i[5] = {0.0,0.0,0.0,0.0,0.0}, U_j[5] = {0.0,0.0,0.0,0.0,0.0};
 
+  AD::StartPreacc(AD::Vec(Normal, nDim),
+                  AD::Vec(V_i, nDim+5), AD::Vec(V_j, nDim+5),
+                  Sensor_i, Sensor_j, Lambda_i, Lambda_j,
+                  AD::Vec(Und_Lapl_i, nVar), AD::Vec(Und_Lapl_j, nVar));
+
   /*--- Pressure, density, enthalpy, energy, and velocity at points i and j ---*/
   
   Pressure_i = V_i[nDim+1];                       Pressure_j = V_j[nDim+1];
@@ -212,6 +217,7 @@ void CCentJST_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jac
     
   }
 
+  AD::EndPreacc(AD::Vec(val_residual, nVar));
 }
 
 CCentJST_KE_Flow::CCentJST_KE_Flow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
@@ -251,6 +257,11 @@ void CCentJST_KE_Flow::ComputeResidual(su2double *val_residual, su2double **val_
                                     CConfig *config) {
 
   su2double U_i[5] = {0.0,0.0,0.0,0.0,0.0}, U_j[5] = {0.0,0.0,0.0,0.0,0.0};
+
+  AD::StartPreacc(AD::Vec(Normal, nDim),
+                  AD::Vec(V_i, nDim+5), AD::Vec(V_j, nDim+5),
+                  Sensor_i, Sensor_j, Lambda_i, Lambda_j,
+                  AD::Vec(Und_Lapl_i, nVar), AD::Vec(Und_Lapl_j, nVar));
 
   /*--- Pressure, density, enthalpy, energy, and velocity at points i and j ---*/
 
@@ -390,6 +401,8 @@ void CCentJST_KE_Flow::ComputeResidual(su2double *val_residual, su2double **val_
     val_Jacobian_j[nVar-1][nVar-1] -= cte_1*Gamma;
 
   }
+
+  AD::EndPreacc(AD::Vec(val_residual, nVar));
 
 }
 
@@ -1777,6 +1790,8 @@ void CUpwRoe_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jaco
   su2double U_i[5] = {0.0,0.0,0.0,0.0,0.0}, U_j[5] = {0.0,0.0,0.0,0.0,0.0};
   su2double ProjGridVel = 0.0;
   
+  AD::StartPreacc(AD::Vec(V_i, nDim+4), AD::Vec(V_j, nDim+4), AD::Vec(Normal, nDim));
+
   /*--- Face area (norm or the normal vector) ---*/
   
   Area = 0.0;
@@ -1996,7 +2011,9 @@ void CUpwRoe_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jaco
     }
     
   }
-  
+
+  AD::EndPreacc(AD::Vec(val_residual, nVar));
+
 }
 
 
@@ -3666,6 +3683,14 @@ CAvgGradCorrected_Flow::~CAvgGradCorrected_Flow(void) {
 }
 void CAvgGradCorrected_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
 
+  AD::StartPreacc(AD::Vec(V_i, nDim+9),   AD::Vec(V_j, nDim+9),
+                  AD::Vec(Coord_i, nDim), AD::Vec(Coord_j, nDim),
+                  AD::Vec(S_i, 2),        AD::Vec(S_j, 2),
+                  AD::Mat(PrimVar_Grad_i, iVar, nDim),
+                  AD::Mat(PrimVar_Grad_j, iVar, nDim),
+                  AD::Vec(PrimVar_Lim_i, nDim+1), AD::Vec(PrimVar_Lim_j, nDim+1),
+                  AD::Vec(Normal, nDim));
+
 	/*--- Normalized normal vector ---*/
   
 	Area = 0.0;
@@ -3755,6 +3780,8 @@ void CAvgGradCorrected_Flow::ComputeResidual(su2double *val_residual, su2double 
 		}
     
 	}
+
+  AD::EndPreacc(AD::Vec(val_residual, nVar));
   
 }
 
@@ -3925,6 +3952,14 @@ CGeneralAvgGradCorrected_Flow::~CGeneralAvgGradCorrected_Flow(void) {
 
 void CGeneralAvgGradCorrected_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
   
+  AD::StartPreacc(AD::Vec(V_i, nDim+9), AD::Vec(V_j, nDim+9),
+                  AD::Vec(Coord_i, nDim), AD::Vec(Coord_j, nDim),
+                  AD::Vec(S_i, 2), AD::Vec(S_j, 2),
+                  AD::Mat(PrimVar_Grad_i, iVar, nDim),
+                  AD::Mat(PrimVar_Grad_j, iVar, nDim),
+                  turb_ke_i, turb_ke_j,
+                  AD::Vec(Normal, nDim));
+
   /*--- Normalized normal vector ---*/
   
   Area = 0.0;
@@ -4015,7 +4050,9 @@ void CGeneralAvgGradCorrected_Flow::ComputeResidual(su2double *val_residual, su2
     }
     
   }
-  
+
+  AD::EndPreacc(AD::Vec(val_residual, nVar));
+
 }
 
 CAvgGradCorrectedArtComp_Flow::CAvgGradCorrectedArtComp_Flow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) {

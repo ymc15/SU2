@@ -5233,9 +5233,10 @@ void CEulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config
             cvector[iVar][iDim] += (Coord_j[iDim]-Coord_i[iDim])*(PrimVar_j[iVar]-PrimVar_i[iVar])/weight;
         
       }
-      
     }
-    
+
+    AD::StartPreacc(r11, r12, r22, r13, r23_a, r23_b, r33, AD::Mat(cvector, nPrimVarGrad, nDim));
+
     /*--- Entries of upper triangular matrix R ---*/
     
     if (r11 >= 0.0) r11 = sqrt(r11); else r11 = 0.0;
@@ -5295,8 +5296,11 @@ void CEulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config
         }
         
         node[iPoint]->SetGradient_Primitive(iVar, iDim, product);
+
       }
     }
+
+    AD::EndPreacc(AD::Mat(node[iPoint]->GetGradient_Primitive(), nPrimVarGrad, nVar));
     
   }
   

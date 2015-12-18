@@ -54,6 +54,10 @@ CUpwSca_TurbSA::~CUpwSca_TurbSA(void) {
 void CUpwSca_TurbSA::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
   
   q_ij = 0.0;
+
+  AD::StartPreacc(AD::Vec(V_i, nDim+1), AD::Vec(V_j, nDim+1),
+                  TurbVar_i[0],TurbVar_j[0],
+                  AD::Vec(Normal, nDim));
   
   if (grid_movement) {
     for (iDim = 0; iDim < nDim; iDim++) {
@@ -77,7 +81,8 @@ void CUpwSca_TurbSA::ComputeResidual(su2double *val_residual, su2double **val_Ja
     val_Jacobian_i[0][0] = a0;
     val_Jacobian_j[0][0] = a1;
   }
-  
+
+  AD::EndPreacc(val_residual[0]);
 }
 
 CAvgGrad_TurbSA::CAvgGrad_TurbSA(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
@@ -284,6 +289,13 @@ CAvgGradCorrected_TurbSA::~CAvgGradCorrected_TurbSA(void) {
 
 void CAvgGradCorrected_TurbSA::ComputeResidual(su2double *val_residual, su2double **Jacobian_i, su2double **Jacobian_j, CConfig *config) {
   
+  AD::StartPreacc(AD::Vec(Coord_i, nDim), AD::Vec(Coord_j, nDim),
+                  AD::Vec(Normal, nDim),
+                  AD::Vec(V_i, nDim+7), AD::Vec(V_j, nDim+7),
+                  AD::Vec(TurbVar_i, nVar), AD::Vec(TurbVar_j, nVar),
+                  AD::Mat(TurbVar_Grad_i, nVar, nDim), AD::Mat(TurbVar_Grad_j, iVar, nDim));
+
+
   if (incompressible) {
     Density_i = V_i[nDim+1];            Density_j = V_j[nDim+1];
     Laminar_Viscosity_i = V_i[nDim+3];  Laminar_Viscosity_j = V_j[nDim+3];
@@ -337,6 +349,7 @@ void CAvgGradCorrected_TurbSA::ComputeResidual(su2double *val_residual, su2doubl
     Jacobian_j[0][0] = (0.5*Proj_Mean_GradTurbVar_Corrected[0]+nu_e*proj_vector_ij)/sigma;
   }
   
+  AD::EndPreacc(AD::Vec(val_residual, nVar));
 }
 
 CAvgGradCorrected_TurbSA_Neg::CAvgGradCorrected_TurbSA_Neg(unsigned short val_nDim, unsigned short val_nVar,
