@@ -5313,7 +5313,7 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
   unsigned long iEdge, iPoint, jPoint;
   unsigned short iVar, iDim;
   su2double **Gradient_i, **Gradient_j, *Coord_i, *Coord_j, *Primitive_i, *Primitive_j,
-  dave, LimK, eps2, eps1, dm, dp, du, y, limiter;
+  dave, LimK, eps2, eps1, dm, dp, du, y, limiter, limiter_i, limiter_j;
   
   /*--- Initialize solution max and solution min and the limiter in the entire domain --*/
   
@@ -5432,9 +5432,14 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
       Gradient_j = node[jPoint]->GetGradient_Primitive();
       Coord_i    = geometry->node[iPoint]->GetCoord();
       Coord_j    = geometry->node[jPoint]->GetCoord();
-      
+
       for (iVar = 0; iVar < nPrimVarGrad; iVar++) {
-        
+
+        AD::StartPreacc(AD::Vec(Gradient_i[iVar], nDim), AD::Vec(Gradient_j[iVar], nDim),
+                        AD::Vec(Coord_i, nDim), AD::Vec(Coord_j, nDim),
+                        node[iPoint]->GetSolution_Max(iVar),  node[iPoint]->GetSolution_Min(iVar),
+                        node[jPoint]->GetSolution_Max(iVar),  node[jPoint]->GetSolution_Min(iVar));
+
         /*--- Calculate the interface left gradient, delta- (dm) ---*/
         
         dm = 0.0;
@@ -5445,12 +5450,10 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
         
         if ( dm > 0.0 ) dp = node[iPoint]->GetSolution_Max(iVar);
         else dp = node[iPoint]->GetSolution_Min(iVar);
-        
-        limiter = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
-        
-        if (limiter < node[iPoint]->GetLimiter_Primitive(iVar))
-          node[iPoint]->SetLimiter_Primitive(iVar, limiter);
-        
+
+        limiter_i = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
+
+
         /*-- Repeat for point j on the edge ---*/
         
         dm = 0.0;
@@ -5459,13 +5462,23 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
         
         if ( dm > 0.0 ) dp = node[jPoint]->GetSolution_Max(iVar);
         else dp = node[jPoint]->GetSolution_Min(iVar);
-        
-        limiter = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
-        
-        if (limiter < node[jPoint]->GetLimiter_Primitive(iVar))
-          node[jPoint]->SetLimiter_Primitive(iVar, limiter);
+
+        limiter_j = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
+
+
+        AD::EndPreacc(limiter_i, limiter_j);
+
+        if (limiter_i < node[iPoint]->GetLimiter_Primitive(iVar)){
+          node[iPoint]->SetLimiter_Primitive(iVar, limiter_i);
+        }
+
+        if (limiter_j < node[jPoint]->GetLimiter_Primitive(iVar)){
+          node[jPoint]->SetLimiter_Primitive(iVar, limiter_j);
+        }
+
+
       }
-      
+
     }
     
   }
