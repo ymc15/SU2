@@ -43,10 +43,18 @@ namespace AD{
   /*--- Reference to the tape ---*/
 
   extern codi::ChunkTape<double, int>& globalTape;
+
   extern bool Status;
 
-}
+  extern bool PreaccActive;
 
+  extern codi::ChunkTape<double, int>::Position StartPosition, EndPosition;
+
+  extern std::vector<unsigned int> localInputValues;
+
+  extern std::vector<su2double*> localOutputValues;
+
+}
 
 namespace SU2_TYPE{
   inline void SetValue(su2double& data, const double &val){data.setValue(val);}
@@ -84,6 +92,90 @@ namespace AD{
       globalTape.reset();
       adjointVectorPosition = 0;
       inputValues.clear();
+    }
+  }
+
+  /* --- Preaccumulation routines ---*/
+
+  inline void SetLocalInput(){}
+
+  inline void SetLocalInput_Object(const su2double &data){
+    if (data.getGradientData() != 0){
+      localInputValues.push_back(data.getGradientData());
+    }
+  }
+
+  inline void SetLocalInput_Object(const Vec& data){
+    for (unsigned short i = 0; i < data.size; i++){
+      if (data.vec[i].getGradientData() != 0){
+        localInputValues.push_back(data.vec[i].getGradientData());
+      }
+    }
+  }
+
+  inline void SetLocalInput_Object(const Mat& data){
+    for (unsigned short i = 0; i < data.size_x; i++){
+      for (unsigned short j = 0; j < data.size_y; j++){
+        if (data.mat[i][j].getGradientData() != 0){
+          localInputValues.push_back(data.mat[i][j].getGradientData());
+        }
+      }
+    }
+  }
+
+  template <typename Arg1, typename ... Args>
+  inline void SetLocalInput(const Arg1& arg1, Args& ... args){
+    SetLocalInput_Object(arg1);
+    SetLocalInput(args...);
+  }
+
+  template <typename ... Args>
+  inline void StartPreacc(Args && ... args){
+    if (globalTape.isActive()){
+      SetLocalInput(args...);
+      StartPosition = globalTape.getPosition();
+      PreaccActive = true;
+    }
+  }
+
+  inline void SetLocalOutput(){}
+
+  inline void SetLocalOutput_Object(su2double& data){
+    if (data.getGradientData() != 0){
+      localOutputValues.push_back(&data);
+    }
+  }
+
+  inline void SetLocalOutput_Object(Vec& data){
+    for (unsigned short i = 0; i < data.size; i++){
+      if (data.vec[i].getGradientData() != 0){
+        localOutputValues.push_back(&data.vec[i]);
+      }
+    }
+  }
+
+  inline void SetLocalOutput_Object(Mat& data){
+    for (unsigned short i = 0; i < data.size_x; i++){
+      for (unsigned short j = 0; j < data.size_y; j++){
+        if (data.mat[i][j].getGradientData() != 0){
+          localOutputValues.push_back(&data.mat[i][j]);
+        }
+      }
+    }
+  }
+
+  template <typename Arg1, typename ... Args>
+  inline void SetLocalOutput(Arg1& arg1, Args& ... args){
+    SetLocalOutput_Object(arg1);
+    SetLocalOutput(args...);
+  }
+
+
+  template <typename ... Args>
+  inline void EndPreacc(Args && ... args){
+    if (PreaccActive){
+      SetLocalOutput(args...);
+      Preaccumulation();
     }
   }
 

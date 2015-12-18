@@ -36,10 +36,72 @@ namespace AD {
   int adjointVectorPosition = 0;
 
   std::vector<unsigned int> inputValues;
+  std::vector<unsigned int> localInputValues;
+  std::vector<su2double*> localOutputValues;
 
   codi::ChunkTape<double, int>& globalTape = codi::RealReverse::getGlobalTape();
 
+  codi::ChunkTape<double, int>::Position StartPosition, EndPosition;
+
   bool Status = false;
+
+  bool PreaccActive = false;
+
+  void Preaccumulation(){
+    if(PreaccActive){
+      unsigned short iOut, iIn;
+      unsigned short nOut, nIn;
+      int Index_Out, Index_In;
+
+      nOut = localOutputValues.size();
+      nIn  = localInputValues.size();
+
+      EndPosition = globalTape.getPosition();
+
+      double* LocalJacobi = (double*)alloca(sizeof(double)*(nOut*nIn));
+      unsigned short* nNonZero    = (unsigned short*)alloca(sizeof(unsigned short)*nOut);
+
+      for (iOut = 0; iOut < nOut; iOut++){
+        nNonZero[iOut] = 0;
+        Index_Out = localOutputValues[iOut]->getGradientData();
+
+        AD::globalTape.setGradient(Index_Out, 1.0);
+        AD::globalTape.evaluate(EndPosition, StartPosition);
+
+        for (iIn= 0; iIn < nIn; iIn++){
+          Index_In =  localInputValues[iIn];
+          LocalJacobi[iOut*nIn+iIn] = AD::globalTape.getGradient(Index_In);
+          if (LocalJacobi[iOut*nIn+iIn] != 0.0){
+            nNonZero[iOut]++;
+          }
+          AD::globalTape.setGradient(Index_In, 0.0);
+        }
+        AD::globalTape.setGradient(Index_Out, 0.0);
+        AD::globalTape.clearAdjoints(StartPosition, EndPosition);
+      }
+      if (nOut > 0){
+        AD::globalTape.reset(StartPosition);
+      }
+      for (iOut = 0; iOut < nOut; iOut++){
+        Index_Out = 0;
+        if (nNonZero[iOut] != 0){
+          AD::globalTape.store(Index_Out, nNonZero[iOut]);
+        }
+        localOutputValues[iOut]->getGradientData() = Index_Out;
+        for (iIn = 0; iIn < nIn; iIn++){
+          Index_In =  localInputValues[iIn];
+          AD::globalTape.pushJacobi(LocalJacobi[iOut*nIn+iIn], LocalJacobi[iOut*nIn+iIn], LocalJacobi[iOut*nIn+iIn], Index_In);
+        }
+      }
+
+      localInputValues.clear();
+      localOutputValues.clear();
+
+      PreaccActive = false;
+    }
+  }
+
+
 }
 #elif defined ADOLC_REVERSE_TYPE
 namespace AD{

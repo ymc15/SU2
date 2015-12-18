@@ -179,6 +179,54 @@ namespace AD{
    */
   void ResetInput(su2double &data);
 
+  /*--- Preaccumulation routines ---*/
+
+  void Preaccumulation();
+
+  struct Vec{
+    su2double* vec;
+    unsigned short size;
+    Vec(su2double* vec_, unsigned short size_):
+      vec(vec_), size(size_){}
+
+  };
+  struct Mat{
+    su2double** mat;
+    unsigned short size_x, size_y;
+    Mat(su2double** mat_, unsigned short size_x_, unsigned short size_y_):
+      mat(mat_), size_x(size_x_), size_y(size_y_){}
+  };
+
+  void Preaccumulation();
+
+  void SetLocalInput_Object(const su2double &data);
+
+  void SetLocalInput_Object(const Mat &data);
+
+  void SetLocalInput_Object(const Vec &data);
+
+  void SetLocalInput();
+
+  template <typename Arg1, typename ... Args>
+  void SetLocalInput(const Arg1& arg1, Args& ... args);
+
+  template <typename ... Args>
+  void StartPreacc(Args && ... args);
+
+  void SetLocalOutput_Object(su2double &data);
+
+  void SetLocalOutput_Object(Vec &data);
+
+  void SetLocalOutput_Object(Mat &data);
+
+  void SetLocalOutput();
+
+  template <typename Arg1, typename ... Args>
+  void SetLocalOutput(Arg1& arg1, Args& ... args);
+
+  template <typename ... Args>
+  void EndPreacc(Args && ... args);
+
 }
 
 #ifdef CODI_REVERSE_TYPE

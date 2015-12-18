@@ -63,6 +63,36 @@ namespace AD{
   inline void Reset(){}
 
   inline void ResetInput(su2double &data){}
+
+  inline void Preaccumulation(){}
+
+  inline void SetLocalInput_Object(const su2double &data){}
+
+  inline void SetLocalInput_Object(const Mat &data){}
+
+  inline void SetLocalInput_Object(const Vec &data){}
+
+  inline void SetLocalInput(){}
+
+  template <typename Arg1, typename ... Args>
+  inline void SetLocalInput(const Arg1& arg1, Args& ... args){}
+
+  template <typename ... Args>
+  inline void StartPreacc(Args && ... args){}
+
+  inline void SetLocalOutput_Object(su2double &data){}
+
+  inline void SetLocalOutput_Object(Vec &data){}
+
+  inline void SetLocalOutput_Object(Mat &data){}
+
+  inline void SetLocalOutput(){}
+
+  template <typename Arg1, typename ... Args>
+  inline void SetLocalOutput(Arg1& arg1, Args& ... args){}
+
+  template <typename ... Args>
+  inline void EndPreacc(Args && ... args){}
 }
 #endif
 
