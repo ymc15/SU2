@@ -5201,9 +5201,7 @@ void CEulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config
     r11 = 0.0; r12 = 0.0;   r13 = 0.0;    r22 = 0.0;
     r23 = 0.0; r23_a = 0.0; r23_b = 0.0;  r33 = 0.0;
 
-    AD::StartPreacc(r11, r12, r22, r13, r23_a, r23_b, r33,
-                    AD::Mat(cvector, nPrimVarGrad, nDim),
-                    AD::Vec(PrimVar_i, nPrimVarGrad),
+    AD::StartPreacc(AD::Vec(PrimVar_i, nPrimVarGrad),
                     AD::Vec(Coord_i, nDim));
     
     for (iNeigh = 0; iNeigh < geometry->node[iPoint]->GetnPoint(); iNeigh++) {
@@ -5306,7 +5304,7 @@ void CEulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config
       }
     }
 
-    AD::EndPreacc(AD::Mat(node[iPoint]->GetGradient_Primitive(), nPrimVarGrad, nVar));
+    AD::EndPreacc(AD::Mat(node[iPoint]->GetGradient_Primitive(), nPrimVarGrad, nDim));
     
   }
   
