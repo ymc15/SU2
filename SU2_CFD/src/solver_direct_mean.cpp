@@ -5312,6 +5312,78 @@ void CEulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config
   
 }
 
+void CEulerSolver::SetSolution_MinMax(CGeometry *geometry, CConfig *config){
+  unsigned short iVar, iNeigh;
+  unsigned long iPoint, jPoint;
+  su2double *PrimVar_i, *PrimVar_j, du, du_max = -EPS, du_min = EPS, du_total,
+      Weight_Max, Weight_Min, Weight_MinTotal, Weight_MaxTotal, Max_Total, Min_Total,
+      SoftNegative, SoftPositive, SoftMax, SoftMin, dave, LimK, eps1, eps2;
+
+  dave = config->GetRefElemLength();
+  LimK = config->GetLimiterCoeff();
+  eps1 = LimK*dave;
+  eps2 = eps1*eps1*eps1;
+
+  /*--- Loop over points of the grid ---*/
+
+  for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
+    /*--- Get primitives from CVariable ---*/
+
+    PrimVar_i = node[iPoint]->GetPrimitive();
+
+    for (iVar = 0; iVar < nPrimVarGrad; iVar++) {
+
+      du_total = 0;
+      du_min = EPS;
+      du_max = -EPS;
+      Weight_MaxTotal = 0;
+      Weight_MinTotal = 0;
+      Max_Total = 0;
+      Min_Total = 0;
+
+      for (iNeigh = 0; iNeigh < geometry->node[iPoint]->GetnPoint(); iNeigh++) {
+
+          jPoint = geometry->node[iPoint]->GetPoint(iNeigh);
+
+          PrimVar_j = node[jPoint]->GetPrimitive();
+
+          du = (PrimVar_j[iVar] - PrimVar_i[iVar]);
+          du_total += du*du;
+          if (du > du_max) du_max = du;
+          if (du < du_min) du_min = du;
+
+      }
+
+      for (iNeigh = 0; iNeigh < geometry->node[iPoint]->GetnPoint(); iNeigh++) {
+        jPoint = geometry->node[iPoint]->GetPoint(iNeigh);
+
+        PrimVar_j = node[jPoint]->GetPrimitive();
+
+        du = (PrimVar_j[iVar] - PrimVar_i[iVar]);
+
+        Weight_Max = exp(-5.0*(du_max - du)/sqrt(du_total));
+        Weight_Min = exp(-5.0*(du_min - du)/sqrt(du_total));
+
+        Weight_MaxTotal += Weight_Max;
+        Weight_MinTotal += Weight_Min;
+
+        Max_Total += Weight_Max*du;
+        Min_Total += Weight_Min*du;
+
+      }
+
+      SoftMin = Min_Total/Weight_MinTotal;
+      SoftMax = Max_Total/Weight_MaxTotal;
+      SoftPositive = (SoftMax + sqrt(SoftMax*SoftMax + eps2))/2.0;
+      SoftNegative = (SoftMin - sqrt(SoftMin*SoftMin + eps2))/2.0;
+
+      node[iPoint]->SetSolution_Min(iVar, SoftNegative);
+      node[iPoint]->SetSolution_Max(iVar, SoftPositive);
+
+    }
+  }
+}
+
 void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
   
   unsigned long iEdge, iPoint, jPoint;
@@ -5329,32 +5401,38 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
     }
   }
   
-  /*--- Establish bounds for Spekreijse monotonicity by finding max & min values of neighbor variables --*/
-  
-  for (iEdge = 0; iEdge < geometry->GetnEdge(); iEdge++) {
-    
-    /*--- Point identification, Normal vector and area ---*/
-    
-    iPoint = geometry->edge[iEdge]->GetNode(0);
-    jPoint = geometry->edge[iEdge]->GetNode(1);
-    
-    /*--- Get the primitive variables ---*/
-    
-    Primitive_i = node[iPoint]->GetPrimitive();
-    Primitive_j = node[jPoint]->GetPrimitive();
-    
-    /*--- Compute the maximum, and minimum values for nodes i & j ---*/
-    
-    for (iVar = 0; iVar < nPrimVarGrad; iVar++) {
-      du = (Primitive_j[iVar] - Primitive_i[iVar]);
-      node[iPoint]->SetSolution_Min(iVar, min(node[iPoint]->GetSolution_Min(iVar), du));
-      node[iPoint]->SetSolution_Max(iVar, max(node[iPoint]->GetSolution_Max(iVar), du));
-      node[jPoint]->SetSolution_Min(iVar, min(node[jPoint]->GetSolution_Min(iVar), -du));
-      node[jPoint]->SetSolution_Max(iVar, max(node[jPoint]->GetSolution_Max(iVar), -du));
+  if (config->GetDifferentiable_Limiter()){
+
+    SetSolution_MinMax(geometry, config);
+
+  } else {
+    /*--- Establish bounds for Spekreijse monotonicity by finding max & min values of neighbor variables --*/
+
+    for (iEdge = 0; iEdge < geometry->GetnEdge(); iEdge++) {
+
+      /*--- Point identification, Normal vector and area ---*/
+
+      iPoint = geometry->edge[iEdge]->GetNode(0);
+      jPoint = geometry->edge[iEdge]->GetNode(1);
+
+      /*--- Get the primitive variables ---*/
+
+      Primitive_i = node[iPoint]->GetPrimitive();
+      Primitive_j = node[jPoint]->GetPrimitive();
+
+      /*--- Compute the maximum, and minimum values for nodes i & j ---*/
+
+      for (iVar = 0; iVar < nPrimVarGrad; iVar++) {
+        du = (Primitive_j[iVar] - Primitive_i[iVar]);
+        node[iPoint]->SetSolution_Min(iVar, min(node[iPoint]->GetSolution_Min(iVar), du));
+        node[iPoint]->SetSolution_Max(iVar, max(node[iPoint]->GetSolution_Max(iVar), du));
+        node[jPoint]->SetSolution_Min(iVar, min(node[jPoint]->GetSolution_Min(iVar), -du));
+        node[jPoint]->SetSolution_Max(iVar, max(node[jPoint]->GetSolution_Max(iVar), -du));
+      }
+
     }
-    
+
   }
-  
   
   /*--- Barth-Jespersen limiter with Venkatakrishnan modification ---*/
   
@@ -5460,7 +5538,7 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
         if ( dm > 0.0 ) dp = node[iPoint]->GetSolution_Max(iVar);
         else dp = node[iPoint]->GetSolution_Min(iVar);
 
-        limiter = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
+        limiter = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm);
 
         if (limiter < node[iPoint]->GetLimiter_Primitive(iVar)){
           node[iPoint]->SetLimiter_Primitive(iVar, limiter);
@@ -5476,7 +5554,7 @@ void CEulerSolver::SetPrimitive_Limiter(CGeometry *geometry, CConfig *config) {
         if ( dm > 0.0 ) dp = node[jPoint]->GetSolution_Max(iVar);
         else dp = node[jPoint]->GetSolution_Min(iVar);
 
-        limiter = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm + eps2);
+        limiter = ( dp*dp + 2.0*dp*dm + eps2 )/( dp*dp + dp*dm + 2.0*dm*dm);
 
         if (limiter < node[jPoint]->GetLimiter_Primitive(iVar)){
           node[jPoint]->SetLimiter_Primitive(iVar, limiter);

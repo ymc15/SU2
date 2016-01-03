@@ -1158,3 +1158,5 @@ inline su2double CConfig::GetMinLogResidualFSI(void) { return MinLogResidualFSI;
 inline unsigned short CConfig::GetDirectDiff(){ return DirectDiff;}
 
 inline bool CConfig::GetDiscrete_Adjoint() {return DiscreteAdjoint;}
+
+inline bool CConfig::GetDifferentiable_Limiter(void) {return DifferentiableLimiter;}

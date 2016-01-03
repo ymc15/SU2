@@ -117,6 +117,7 @@ private:
 	su2double LimiterCoeff;				/*!< \brief Limiter coefficient */
   unsigned long LimiterIter;	/*!< \brief Freeze the value of the limiter after a number of iterations */
 	su2double SharpEdgesCoeff;				/*!< \brief Coefficient to identify the limit of a sharp edge. */
+  bool DifferentiableLimiter;       /*!< \brief Differentiable limiter with soft min/max. */
   unsigned short SystemMeasurements; /*!< \brief System of measurements. */
   unsigned short Kind_Regime;  /*!< \brief Kind of adjoint function. */
   unsigned short Kind_ObjFunc;  /*!< \brief Kind of objective function. */
@@ -5333,7 +5334,11 @@ public:
 	 */
 	unsigned short GetRelaxation_Method_FSI(void);
 
-
+  /*!
+   * \brief Get the relaxation method chosen for the simulation
+   * \return <code>TRUE</code> if differentiable limiter is enabled.
+   */
+  bool GetDifferentiable_Limiter(void);
 
 };
 
