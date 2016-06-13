@@ -4699,7 +4699,7 @@ void CPhysicalGeometry::SetBoundaries(CConfig *config) {
 
 void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mesh_filename, unsigned short val_iZone, unsigned short val_nZone) {
   
-  string text_line, Marker_Tag;
+  string text_line, Marker_Tag, Marker_Tag_Duplicate;
   ifstream mesh_file;
   unsigned short nMarker_Max = config->GetnMarker_Max();
   unsigned long VTK_Type, iMarker, iChar;
@@ -4708,7 +4708,7 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
   unsigned long vnodes_edge[2], vnodes_triangle[3], vnodes_quad[4];
   unsigned long vnodes_tetra[4], vnodes_hexa[8], vnodes_prism[6],
   vnodes_pyramid[5], dummyLong, GlobalIndex;
-  unsigned long i;
+  unsigned long i, j;
   long local_index;
   char cstr[200];
   su2double Coord_2D[2], Coord_3D[3];
@@ -4717,6 +4717,9 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
   bool domain_flag = false;
   bool found_transform = false;
   bool time_spectral = config->GetUnsteady_Simulation() == TIME_SPECTRAL;
+  bool actuator_disk  = (((config->GetnMarker_ActDisk_Inlet() != 0) ||
+                          (config->GetnMarker_ActDisk_Outlet() != 0)) &&
+                          (config->GetKind_SU2() == SU2_CFD));
   nZone = val_nZone;
   
   /*--- Initialize some additional counters for the parallel partitioning ---*/
@@ -4729,11 +4732,557 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
   unsigned long local_element_count = 0;
   
   /*--- Initialize counters for local/global points & elements ---*/
+  
 #ifdef HAVE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-  unsigned long LocalIndex, j;
+  unsigned long LocalIndex;
 #endif
+  
+  /*--- Actuator disk preprocesing ---*/
+  
+  bool *MapActDiskBool 			= NULL, *MapVolumePointBool = NULL, InElem, Perimeter;
+  unsigned long *MapActDisk = NULL, *VolumePoint_Inv = NULL, *SurfacePoint_Inv = NULL;
+  su2double *CoordXActDisk = NULL, *CoordYActDisk = NULL, *CoordZActDisk = NULL;
+  su2double *CoordXVolumePoint = NULL, *CoordYVolumePoint = NULL, *CoordZVolumePoint = NULL;
+  su2double Xloc = 0.0, Yloc = 0.0, Zloc = 0.0, Xcg = 0.0;
+  unsigned long iElem, nElem_Bound_, ActDiskNewPoints = 0, kPoint = 0, Counter = 0;
+  
+  vector<unsigned long long> EdgeBegin, EdgeEnd;
+  vector<unsigned long>::iterator it;
+  
+  unsigned long AuxEdge, iEdge, jEdge, nEdges, nPointVolume;
+  unsigned long long FirstEdgeIndex, SecondEdgeIndex;
+  
+  vector<unsigned long> SurfacePoint, VolumePoint, PerimeterPoint;
+  
+  /*--- End actuator disk preprocesing ---*/
+  
+  /*--- If actuator disk, we should split the surface, the first step is to identify the existing boundary ---*/
+  
+  if (actuator_disk) {
+    
+    //    if (rank == MASTER_NODE) {
+    
+    /*--- Open grid file ---*/
+    
+    strcpy (cstr, val_mesh_filename.c_str());
+    mesh_file.open(cstr, ios::in);
+    
+    /*--- Check the grid ---*/
+    
+    if (mesh_file.fail()) {
+      cout << "There is no mesh file (CPhysicalGeometry)!! " << cstr << endl;
+#ifndef HAVE_MPI
+      exit(EXIT_FAILURE);
+#else
+      MPI_Abort(MPI_COMM_WORLD,1);
+      MPI_Finalize();
+#endif
+    }
+    
+    /*--- Read grid file with format SU2 ---*/
+    
+    while (getline (mesh_file, text_line)) {
+      
+      position = text_line.find ("NDIME=",0);
+      if (position != string::npos) {
+        text_line.erase (0,6); nDim = atoi(text_line.c_str());
+      }
+      
+      position = text_line.find ("NPOIN=",0);
+      if (position != string::npos) {
+        text_line.erase (0,6); stringstream test_line(text_line);
+        iCount = 0; while (test_line >> dummyLong) iCount++;
+        stringstream  stream_line(text_line);
+        if (iCount == 2) {  stream_line >> nPoint;  stream_line >> nPointDomain; }
+        else if (iCount == 1) { stream_line >> nPoint; }
+        for (iPoint = 0; iPoint < nPoint; iPoint++) getline (mesh_file, text_line);
+      }
+      
+      position = text_line.find ("NELEM=",0);
+      if (position != string::npos) {
+        text_line.erase (0,6); nElem = atoi(text_line.c_str());
+        for (iElem = 0; iElem < nElem; iElem++) getline (mesh_file, text_line);
+      }
+      
+      position = text_line.find ("NMARK=",0);
+      if (position != string::npos) {
+        text_line.erase (0,6); nMarker = atoi(text_line.c_str());
+        
+        for (iMarker = 0 ; iMarker < nMarker; iMarker++) {
+          
+          getline (mesh_file, text_line);
+          text_line.erase (0,11); string::size_type position;
+          for (iChar = 0; iChar < 20; iChar++) {
+            position = text_line.find( " ", 0 );
+            if (position != string::npos) text_line.erase (position,1); position = text_line.find( "\r", 0 );
+            if (position != string::npos) text_line.erase (position,1); position = text_line.find( "\n", 0 );
+            if (position != string::npos) text_line.erase (position,1);
+          }
+          Marker_Tag = text_line.c_str();
+          
+          getline (mesh_file, text_line);
+          text_line.erase (0,13); nElem_Bound_ = atoi(text_line.c_str());
+          
+          if (( Marker_Tag  == config->GetMarker_ActDiskInlet_TagBound(0)) && (rank == MASTER_NODE))
+            cout << "Splitting the surface " << Marker_Tag << "( " << nElem_Bound_  << " boundary elements )." << endl;
+          
+          if (Marker_Tag  != config->GetMarker_ActDiskInlet_TagBound(0)) {
+            for (iElem_Bound = 0; iElem_Bound < nElem_Bound_; iElem_Bound++) { getline (mesh_file, text_line); }
+          }
+          else {
+            
+            /*--- Create a list of edges ---*/
+            
+            for (iElem_Bound = 0; iElem_Bound < nElem_Bound_; iElem_Bound++) {
+              
+              getline(mesh_file, text_line);
+              
+              istringstream bound_line(text_line); bound_line >> VTK_Type;
+              
+              switch(VTK_Type) {
+                case LINE:
+                  bound_line >> vnodes_edge[0]; bound_line >> vnodes_edge[1];
+                  EdgeBegin.push_back(vnodes_edge[0]); EdgeEnd.push_back( vnodes_edge[1]);
+                  break;
+                case TRIANGLE:
+                  bound_line >> vnodes_triangle[0]; bound_line >> vnodes_triangle[1]; bound_line >> vnodes_triangle[2];
+                  EdgeBegin.push_back(vnodes_triangle[0]); EdgeEnd.push_back( vnodes_triangle[1]);
+                  EdgeBegin.push_back(vnodes_triangle[1]); EdgeEnd.push_back( vnodes_triangle[2]);
+                  EdgeBegin.push_back(vnodes_triangle[2]); EdgeEnd.push_back( vnodes_triangle[0]);
+                  break;
+                case QUADRILATERAL:
+                  bound_line >> vnodes_quad[0]; bound_line >> vnodes_quad[1]; bound_line >> vnodes_quad[2]; bound_line >> vnodes_quad[3];
+                  EdgeBegin.push_back(vnodes_quad[0]); EdgeEnd.push_back( vnodes_quad[1]);
+                  EdgeBegin.push_back(vnodes_quad[1]); EdgeEnd.push_back( vnodes_quad[2]);
+                  EdgeBegin.push_back(vnodes_quad[2]); EdgeEnd.push_back( vnodes_quad[3]);
+                  EdgeBegin.push_back(vnodes_quad[3]); EdgeEnd.push_back( vnodes_quad[0]);
+                  break;
+              }
+              
+            }
+            
+            /*--- Set the total number of edges ---*/
+            
+            nEdges = EdgeBegin.size();
+            
+            /*--- Sort edges based on local point index, first index is always the largest ---*/
+            
+            for (iEdge = 0; iEdge <  nEdges; iEdge++) {
+              if (EdgeEnd[iEdge] < EdgeBegin[iEdge]) {
+                AuxEdge = EdgeEnd[iEdge]; EdgeEnd[iEdge] = EdgeBegin[iEdge]; EdgeBegin[iEdge] = AuxEdge;
+              }
+            }
+            
+            /*--- Bubble sort of the points based on the first index   ---*/
+            
+            for (iEdge = 0; iEdge < nEdges; iEdge++) {
+              for (jEdge = iEdge+1; jEdge < nEdges; jEdge++) {
+                
+                FirstEdgeIndex = EdgeBegin[jEdge] << 31;
+                FirstEdgeIndex += EdgeEnd[jEdge];
+                
+                SecondEdgeIndex = EdgeBegin[iEdge] << 31;
+                SecondEdgeIndex += EdgeEnd[iEdge];
+                
+                if (FirstEdgeIndex <= SecondEdgeIndex) {
+                  AuxEdge = EdgeBegin[iEdge]; EdgeBegin[iEdge] = EdgeBegin[jEdge]; EdgeBegin[jEdge] = AuxEdge;
+                  AuxEdge = EdgeEnd[iEdge];  EdgeEnd[iEdge] = EdgeEnd[jEdge]; EdgeEnd[jEdge] = AuxEdge;
+                }
+              }
+            }
+            
+            if (nDim ==3) {
+              
+              /*--- Check the begning of the list ---*/
+              
+              if (!((EdgeBegin[0] == EdgeBegin[1]) && (EdgeEnd[0] == EdgeEnd[1]))) {
+                PerimeterPoint.push_back(EdgeBegin[0]);
+                PerimeterPoint.push_back(EdgeEnd[0]);
+              }
+              
+              for (iEdge = 1; iEdge < nEdges-1; iEdge++) {
+                bool Check_1 = !((EdgeBegin[iEdge] == EdgeBegin[iEdge-1]) && (EdgeEnd[iEdge] == EdgeEnd[iEdge-1]));
+                bool Check_2 = !((EdgeBegin[iEdge] == EdgeBegin[iEdge+1]) && (EdgeEnd[iEdge] == EdgeEnd[iEdge+1]));
+                if ((Check_1 && Check_2)) {
+                  PerimeterPoint.push_back(EdgeBegin[iEdge]);
+                  PerimeterPoint.push_back(EdgeEnd[iEdge]);
+                }
+              }
+              
+              /*--- Check the  end of the list ---*/
+              
+              if (!((EdgeBegin[nEdges-1] == EdgeBegin[nEdges-2]) && (EdgeEnd[nEdges-1] == EdgeEnd[nEdges-2]))) {
+                PerimeterPoint.push_back(EdgeBegin[nEdges-1]);
+                PerimeterPoint.push_back(EdgeEnd[nEdges-1]);
+              }
+              
+            }
+            
+            else {
+              
+              /*--- Create a list with all the points ---*/
+              
+              for (iEdge = 0; iEdge < nEdges; iEdge++) {
+                SurfacePoint.push_back(EdgeBegin[iEdge]);
+                SurfacePoint.push_back(EdgeEnd[iEdge]);
+              }
+              
+              sort(SurfacePoint.begin(), SurfacePoint.end());
+              it = unique(SurfacePoint.begin(), SurfacePoint.end());
+              SurfacePoint.resize(it - SurfacePoint.begin());
+              
+              /*--- Check the begning of the list ---*/
+              
+              if (!(SurfacePoint[0] == SurfacePoint[1]) ) { PerimeterPoint.push_back(SurfacePoint[0]); }
+              
+              for (iPoint = 1; iPoint < SurfacePoint.size()-1; iPoint++) {
+                bool Check_1 = !((SurfacePoint[iPoint] == SurfacePoint[iPoint-1]) );
+                bool Check_2 = !((SurfacePoint[iPoint] == SurfacePoint[iPoint+1]) );
+                if ((Check_1 && Check_2)) { PerimeterPoint.push_back(SurfacePoint[iEdge]); }
+              }
+              
+              /*--- Check the  end of the list ---*/
+              
+              if (!((EdgeBegin[SurfacePoint.size()-1] == EdgeBegin[SurfacePoint.size()-2]) )) {
+                PerimeterPoint.push_back(SurfacePoint[SurfacePoint.size()-1]);
+              }
+              
+              SurfacePoint.clear();
+              
+            }
+            
+            sort(PerimeterPoint.begin(), PerimeterPoint.end());
+            it = unique(PerimeterPoint.begin(), PerimeterPoint.end());
+            PerimeterPoint.resize(it - PerimeterPoint.begin());
+            
+            for (iEdge = 0; iEdge < nEdges; iEdge++) {
+              
+              Perimeter = false;
+              for (iPoint = 0; iPoint < PerimeterPoint.size(); iPoint++) {
+                if (EdgeBegin[iEdge] == PerimeterPoint[iPoint]) {
+                  Perimeter = true; break;
+                }
+              }
+              
+              if (!Perimeter) SurfacePoint.push_back(EdgeBegin[iEdge]);
+              
+              Perimeter = false;
+              for (iPoint = 0; iPoint < PerimeterPoint.size(); iPoint++) {
+                if (EdgeEnd[iEdge] == PerimeterPoint[iPoint]) {
+                  Perimeter = true; break;
+                }
+              }
+              
+              if (!Perimeter) SurfacePoint.push_back(EdgeEnd[iEdge]);
+              
+            }
+            
+            /*--- Sort,and remove repeated points from the disk list of points ---*/
+            
+            sort(SurfacePoint.begin(), SurfacePoint.end());
+            it = unique(SurfacePoint.begin(), SurfacePoint.end());
+            SurfacePoint.resize(it - SurfacePoint.begin());
+            ActDiskNewPoints = SurfacePoint.size();
+            
+            if (rank == MASTER_NODE)
+              cout << "Splitting the surface " << Marker_Tag << "( " << SurfacePoint.size()  << " internal points )." << endl;
+            
+            /*--- Create a map from original point to the new ones (back plane) ---*/
+            
+            MapActDisk = new unsigned long [nPoint];
+            MapActDiskBool = new bool [nPoint];
+            SurfacePoint_Inv= new unsigned long [nPoint];
+            
+            for (iPoint = 0; iPoint < nPoint; iPoint++) {
+              MapActDiskBool[iPoint] = false;
+              MapActDisk[iPoint] = 0;
+            }
+            
+            kPoint = nPoint;
+            for (iPoint = 0; iPoint < SurfacePoint.size(); iPoint++) {
+              SurfacePoint_Inv[SurfacePoint[iPoint]] = iPoint;
+              MapActDiskBool[SurfacePoint[iPoint]] = true;
+              MapActDisk[SurfacePoint[iPoint]] = kPoint;
+             	kPoint++;
+            }
+            
+          }
+        }
+      }
+    }
+    
+    mesh_file.close();
+    
+    /*--- Store the coordinates of the new points ---*/
+    
+    CoordXActDisk = new su2double[ActDiskNewPoints];
+    CoordYActDisk = new su2double[ActDiskNewPoints];
+    CoordZActDisk = new su2double[ActDiskNewPoints];
+    
+    strcpy (cstr, val_mesh_filename.c_str());
+    mesh_file.open(cstr, ios::in);
+    
+    
+    /*--- Read the coordinates of the points ---*/
+    
+    while (getline (mesh_file, text_line)) {
+      
+      position = text_line.find ("NPOIN=",0);
+      if (position != string::npos) {
+        text_line.erase (0,6); stringstream test_line(text_line);
+        iCount = 0; while (test_line >> dummyLong) iCount++;
+        stringstream  stream_line(text_line);
+        if (iCount == 2) {  stream_line >> nPoint;  stream_line >> nPointDomain; }
+        else if (iCount == 1) { stream_line >> nPoint; }
+        
+        Counter =0;
+        for (iPoint = 0; iPoint < nPoint; iPoint++) {
+          getline (mesh_file, text_line);
+          istringstream point_line(text_line);
+          if (nDim == 2) {point_line >> Coord_2D[0]; point_line >> Coord_2D[1]; }
+          else { point_line >> Coord_3D[0]; point_line >> Coord_3D[1]; point_line >> Coord_3D[2]; }
+          
+          if (MapActDiskBool[iPoint]) {
+            CoordXActDisk[SurfacePoint_Inv[iPoint]] = Coord_3D[0];
+            CoordYActDisk[SurfacePoint_Inv[iPoint]] = Coord_3D[1];
+            Xloc += Coord_3D[0]; Yloc += Coord_3D[1];
+            
+            if (nDim == 3) {
+              CoordZActDisk[SurfacePoint_Inv[iPoint]] = Coord_3D[2];
+              Zloc += Coord_3D[2];
+            }
+            
+            Counter++;
+          }
+        }
+      }
+      
+      /*--- Find points that touch the actuatord disk surface ---*/
+      
+      position = text_line.find ("NELEM=",0);
+      if (position != string::npos) {
+        text_line.erase (0,6); nElem = atoi(text_line.c_str());
+        for (iElem = 0; iElem < nElem; iElem++) {
+          
+          getline(mesh_file, text_line);
+          istringstream elem_line(text_line);
+          
+          elem_line >> VTK_Type;
+          
+          switch(VTK_Type) {
+            case TRIANGLE:
+              elem_line >> vnodes_triangle[0]; elem_line >> vnodes_triangle[1]; elem_line >> vnodes_triangle[2];
+              
+              InElem = false;
+              
+              for (i = 0; i < N_POINTS_TRIANGLE; i++) {
+                if (MapActDiskBool[vnodes_triangle[i]]) { InElem = true; break; }
+              }
+              
+              if (InElem) {
+                for (i = 0; i < N_POINTS_TRIANGLE; i++) {
+                  VolumePoint.push_back(vnodes_triangle[i]);
+                }
+              }
+              
+              break;
+            case QUADRILATERAL:
+              elem_line >> vnodes_quad[0]; elem_line >> vnodes_quad[1]; elem_line >> vnodes_quad[2]; elem_line >> vnodes_quad[3];
+              
+              InElem = false;
+              
+              for (i = 0; i < N_POINTS_QUADRILATERAL; i++) {
+                if (MapActDiskBool[vnodes_quad[i]]) { InElem = true; break; }
+              }
+              
+              if (InElem) {
+                for (i = 0; i < N_POINTS_QUADRILATERAL; i++) {
+                  VolumePoint.push_back(vnodes_quad[i]);
+                }
+              }
+              
+              break;
+            case TETRAHEDRON:
+              elem_line >> vnodes_tetra[0]; elem_line >> vnodes_tetra[1]; elem_line >> vnodes_tetra[2]; elem_line >> vnodes_tetra[3];
+              
+              InElem = false;
+              
+              for (i = 0; i < N_POINTS_TETRAHEDRON; i++) {
+                if (MapActDiskBool[vnodes_tetra[i]]) { InElem = true; break; }
+              }
+              
+              if (InElem) {
+                for (i = 0; i < N_POINTS_TETRAHEDRON; i++) {
+                  VolumePoint.push_back(vnodes_tetra[i]);
+                }
+              }
+              
+              break;
+            case HEXAHEDRON:
+              elem_line >> vnodes_hexa[0]; elem_line >> vnodes_hexa[1]; elem_line >> vnodes_hexa[2];
+              elem_line >> vnodes_hexa[3]; elem_line >> vnodes_hexa[4]; elem_line >> vnodes_hexa[5];
+              elem_line >> vnodes_hexa[6]; elem_line >> vnodes_hexa[7];
+              
+              InElem = false;
+              
+              for (i = 0; i < N_POINTS_HEXAHEDRON; i++) {
+                if (MapActDiskBool[vnodes_hexa[i]]) { InElem = true; break; }
+              }
+              
+              if (InElem) {
+                for (i = 0; i < N_POINTS_HEXAHEDRON; i++) {
+                  VolumePoint.push_back(vnodes_hexa[i]);
+                }
+              }
+              
+              break;
+            case PRISM:
+              elem_line >> vnodes_prism[0]; elem_line >> vnodes_prism[1]; elem_line >> vnodes_prism[2];
+              elem_line >> vnodes_prism[3]; elem_line >> vnodes_prism[4]; elem_line >> vnodes_prism[5];
+              
+              InElem = false;
+              
+              for (i = 0; i < N_POINTS_PRISM; i++) {
+                if (MapActDiskBool[vnodes_prism[i]]) { InElem = true; break; }
+              }
+              
+              if (InElem) {
+                for (i = 0; i < N_POINTS_PRISM; i++) {
+                  VolumePoint.push_back(vnodes_prism[i]);
+                }
+              }
+              
+              break;
+            case PYRAMID:
+              elem_line >> vnodes_pyramid[0]; elem_line >> vnodes_pyramid[1]; elem_line >> vnodes_pyramid[2];
+              elem_line >> vnodes_pyramid[3]; elem_line >> vnodes_pyramid[4];
+              
+              InElem = false;
+              
+              for (i = 0; i < N_POINTS_PYRAMID; i++) {
+                if (MapActDiskBool[vnodes_pyramid[i]]) { InElem = true; break; }
+              }
+              
+              if (InElem) {
+                for (i = 0; i < N_POINTS_PYRAMID; i++) {
+                  VolumePoint.push_back(vnodes_pyramid[i]);
+                }
+              }
+              
+              break;
+          }
+        }
+      }
+      
+    }
+    
+    mesh_file.close();
+    
+    /*--- Compute the CG of the surface ---*/
+    
+    Xloc /= su2double(Counter);  Yloc /= su2double(Counter);  Zloc /= su2double(Counter);
+    
+    /*--- Sort,and remove repeated points from the disk list of points ---*/
+    
+    sort(VolumePoint.begin(), VolumePoint.end());
+    it = unique(VolumePoint.begin(), VolumePoint.end());
+    VolumePoint.resize(it - VolumePoint.begin());
+    nPointVolume = VolumePoint.size();
+    
+    
+    CoordXVolumePoint = new su2double[nPointVolume];
+    CoordYVolumePoint = new su2double[nPointVolume];
+    CoordZVolumePoint = new su2double[nPointVolume];
+    MapVolumePointBool = new bool[nPoint];
+    VolumePoint_Inv = new unsigned long[nPoint];
+    
+    for (iPoint = 0; iPoint < nPoint; iPoint++) {
+      MapVolumePointBool[iPoint] = false;
+    }
+    
+    for (iPoint = 0; iPoint < nPointVolume; iPoint++) {
+      MapVolumePointBool[VolumePoint[iPoint]] = true;
+      VolumePoint_Inv[VolumePoint[iPoint]] = iPoint;
+    }
+    
+    strcpy (cstr, val_mesh_filename.c_str());
+    mesh_file.open(cstr, ios::in);
+    
+    /*--- Store the coordinates of all the surface and volume
+     points that touch the actuator disk ---*/
+    
+    while (getline (mesh_file, text_line)) {
+      
+      position = text_line.find ("NPOIN=",0);
+      if (position != string::npos) {
+        text_line.erase (0,6); stringstream test_line(text_line);
+        iCount = 0; while (test_line >> dummyLong) iCount++;
+        stringstream  stream_line(text_line);
+        if (iCount == 2) {  stream_line >> nPoint;  stream_line >> nPointDomain; }
+        else if (iCount == 1) { stream_line >> nPoint; }
+        
+        Counter =0;
+        for (iPoint = 0; iPoint < nPoint; iPoint++) {
+          getline (mesh_file, text_line);
+          istringstream point_line(text_line);
+          if (nDim == 2) {point_line >> Coord_2D[0]; point_line >> Coord_2D[1]; }
+          else { point_line >> Coord_3D[0]; point_line >> Coord_3D[1]; point_line >> Coord_3D[2]; }
+          
+          if (MapVolumePointBool[iPoint]) {
+            CoordXVolumePoint[VolumePoint_Inv[iPoint]] = Coord_3D[0];
+            CoordYVolumePoint[VolumePoint_Inv[iPoint]] = Coord_3D[1];
+            if (nDim == 3) { CoordZVolumePoint[VolumePoint_Inv[iPoint]] = Coord_3D[2]; }
+          }
+        }
+      }
+      
+    }
+    
+    mesh_file.close();
+    
+    /*--- Deallocate memory ---*/
+    
+    delete [] MapVolumePointBool;
+    delete [] SurfacePoint_Inv;
+    
+    //    }
+    
+    //  	/*--- Allocate and Send-Receive some of the vectors that we have computed on the MASTER_NODE ---*/
+    
+    //    SU2_MPI::Bcast(&ActDiskNewPoints, 1, MPI_UNSIGNED_LONG, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(&nPoint, 1, MPI_UNSIGNED_LONG, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(&nPointVolume, 1, MPI_UNSIGNED_LONG, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(&Xloc, 1, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(&Yloc, 1, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(&Zloc, 1, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    
+    //    if (rank != MASTER_NODE) {
+    //      MapActDisk 				= new unsigned long [nPoint];
+    //      MapActDiskBool 		= new bool [nPoint];
+    //      VolumePoint_Inv 	= new unsigned long [nPoint];
+    //      CoordXVolumePoint = new su2double [nPointVolume];
+    //      CoordYVolumePoint = new su2double [nPointVolume];
+    //      CoordZVolumePoint = new su2double [nPointVolume];
+    //      CoordXActDisk 		= new su2double[ActDiskNewPoints];
+    //      CoordYActDisk 		= new su2double[ActDiskNewPoints];
+    //      CoordZActDisk 		= new su2double[ActDiskNewPoints];
+    //    }
+    
+    //    SU2_MPI::Bcast(MapActDisk, nPoint, MPI_UNSIGNED_LONG, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(MapActDiskBool, nPoint, MPI_UNSIGNED_SHORT, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(VolumePoint_Inv, nPoint, MPI_UNSIGNED_LONG, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(CoordXVolumePoint, nPointVolume, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(CoordYVolumePoint, nPointVolume, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(CoordZVolumePoint, nPointVolume, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(CoordXActDisk, ActDiskNewPoints, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(CoordYActDisk, ActDiskNewPoints, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    //    SU2_MPI::Bcast(CoordZActDisk, ActDiskNewPoints, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
+    
+  }
+
+  
   Global_nPoint  = 0; Global_nPointDomain   = 0; Global_nElem = 0;
   nelem_edge     = 0; Global_nelem_edge     = 0;
   nelem_triangle = 0; Global_nelem_triangle = 0;
@@ -4814,8 +5363,7 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
       
       /*--- Check for ghost points. ---*/
       stringstream test_line(text_line);
-      while (test_line >> dummyLong)
-        iCount++;
+      iCount = 0; while (test_line >> dummyLong) iCount++;
       
       /*--- Now read and store the number of points and possible ghost points. ---*/
       
@@ -4823,6 +5371,8 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
       if (iCount == 2) {
         stream_line >> nPoint;
         stream_line >> nPointDomain;
+        
+        if (actuator_disk) { nPoint += ActDiskNewPoints;  nPointDomain += ActDiskNewPoints; }
         
         /*--- Set some important point information for parallel simulations. ---*/
         
@@ -4838,6 +5388,9 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
         
       } else if (iCount == 1) {
         stream_line >> nPoint;
+        
+        if (actuator_disk) { nPoint += ActDiskNewPoints; }
+        
         nPointDomain = nPoint;
         Global_nPointDomain = nPoint;
         Global_nPoint = nPoint;
@@ -5007,6 +5560,25 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
             elem_line >> vnodes_triangle[1];
             elem_line >> vnodes_triangle[2];
             
+            
+            if (actuator_disk) {
+              for (i = 0; i<N_POINTS_TRIANGLE; i++) {
+                if (MapActDiskBool[vnodes_triangle[i]]) {
+                  Xcg = 0.0; Counter = 0;
+                  for (j = 0; j<N_POINTS_TRIANGLE; j++) {
+                    if (vnodes_triangle[j] < nPoint-ActDiskNewPoints) {
+                      Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_triangle[j]]]; Counter++;
+                    }
+                  }
+                  Xcg = Xcg / su2double(Counter);
+                  if (Counter != 0)  {
+                    if (Xcg > Xloc) { vnodes_triangle[i] = MapActDisk[vnodes_triangle[i]]; }
+                    else { vnodes_triangle[i] = vnodes_triangle[i]; }
+                  }
+                }
+              }
+            }
+            
             /*--- Decide whether we need to store this element, i.e., check if
              any of the nodes making up this element have a global index value
              that falls within the range of our linear partitioning. ---*/
@@ -5048,6 +5620,31 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
             elem_line >> vnodes_quad[2];
             elem_line >> vnodes_quad[3];
             
+            if (actuator_disk) {
+              for (i = 0; i<N_POINTS_QUADRILATERAL; i++) {
+                if (MapActDiskBool[vnodes_quad[i]]) {
+                  
+                  Xcg = 0.0; Counter = 0;
+                  for (j = 0; j<N_POINTS_QUADRILATERAL; j++) {
+                    if (vnodes_quad[j] < nPoint-ActDiskNewPoints) {
+                      Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_quad[j]]];
+                      Counter++;
+                    }
+                  }
+                  Xcg = Xcg / su2double(Counter);
+                  
+                  
+                  if (Counter != 0)  {
+                    if (Xcg > Xloc) {
+                      vnodes_quad[i] = MapActDisk[vnodes_quad[i]];
+                    }
+                    else { vnodes_quad[i] = vnodes_quad[i]; }
+                  }
+                  
+                }
+              }
+            }
+
             /*--- Decide whether we need to store this element, i.e., check if
              any of the nodes making up this element have a global index value
              that falls within the range of our linear partitioning. ---*/
@@ -5087,6 +5684,31 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
             elem_line >> vnodes_tetra[1];
             elem_line >> vnodes_tetra[2];
             elem_line >> vnodes_tetra[3];
+            
+            if (actuator_disk) {
+              for (i = 0; i<N_POINTS_TETRAHEDRON; i++) {
+                if (MapActDiskBool[vnodes_tetra[i]]) {
+                  
+                  Xcg = 0.0; Counter = 0;
+                  for (j = 0; j<N_POINTS_TETRAHEDRON; j++) {
+                    if (vnodes_tetra[j] < nPoint-ActDiskNewPoints) {
+                      Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_tetra[j]]];
+                      Counter++;
+                    }
+                  }
+                  Xcg = Xcg / su2double(Counter);
+                  
+                  
+                  if (Counter != 0)  {
+                    if (Xcg > Xloc) {
+                      vnodes_tetra[i] = MapActDisk[vnodes_tetra[i]];
+                    }
+                    else { vnodes_tetra[i] = vnodes_tetra[i]; }
+                  }
+                  
+                }
+              }
+            }
             
             /*--- Decide whether we need to store this element, i.e., check if
              any of the nodes making up this element have a global index value
@@ -5132,6 +5754,27 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
             elem_line >> vnodes_hexa[5];
             elem_line >> vnodes_hexa[6];
             elem_line >> vnodes_hexa[7];
+            
+            if (actuator_disk) {
+              for (i = 0; i<N_POINTS_HEXAHEDRON; i++) {
+                if (MapActDiskBool[vnodes_hexa[i]]) {
+                  
+                  Xcg = 0.0; Counter = 0;
+                  for (j = 0; j<N_POINTS_HEXAHEDRON; j++) {
+                    if (vnodes_hexa[j] < nPoint-ActDiskNewPoints) {
+                      Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_hexa[j]]];
+                      Counter++;
+                    }
+                  }
+                  Xcg = Xcg / su2double(Counter);
+                  
+                  if (Counter != 0)  {
+                    if (Xcg > Xloc) { vnodes_hexa[i] = MapActDisk[vnodes_hexa[i]]; }
+                    else { vnodes_hexa[i] = vnodes_hexa[i]; }
+                  }
+                }
+              }
+            }
             
             /*--- Decide whether we need to store this element, i.e., check if
              any of the nodes making up this element have a global index value
@@ -5181,6 +5824,27 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
             elem_line >> vnodes_prism[4];
             elem_line >> vnodes_prism[5];
             
+            if (actuator_disk) {
+              for (i = 0; i<N_POINTS_PRISM; i++) {
+                if (MapActDiskBool[vnodes_prism[i]]) {
+                  
+                  Xcg = 0.0; Counter = 0;
+                  for (j = 0; j<N_POINTS_PRISM; j++) {
+                    if (vnodes_prism[j] < nPoint-ActDiskNewPoints) {
+                      Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_prism[j]]];
+                      Counter++;
+                    }
+                  }
+                  Xcg = Xcg / su2double(Counter);
+                  
+                  if (Counter != 0)  {
+                    if (Xcg > Xloc) { vnodes_prism[i] = MapActDisk[vnodes_prism[i]]; }
+                    else { vnodes_prism[i] = vnodes_prism[i]; }
+                  }
+                }
+              }
+            }
+            
             /*--- Decide whether we need to store this element, i.e., check if
              any of the nodes making up this element have a global index value
              that falls within the range of our linear partitioning. ---*/
@@ -5227,6 +5891,27 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
             elem_line >> vnodes_pyramid[2];
             elem_line >> vnodes_pyramid[3];
             elem_line >> vnodes_pyramid[4];
+            
+            if (actuator_disk) {
+              for (i = 0; i<N_POINTS_PYRAMID; i++) {
+                if (MapActDiskBool[vnodes_pyramid[i]]) {
+                  
+                  Xcg = 0.0; Counter = 0;
+                  for (j = 0; j<N_POINTS_PYRAMID; j++) {
+                    if (vnodes_pyramid[j] < nPoint-ActDiskNewPoints) {
+                      Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_pyramid[j]]];
+                      Counter++;
+                    }
+                  }
+                  Xcg = Xcg / su2double(Counter);
+                  
+                  if (Counter != 0)  {
+                    if (Xcg > Xloc) { vnodes_pyramid[i] = MapActDisk[vnodes_pyramid[i]]; }
+                    else { vnodes_pyramid[i] = vnodes_pyramid[i]; }
+                  }
+                }
+              }
+            }
             
             /*--- Decide whether we need to store this element, i.e., check if
              any of the nodes making up this element have a global index value
@@ -5299,7 +5984,6 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
   unsigned long loc_adjc_size=0;
   vector<unsigned long> adjac_vec;
   unsigned long adj_elem_size;
-  vector<unsigned long>::iterator it;
   
   xadj = new idx_t [npoint_procs[rank]+1];
   xadj[0]=0;
@@ -5416,6 +6100,30 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
               elem_line >> vnodes_triangle[1];
               elem_line >> vnodes_triangle[2];
               
+              if (actuator_disk) {
+                for (i = 0; i<N_POINTS_TRIANGLE; i++) {
+                  if (MapActDiskBool[vnodes_triangle[i]]) {
+                    
+                    Xcg = 0.0; Counter = 0;
+                    for (j = 0; j<N_POINTS_TRIANGLE; j++) {
+                      if (vnodes_triangle[j] < nPoint-ActDiskNewPoints) {
+                        Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_triangle[j]]];
+                        Counter++;
+                      }
+                    }
+                    Xcg = Xcg / su2double(Counter);
+                    
+                    if (Counter != 0)  {
+                      if (Xcg > Xloc) {
+                        vnodes_triangle[i] = MapActDisk[vnodes_triangle[i]];
+                      }
+                      else { vnodes_triangle[i] = vnodes_triangle[i]; }
+                    }
+                    
+                  }
+                }
+              }
+              
               /*--- If any of the nodes were within the linear partition, the
                element is added to our element data structure. ---*/
               
@@ -5435,6 +6143,31 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
               elem_line >> vnodes_quad[1];
               elem_line >> vnodes_quad[2];
               elem_line >> vnodes_quad[3];
+              
+              if (actuator_disk) {
+                for (i = 0; i<N_POINTS_QUADRILATERAL; i++) {
+                  if (MapActDiskBool[vnodes_quad[i]]) {
+                    
+                    Xcg = 0.0; Counter = 0;
+                    for (j = 0; j<N_POINTS_QUADRILATERAL; j++) {
+                      if (vnodes_quad[j] < nPoint-ActDiskNewPoints) {
+                        Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_quad[j]]];
+                        Counter++;
+                      }
+                    }
+                    Xcg = Xcg / su2double(Counter);
+                    
+                    
+                    if (Counter != 0)  {
+                      if (Xcg > Xloc) {
+                        vnodes_quad[i] = MapActDisk[vnodes_quad[i]];
+                      }
+                      else { vnodes_quad[i] = vnodes_quad[i]; }
+                    }
+                    
+                  }
+                }
+              }
               
               /*--- If any of the nodes were within the linear partition, the
                element is added to our element data structure. ---*/
@@ -5456,6 +6189,32 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
               elem_line >> vnodes_tetra[1];
               elem_line >> vnodes_tetra[2];
               elem_line >> vnodes_tetra[3];
+              
+              
+              if (actuator_disk) {
+                for (i = 0; i<N_POINTS_TETRAHEDRON; i++) {
+                  if (MapActDiskBool[vnodes_tetra[i]]) {
+                    
+                    Xcg = 0.0; Counter = 0;
+                    for (j = 0; j<N_POINTS_TETRAHEDRON; j++) {
+                      if (vnodes_tetra[j] < nPoint-ActDiskNewPoints) {
+                        Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_tetra[j]]];
+                        Counter++;
+                      }
+                    }
+                    Xcg = Xcg / su2double(Counter);
+                    
+                    
+                    if (Counter != 0)  {
+                      if (Xcg > Xloc) {
+                        vnodes_tetra[i] = MapActDisk[vnodes_tetra[i]];
+                      }
+                      else { vnodes_tetra[i] = vnodes_tetra[i]; }
+                    }
+                    
+                  }
+                }
+              }
               
               /*--- If any of the nodes were within the linear partition, the
                element is added to our element data structure. ---*/
@@ -5481,6 +6240,27 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
               elem_line >> vnodes_hexa[5];
               elem_line >> vnodes_hexa[6];
               elem_line >> vnodes_hexa[7];
+              
+              if (actuator_disk) {
+                for (i = 0; i<N_POINTS_HEXAHEDRON; i++) {
+                  if (MapActDiskBool[vnodes_hexa[i]]) {
+                    
+                    Xcg = 0.0; Counter = 0;
+                    for (j = 0; j<N_POINTS_HEXAHEDRON; j++) {
+                      if (vnodes_hexa[j] < nPoint-ActDiskNewPoints) {
+                        Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_hexa[j]]];
+                        Counter++;
+                      }
+                    }
+                    Xcg = Xcg / su2double(Counter);
+                    
+                    if (Counter != 0)  {
+                      if (Xcg > Xloc) { vnodes_hexa[i] = MapActDisk[vnodes_hexa[i]]; }
+                      else { vnodes_hexa[i] = vnodes_hexa[i]; }
+                    }
+                  }
+                }
+              }
               
               /*--- If any of the nodes were within the linear partition, the
                element is added to our element data structure. ---*/
@@ -5509,6 +6289,27 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
               elem_line >> vnodes_prism[4];
               elem_line >> vnodes_prism[5];
               
+              if (actuator_disk) {
+                for (i = 0; i<N_POINTS_PRISM; i++) {
+                  if (MapActDiskBool[vnodes_prism[i]]) {
+                    
+                    Xcg = 0.0; Counter = 0;
+                    for (j = 0; j<N_POINTS_PRISM; j++) {
+                      if (vnodes_prism[j] < nPoint-ActDiskNewPoints) {
+                        Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_prism[j]]];
+                        Counter++;
+                      }
+                    }
+                    Xcg = Xcg / su2double(Counter);
+                    
+                    if (Counter != 0)  {
+                      if (Xcg > Xloc) { vnodes_prism[i] = MapActDisk[vnodes_prism[i]]; }
+                      else { vnodes_prism[i] = vnodes_prism[i]; }
+                    }
+                  }
+                }
+              }
+              
               /*--- If any of the nodes were within the linear partition, the
                element is added to our element data structure. ---*/
               
@@ -5532,6 +6333,27 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
               elem_line >> vnodes_pyramid[2];
               elem_line >> vnodes_pyramid[3];
               elem_line >> vnodes_pyramid[4];
+              
+              if (actuator_disk) {
+                for (i = 0; i<N_POINTS_PYRAMID; i++) {
+                  if (MapActDiskBool[vnodes_pyramid[i]]) {
+                    
+                    Xcg = 0.0; Counter = 0;
+                    for (j = 0; j<N_POINTS_PYRAMID; j++) {
+                      if (vnodes_pyramid[j] < nPoint-ActDiskNewPoints) {
+                        Xcg += CoordXVolumePoint[VolumePoint_Inv[vnodes_pyramid[j]]];
+                        Counter++;
+                      }
+                    }
+                    Xcg = Xcg / su2double(Counter);
+                    
+                    if (Counter != 0)  {
+                      if (Xcg > Xloc) { vnodes_pyramid[i] = MapActDisk[vnodes_pyramid[i]]; }
+                      else { vnodes_pyramid[i] = vnodes_pyramid[i]; }
+                    }
+                  }
+                }
+              }
               
               /*--- If any of the nodes were within the linear partition, the
                element is added to our element data structure. ---*/
@@ -5582,18 +6404,26 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
   if (rank == MASTER_NODE) {
     
     while (getline (mesh_file, text_line)) {
+      
       /*--- Read number of markers ---*/
+      
       position = text_line.find ("NMARK=",0);
       boundary_marker_count = 0;
       if (position != string::npos) {
         text_line.erase (0,6); nMarker = atoi(text_line.c_str());
+        
+        if (actuator_disk) { nMarker++;  }
+
         if (rank == MASTER_NODE) cout << nMarker << " surface markers." << endl;
         config->SetnMarker_All(nMarker);
         bound = new CPrimalGrid**[nMarker];
         nElem_Bound = new unsigned long [nMarker];
         Tag_to_Marker = new string [nMarker_Max];
         
-        for (iMarker = 0 ; iMarker < nMarker; iMarker++) {
+        bool duplicate = false;
+        iMarker=0;
+        do {
+          
           getline (mesh_file, text_line);
           text_line.erase (0,11);
           string::size_type position;
@@ -5607,17 +6437,32 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
           }
           Marker_Tag = text_line.c_str();
           
+          duplicate = false;
+          if ((actuator_disk) && ( Marker_Tag  == config->GetMarker_ActDiskInlet_TagBound(0))) {
+            duplicate = true;
+            Marker_Tag_Duplicate  = config->GetMarker_ActDiskOutlet_TagBound(0);
+          }
+          
           /*--- Physical boundaries definition ---*/
+          
           if (Marker_Tag != "SEND_RECEIVE") {
+            
             getline (mesh_file, text_line);
             text_line.erase (0,13); nElem_Bound[iMarker] = atoi(text_line.c_str());
-            if (rank == MASTER_NODE)
+            if (duplicate)  nElem_Bound[iMarker+1]  = nElem_Bound[iMarker];
+
+            if (rank == MASTER_NODE) {
               cout << nElem_Bound[iMarker]  << " boundary elements in index "<< iMarker <<" (Marker = " <<Marker_Tag<< ")." << endl;
+            if (duplicate)  cout << nElem_Bound[iMarker+1]  << " boundary elements in index "<< iMarker+1 <<" (Marker = " <<Marker_Tag_Duplicate<< ")." << endl;
+            }
+
             
             
             /*--- Allocate space for elements ---*/
             bound[iMarker] = new CPrimalGrid* [nElem_Bound[iMarker]];
             
+            if (duplicate) bound[iMarker+1] = new CPrimalGrid* [nElem_Bound[iMarker+1]];
+
             nelem_edge_bound = 0; nelem_triangle_bound = 0; nelem_quad_bound = 0; ielem = 0;
             for (iElem_Bound = 0; iElem_Bound < nElem_Bound[iMarker]; iElem_Bound++) {
               getline(mesh_file, text_line);
@@ -5638,11 +6483,30 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
                   
                   bound_line >> vnodes_edge[0]; bound_line >> vnodes_edge[1];
                   bound[iMarker][ielem] = new CLine(vnodes_edge[0], vnodes_edge[1],2);
+                  
+                  if (duplicate) {
+                    if (MapActDiskBool[vnodes_edge[0]]) { vnodes_edge[0] = MapActDisk[vnodes_edge[0]]; }
+                    if (MapActDiskBool[vnodes_edge[1]]) { vnodes_edge[1] = MapActDisk[vnodes_edge[1]]; }
+                    bound[iMarker+1][ielem] = new CLine(vnodes_edge[0], vnodes_edge[1],2);
+                  }
+                  
                   ielem++; nelem_edge_bound++; break;
                   
                 case TRIANGLE:
                   bound_line >> vnodes_triangle[0]; bound_line >> vnodes_triangle[1]; bound_line >> vnodes_triangle[2];
                   bound[iMarker][ielem] = new CTriangle(vnodes_triangle[0], vnodes_triangle[1], vnodes_triangle[2],3);
+                  
+                  if (duplicate) {
+                    if (MapActDiskBool[vnodes_triangle[0]]) { vnodes_triangle[0] = MapActDisk[vnodes_triangle[0]]; }
+                    if (MapActDiskBool[vnodes_triangle[1]]) { vnodes_triangle[1] = MapActDisk[vnodes_triangle[1]]; }
+                    if (MapActDiskBool[vnodes_triangle[2]]) { vnodes_triangle[2] = MapActDisk[vnodes_triangle[2]]; }
+                    
+                    /*--- Note that we are also changing the orientation to be consistent with the code criteria ---*/
+                    
+                    bound[iMarker+1][ielem] = new CTriangle(vnodes_triangle[0], vnodes_triangle[1], vnodes_triangle[2],3);
+                    
+                  }
+                  
                   ielem++; nelem_triangle_bound++; break;
                   
                 case QUADRILATERAL:
@@ -5650,6 +6514,16 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
                   bound_line >> vnodes_quad[0]; bound_line >> vnodes_quad[1]; bound_line >> vnodes_quad[2]; bound_line >> vnodes_quad[3];
                   
                   bound[iMarker][ielem] = new CQuadrilateral(vnodes_quad[0], vnodes_quad[1], vnodes_quad[2], vnodes_quad[3],3);
+                  
+                  if (duplicate) {
+                    
+                    if (MapActDiskBool[vnodes_quad[0]]) { vnodes_quad[0] = MapActDisk[vnodes_quad[0]]; }
+                    if (MapActDiskBool[vnodes_quad[1]]) { vnodes_quad[1] = MapActDisk[vnodes_quad[1]]; }
+                    if (MapActDiskBool[vnodes_quad[2]]) { vnodes_quad[2] = MapActDisk[vnodes_quad[2]]; }
+                    if (MapActDiskBool[vnodes_quad[3]]) { vnodes_quad[3] = MapActDisk[vnodes_quad[3]]; }
+                    bound[iMarker+1][ielem] = new CQuadrilateral(vnodes_quad[0], vnodes_quad[1], vnodes_quad[2], vnodes_quad[3],3);
+                  }
+                  
                   ielem++; nelem_quad_bound++;
                   
                   break;
@@ -5674,11 +6548,29 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
             config->SetMarker_All_SendRecv(iMarker, NONE);
             config->SetMarker_All_Out_1D(iMarker, config->GetMarker_CfgFile_Out_1D(Marker_Tag));
             
+            if (duplicate) {
+              Tag_to_Marker[config->GetMarker_CfgFile_TagBound(Marker_Tag_Duplicate)] = Marker_Tag_Duplicate;
+              config->SetMarker_All_TagBound(iMarker+1, Marker_Tag);
+              config->SetMarker_All_KindBC(iMarker+1, config->GetMarker_CfgFile_KindBC(Marker_Tag));
+              config->SetMarker_All_Monitoring(iMarker+1, config->GetMarker_CfgFile_Monitoring(Marker_Tag));
+              config->SetMarker_All_GeoEval(iMarker+1, config->GetMarker_CfgFile_GeoEval(Marker_Tag));
+              config->SetMarker_All_Designing(iMarker+1, config->GetMarker_CfgFile_Designing(Marker_Tag));
+              config->SetMarker_All_Plotting(iMarker+1, config->GetMarker_CfgFile_Plotting(Marker_Tag));
+              config->SetMarker_All_FSIinterface(iMarker+1, config->GetMarker_CfgFile_FSIinterface(Marker_Tag));
+              config->SetMarker_All_DV(iMarker+1, config->GetMarker_CfgFile_DV(Marker_Tag));
+              config->SetMarker_All_Moving(iMarker+1, config->GetMarker_CfgFile_Moving(Marker_Tag));
+              config->SetMarker_All_PerBound(iMarker+1, config->GetMarker_CfgFile_PerBound(Marker_Tag));
+              config->SetMarker_All_SendRecv(iMarker+1, NONE);
+              config->SetMarker_All_Out_1D(iMarker+1, config->GetMarker_CfgFile_Out_1D(Marker_Tag));
+            }
+            
+            
           }
           
           /*--- Send-Receive boundaries definition ---*/
           
           else {
+            
             unsigned long nelem_vertex = 0, vnodes_vertex;
             unsigned short transform;
             getline (mesh_file, text_line);
@@ -5701,8 +6593,21 @@ void CPhysicalGeometry::Read_SU2_Format_Parallel(CConfig *config, string val_mes
             }
             
           }
+          
           boundary_marker_count++;
-        }
+          
+          iMarker++;
+          
+          if (duplicate) {
+            
+            boundary_marker_count++;
+            
+            iMarker++;
+
+          }
+
+        } while (iMarker <nMarker);
+        
         if (boundary_marker_count == nMarker) break;
       }
     }
