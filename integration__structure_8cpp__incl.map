@@ -1,0 +1,34 @@
+<map id="integration_structure.cpp" name="integration_structure.cpp">
+<area shape="rect" id="node2" href="$integration__structure_8hpp.html" title="Headers of the main subroutines for space and time integration. The subroutines and functions are in ..." alt="" coords="3662,81,3799,122"/>
+<area shape="rect" id="node3" href="$mpi__structure_8hpp.html" title="Headers of the mpi interface for generalized datatypes. The subroutines and functions are in the mpi_..." alt="" coords="1071,907,1209,949"/>
+<area shape="rect" id="node13" href="$solver__structure_8hpp.html" title="Headers of the main subroutines for solving partial differential equations. The subroutines and funct..." alt="" coords="2872,171,3007,197"/>
+<area shape="rect" id="node25" href="$config__structure_8hpp.html" title="All the information about the definition of the physical problem. The subroutines and functions are i..." alt="" coords="2820,742,2960,783"/>
+<area shape="rect" id="node35" href="$geometry__structure_8hpp.html" title="Headers of the main subroutines for creating the geometrical structure. The subroutines and functions..." alt="" coords="2441,517,2596,544"/>
+<area shape="rect" id="node50" href="$integration__structure_8inl.html" title="In&#45;Line subroutines of the integration_structure.hpp file. " alt="" coords="4761,171,4915,197"/>
+<area shape="rect" id="node4" href="$datatype__structure_8hpp.html" title="Headers for generalized datatypes. The subroutines and functions are in the datatype_structure.cpp file. " alt="" coords="217,997,375,1024"/>
+<area shape="rect" id="node10" href="$mpi__structure_8inl.html" title="mpi_structure.inl" alt="" coords="1082,997,1197,1024"/>
+<area shape="rect" id="node7" href="$primitive__structure_8hpp.html" title="Header for the primitive datatype. " alt="" coords="85,1073,213,1114"/>
+<area shape="rect" id="node8" href="$ad__structure_8hpp.html" title="ad_structure.hpp" alt="" coords="237,1080,353,1107"/>
+<area shape="rect" id="node9" href="$datatype__structure_8inl.html" title="In&#45;Line subroutines of the datatype_structure.hpp file. " alt="" coords="379,1080,523,1107"/>
+<area shape="rect" id="node21" href="$fluid__model_8hpp.html" title="Headers of the main thermodynamic subroutines of the SU2 solvers. " alt="" coords="525,667,635,693"/>
+<area shape="rect" id="node32" href="$numerics__structure_8hpp.html" title="Headers of the main subroutines for the dumerical definition of the problem. The subroutines and func..." alt="" coords="1708,253,1861,280"/>
+<area shape="rect" id="node34" href="$gauss__structure_8hpp.html" title="Headers of the Finite Element structure (gaussian points) The subroutines and functions are in the ga..." alt="" coords="1570,427,1709,469"/>
+<area shape="rect" id="node40" href="$element__structure_8hpp.html" title="Headers of the Finite Element structure (elements) The subroutines and functions are in the element_s..." alt="" coords="1925,337,2077,378"/>
+<area shape="rect" id="node42" href="$variable__structure_8hpp.html" title="Headers of the main subroutines for storing all the variables for each kind of governing equation (di..." alt="" coords="883,592,1029,619"/>
+<area shape="rect" id="node45" href="$matrix__structure_8hpp.html" title="Headers of the main subroutines for creating the sparse matrices&#45;by&#45;blocks. The subroutines and funct..." alt="" coords="3079,427,3221,469"/>
+<area shape="rect" id="node46" href="$vector__structure_8hpp.html" title="Headers for the classes related to linear solvers (CG, FGMRES, etc) The subroutines and functions are..." alt="" coords="3372,749,3511,776"/>
+<area shape="rect" id="node47" href="$linear__solvers__structure_8hpp.html" title="Headers for the classes related to linear solvers (CG, FGMRES, etc) The subroutines and functions are..." alt="" coords="3383,337,3567,378"/>
+<area shape="rect" id="node48" href="$grid__movement__structure_8hpp.html" title="Headers of the main subroutines for doing the numerical grid movement (including volumetric movement..." alt="" coords="3091,246,3285,287"/>
+<area shape="rect" id="node49" href="$solver__structure_8inl.html" title="In&#45;Line subroutines of the solver_structure.hpp file. " alt="" coords="3309,253,3437,280"/>
+<area shape="rect" id="node24" href="$transport__model_8hpp.html" title="Headers of the main transport properties subroutines of the SU2 solvers. " alt="" coords="391,742,517,783"/>
+<area shape="rect" id="node31" href="$fluid__model_8inl.html" title="In&#45;Line subroutines of the solver_structure.hpp file. " alt="" coords="594,749,696,776"/>
+<area shape="rect" id="node29" href="$option__structure_8hpp.html" title="Defines classes for referencing options for easy input in CConfig. " alt="" coords="3589,832,3733,859"/>
+<area shape="rect" id="node30" href="$config__structure_8inl.html" title="In&#45;Line subroutines of the config_structure.hpp file. " alt="" coords="2826,832,2955,859"/>
+<area shape="rect" id="node44" href="$numerics__structure_8inl.html" title="In&#45;Line subroutines of the numerics_structure.hpp file. " alt="" coords="1477,344,1624,371"/>
+<area shape="rect" id="node39" href="$gauss__structure_8inl.html" title="In&#45;Line subroutines of the gauss_structure.hpp file. " alt="" coords="1431,517,1559,544"/>
+<area shape="rect" id="node36" href="$primal__grid__structure_8hpp.html" title="Headers of the main subroutines for storing the primal grid structure. The subroutines and functions ..." alt="" coords="2533,592,2699,619"/>
+<area shape="rect" id="node37" href="$dual__grid__structure_8hpp.html" title="Headers of the main subroutines for doing the complete dual grid structure. The subroutines and funct..." alt="" coords="2393,667,2547,693"/>
+<area shape="rect" id="node38" href="$geometry__structure_8inl.html" title="In&#45;Line subroutines of the geometry_structure.hpp file. " alt="" coords="2258,592,2405,619"/>
+<area shape="rect" id="node41" href="$element__structure_8inl.html" title="In&#45;Line subroutines of the element_structure.hpp file. " alt="" coords="1937,435,2077,461"/>
+<area shape="rect" id="node43" href="$variable__structure_8inl.html" title="In&#45;Line subroutines of the variable_structure.hpp file. " alt="" coords="863,667,1001,693"/>
+</map>

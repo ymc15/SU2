@@ -1,0 +1,51 @@
+<map id="option_structure.hpp" name="option_structure.hpp">
+<area shape="rect" id="node2" href="$config__structure_8hpp.html" title="All the information about the definition of the physical problem. The subroutines and functions are i..." alt="" coords="2491,80,2628,107"/>
+<area shape="rect" id="node34" href="$linear__solvers__structure_8hpp.html" title="Headers for the classes related to linear solvers (CG, FGMRES, etc) The subroutines and functions are..." alt="" coords="3335,461,3515,488"/>
+<area shape="rect" id="node3" href="$dual__grid__structure_8hpp.html" title="Headers of the main subroutines for doing the complete dual grid structure. The subroutines and funct..." alt="" coords="2317,155,2471,181"/>
+<area shape="rect" id="node4" href="$primal__grid__structure_8hpp.html" title="Headers of the main subroutines for storing the primal grid structure. The subroutines and functions ..." alt="" coords="2101,229,2267,256"/>
+<area shape="rect" id="node5" href="$geometry__structure_8hpp.html" title="Headers of the main subroutines for creating the geometrical structure. The subroutines and functions..." alt="" coords="2241,304,2396,331"/>
+<area shape="rect" id="node6" href="$element__structure_8hpp.html" title="Headers of the Finite Element structure (elements) The subroutines and functions are in the element_s..." alt="" coords="1236,461,1384,488"/>
+<area shape="rect" id="node9" href="$numerics__structure_8hpp.html" title="Headers of the main subroutines for the dumerical definition of the problem. The subroutines and func..." alt="" coords="903,552,1056,579"/>
+<area shape="rect" id="node10" href="$solver__structure_8hpp.html" title="Headers of the main subroutines for solving partial differential equations. The subroutines and funct..." alt="" coords="1981,643,2116,669"/>
+<area shape="rect" id="node11" href="$_s_u2___d_e_f_8hpp.html" title="Headers of the main subroutines of the code SU2_DEF. The subroutines and functions are in the SU2_DEF..." alt="" coords="2322,875,2424,901"/>
+<area shape="rect" id="node12" href="$output__structure_8hpp.html" title="Headers of the main subroutines for generating the file outputs. The subroutines and functions are in..." alt="" coords="2072,800,2211,827"/>
+<area shape="rect" id="node13" href="$_s_u2___d_o_t_8hpp.html" title="Headers of the main subroutines of the code SU2_DOT. The subroutines and functions are in the SU2_DOT..." alt="" coords="2575,875,2680,901"/>
+<area shape="rect" id="node14" href="$iteration__structure_8hpp.html" title="Headers of the main subroutines used by SU2_CFD. The subroutines and functions are in the definition_..." alt="" coords="1493,875,1641,901"/>
+<area shape="rect" id="node15" href="$driver__structure_8hpp.html" title="Headers of the main subroutines for driving single or multi&#45;zone problems. The subroutines and functi..." alt="" coords="1819,949,1953,976"/>
+<area shape="rect" id="node16" href="$definition__structure_8hpp.html" title="Headers of the main subroutines used by SU2_CFD. The subroutines and functions are in the definition_..." alt="" coords="1589,1024,1743,1051"/>
+<area shape="rect" id="node17" href="$_s_u2___c_f_d_8hpp.html" title="Headers of the main subroutines of the code SU2_CFD. The subroutines and functions are in the SU2_CFD..." alt="" coords="2011,1099,2115,1125"/>
+<area shape="rect" id="node18" href="$integration__structure_8hpp.html" title="Headers of the main subroutines for space and time integration. The subroutines and functions are in ..." alt="" coords="1717,725,1880,752"/>
+<area shape="rect" id="node19" href="$transfer__structure_8hpp.html" title="Headers of the transfer structure The subroutines and functions are in the transfer_structure.cpp and transfer_physics.cpp files. " alt="" coords="1293,800,1440,827"/>
+<area shape="rect" id="node25" href="$gauss__structure_8hpp.html" title="Headers of the Finite Element structure (gaussian points) The subroutines and functions are in the ga..." alt="" coords="1199,379,1333,405"/>
+<area shape="rect" id="node27" href="$grid__adaptation__structure_8hpp.html" title="Headers of the main subroutines for doing the numerical grid adaptation. " alt="" coords="2775,379,2965,405"/>
+<area shape="rect" id="node29" href="$_s_u2___m_s_h_8hpp.html" title="Headers of the main subroutines of the code SU2_MSH. The subroutines and functions are in the SU2_MSH..." alt="" coords="2889,461,2996,488"/>
+<area shape="rect" id="node30" href="$grid__movement__structure_8hpp.html" title="Headers of the main subroutines for doing the numerical grid movement (including volumetric movement..." alt="" coords="2573,552,2763,579"/>
+<area shape="rect" id="node32" href="$_s_u2___g_e_o_8hpp.html" title="Headers of the main subroutines of the code SU2_GEO. The subroutines and functions are in the SU2_GEO..." alt="" coords="3023,643,3129,669"/>
+<area shape="rect" id="node33" href="$matrix__structure_8hpp.html" title="Headers of the main subroutines for creating the sparse matrices&#45;by&#45;blocks. The subroutines and funct..." alt="" coords="3121,379,3260,405"/>
+<area shape="rect" id="node38" href="$interpolation__structure_8hpp.html" title="Headers of the main subroutines used by SU2_FSI. The subroutines and functions are in the interpolati..." alt="" coords="2771,875,2944,901"/>
+<area shape="rect" id="node43" href="$linear__solvers__structure__b_8hpp.html" title="Routines for the linear solver used in the reverse sweep of AD. " alt="" coords="3539,454,3695,495"/>
+<area shape="rect" id="node44" href="$config__structure_8cpp.html" title="Main file for managing the config file. " alt="" coords="3165,155,3301,181"/>
+<area shape="rect" id="node45" href="$fluid__model_8hpp.html" title="Headers of the main thermodynamic subroutines of the SU2 solvers. " alt="" coords="3923,379,4033,405"/>
+<area shape="rect" id="node46" href="$variable__structure_8hpp.html" title="Headers of the main subroutines for storing all the variables for each kind of governing equation (di..." alt="" coords="1663,461,1809,488"/>
+<area shape="rect" id="node42" href="$dual__grid__structure_8cpp.html" title="Main classes for defining the dual grid. " alt="" coords="2292,229,2445,256"/>
+<area shape="rect" id="node41" href="$primal__grid__structure_8cpp.html" title="Main classes for defining the primal grid elements. " alt="" coords="2050,304,2216,331"/>
+<area shape="rect" id="node40" href="$geometry__structure_8cpp.html" title="Main subroutines for creating the primal grid and multigrid structure. " alt="" coords="2189,379,2344,405"/>
+<area shape="rect" id="node7" href="$element__linear_8cpp.html" title="Definition of the linear element structure for structural applications. " alt="" coords="1255,552,1384,579"/>
+<area shape="rect" id="node8" href="$element__structure_8cpp.html" title="Definition of the Finite Element structure (elements) " alt="" coords="1081,552,1229,579"/>
+<area shape="rect" id="node20" href="$numerics__adjoint__levelset_8cpp.html" title="This file contains all the convective term discretization. " alt="" coords="347,643,540,669"/>
+<area shape="rect" id="node21" href="$numerics__adjoint__mean_8cpp.html" title="This file contains all the convective term discretization. " alt="" coords="565,643,747,669"/>
+<area shape="rect" id="node22" href="$numerics__adjoint__turbulent_8cpp.html" title="This file contains all the convective term discretization. " alt="" coords="772,643,971,669"/>
+<area shape="rect" id="node23" href="$numerics__direct__elasticity_8cpp.html" title="This file contains the routines for setting the tangent matrix and residual of a FEM linear elastic s..." alt="" coords="996,643,1191,669"/>
+<area shape="rect" id="node24" href="$numerics__direct__elasticity__linear_8cpp.html" title="This file contains the routines for setting the FEM elastic structural problem. " alt="" coords="1215,635,1385,677"/>
+<area shape="rect" id="node26" href="$gauss__structure_8cpp.html" title="Definition of the Gaussian Points structure for Finite Element applications. " alt="" coords="1076,461,1211,488"/>
+<area shape="rect" id="node28" href="$grid__adaptation__structure_8cpp.html" title="Main subroutines for grid adaptation. " alt="" coords="2674,461,2864,488"/>
+<area shape="rect" id="node31" href="$grid__movement__structure_8cpp.html" title="Subroutines for doing the grid movement using different strategies. " alt="" coords="2706,643,2896,669"/>
+<area shape="rect" id="node36" href="$linear__solvers__structure__b_8cpp.html" title="Routines for the linear solver used in the reverse sweep of AD. " alt="" coords="3285,545,3440,586"/>
+<area shape="rect" id="node37" href="$matrix__structure_8cpp.html" title="Main subroutines for doing the sparse structures. " alt="" coords="3121,461,3260,488"/>
+<area shape="rect" id="node35" href="$linear__solvers__structure_8cpp.html" title="Main classes required for solving linear systems of equations. " alt="" coords="3465,552,3644,579"/>
+<area shape="rect" id="node39" href="$interpolation__structure_8cpp.html" title="Main subroutines used by SU2_FSI. " alt="" coords="2647,949,2820,976"/>
+<area shape="rect" id="node47" href="$fluid__model_8cpp.html" title="fluid_model.cpp" alt="" coords="3923,461,4033,488"/>
+<area shape="rect" id="node48" href="$fluid__model__pig_8cpp.html" title="fluid_model_pig.cpp" alt="" coords="4058,461,4192,488"/>
+<area shape="rect" id="node49" href="$fluid__model__ppr_8cpp.html" title="fluid_model_ppr.cpp" alt="" coords="4217,461,4352,488"/>
+<area shape="rect" id="node50" href="$fluid__model__pvdw_8cpp.html" title="fluid_model_pvdw.cpp" alt="" coords="4377,461,4524,488"/>
+</map>

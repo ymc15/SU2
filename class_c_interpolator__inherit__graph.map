@@ -1,0 +1,5 @@
+<map id="CInterpolator" name="CInterpolator">
+<area shape="rect" id="node2" href="$class_c_isoparametric.html" title="Isoparametric interpolation. " alt="" coords="5,80,115,107"/>
+<area shape="rect" id="node3" href="$class_c_mirror.html" title="Mirror interpolation: copy point linking and coefficient values from the opposing mesh Assumes that t..." alt="" coords="139,80,203,107"/>
+<area shape="rect" id="node4" href="$class_c_nearest_neighbor.html" title="Nearest Neighbor interpolation. " alt="" coords="227,80,353,107"/>
+</map>

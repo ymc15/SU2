@@ -1,0 +1,6 @@
+<map id="grid_adaptation_structure.inl" name="grid_adaptation_structure.inl">
+<area shape="rect" id="node2" href="$grid__adaptation__structure_8hpp.html" title="Headers of the main subroutines for doing the numerical grid adaptation. " alt="" coords="91,80,281,107"/>
+<area shape="rect" id="node3" href="$grid__adaptation__structure_8cpp.html" title="Main subroutines for grid adaptation. " alt="" coords="5,155,195,181"/>
+<area shape="rect" id="node4" href="$_s_u2___m_s_h_8hpp.html" title="Headers of the main subroutines of the code SU2_MSH. The subroutines and functions are in the SU2_MSH..." alt="" coords="220,155,327,181"/>
+<area shape="rect" id="node5" href="$_s_u2___m_s_h_8cpp.html" title="Main file of Mesh Adaptation Code (SU2_MSH). " alt="" coords="220,229,327,256"/>
+</map>

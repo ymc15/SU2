@@ -1,0 +1,5 @@
+<map id="CDualGrid" name="CDualGrid">
+<area shape="rect" id="node2" href="$class_c_edge.html" title="Class for defining an edge. " alt="" coords="5,80,64,107"/>
+<area shape="rect" id="node3" href="$class_c_point.html" title="Class for point definition (including control volume definition). " alt="" coords="89,80,151,107"/>
+<area shape="rect" id="node4" href="$class_c_vertex.html" title="Class for vertex definition (equivalent to edges, but for the boundaries). " alt="" coords="175,80,241,107"/>
+</map>

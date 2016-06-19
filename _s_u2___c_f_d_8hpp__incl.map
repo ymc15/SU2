@@ -1,0 +1,34 @@
+<map id="SU2_CFD.hpp" name="SU2_CFD.hpp">
+<area shape="rect" id="node2" href="$mpi__structure_8hpp.html" title="Headers of the mpi interface for generalized datatypes. The subroutines and functions are in the mpi_..." alt="" coords="4547,1206,4685,1247"/>
+<area shape="rect" id="node7" href="$driver__structure_8hpp.html" title="Headers of the main subroutines for driving single or multi&#45;zone problems. The subroutines and functi..." alt="" coords="3430,171,3564,197"/>
+<area shape="rect" id="node8" href="$iteration__structure_8hpp.html" title="Headers of the main subroutines used by SU2_CFD. The subroutines and functions are in the definition_..." alt="" coords="3315,245,3463,272"/>
+<area shape="rect" id="node9" href="$solver__structure_8hpp.html" title="Headers of the main subroutines for solving partial differential equations. The subroutines and funct..." alt="" coords="2927,469,3061,496"/>
+<area shape="rect" id="node20" href="$config__structure_8hpp.html" title="All the information about the definition of the physical problem. The subroutines and functions are i..." alt="" coords="2268,1041,2408,1082"/>
+<area shape="rect" id="node27" href="$numerics__structure_8hpp.html" title="Headers of the main subroutines for the dumerical definition of the problem. The subroutines and func..." alt="" coords="4224,552,4377,579"/>
+<area shape="rect" id="node30" href="$geometry__structure_8hpp.html" title="Headers of the main subroutines for creating the geometrical structure. The subroutines and functions..." alt="" coords="2274,816,2429,843"/>
+<area shape="rect" id="node40" href="$grid__movement__structure_8hpp.html" title="Headers of the main subroutines for doing the numerical grid movement (including volumetric movement..." alt="" coords="1785,545,1980,586"/>
+<area shape="rect" id="node43" href="$integration__structure_8hpp.html" title="Headers of the main subroutines for space and time integration. The subroutines and functions are in ..." alt="" coords="3741,395,3904,421"/>
+<area shape="rect" id="node45" href="$output__structure_8hpp.html" title="Headers of the main subroutines for generating the file outputs. The subroutines and functions are in..." alt="" coords="2775,320,2913,347"/>
+<area shape="rect" id="node47" href="$transfer__structure_8hpp.html" title="Headers of the transfer structure The subroutines and functions are in the transfer_structure.cpp and transfer_physics.cpp files. " alt="" coords="2079,395,2225,421"/>
+<area shape="rect" id="node49" href="$interpolation__structure_8hpp.html" title="Headers of the main subroutines used by SU2_FSI. The subroutines and functions are in the interpolati..." alt="" coords="4598,726,4775,767"/>
+<area shape="rect" id="node50" href="$definition__structure_8hpp.html" title="Headers of the main subroutines used by SU2_CFD. The subroutines and functions are in the definition_..." alt="" coords="3691,81,3819,122"/>
+<area shape="rect" id="node3" href="$datatype__structure_8hpp.html" title="Headers for generalized datatypes. The subroutines and functions are in the datatype_structure.cpp file. " alt="" coords="2673,1296,2831,1323"/>
+<area shape="rect" id="node5" href="$mpi__structure_8inl.html" title="mpi_structure.inl" alt="" coords="4558,1296,4673,1323"/>
+<area shape="rect" id="node18" href="$fluid__model_8hpp.html" title="Headers of the main thermodynamic subroutines of the SU2 solvers. " alt="" coords="3449,965,3559,992"/>
+<area shape="rect" id="node29" href="$gauss__structure_8hpp.html" title="Headers of the Finite Element structure (gaussian points) The subroutines and functions are in the ga..." alt="" coords="4167,726,4307,767"/>
+<area shape="rect" id="node34" href="$element__structure_8hpp.html" title="Headers of the Finite Element structure (elements) The subroutines and functions are in the element_s..." alt="" coords="3945,635,4097,677"/>
+<area shape="rect" id="node35" href="$variable__structure_8hpp.html" title="Headers of the main subroutines for storing all the variables for each kind of governing equation (di..." alt="" coords="3837,891,3984,917"/>
+<area shape="rect" id="node37" href="$matrix__structure_8hpp.html" title="Headers of the main subroutines for creating the sparse matrices&#45;by&#45;blocks. The subroutines and funct..." alt="" coords="1723,726,1865,767"/>
+<area shape="rect" id="node38" href="$vector__structure_8hpp.html" title="Headers for the classes related to linear solvers (CG, FGMRES, etc) The subroutines and functions are..." alt="" coords="1080,965,1219,992"/>
+<area shape="rect" id="node39" href="$linear__solvers__structure_8hpp.html" title="Headers for the classes related to linear solvers (CG, FGMRES, etc) The subroutines and functions are..." alt="" coords="1613,635,1797,677"/>
+<area shape="rect" id="node42" href="$solver__structure_8inl.html" title="In&#45;Line subroutines of the solver_structure.hpp file. " alt="" coords="2931,552,3059,579"/>
+<area shape="rect" id="node25" href="$option__structure_8hpp.html" title="Defines classes for referencing options for easy input in CConfig. " alt="" coords="1547,1131,1692,1157"/>
+<area shape="rect" id="node26" href="$config__structure_8inl.html" title="In&#45;Line subroutines of the config_structure.hpp file. " alt="" coords="2377,1131,2505,1157"/>
+<area shape="rect" id="node36" href="$numerics__structure_8inl.html" title="In&#45;Line subroutines of the numerics_structure.hpp file. " alt="" coords="4376,643,4523,669"/>
+<area shape="rect" id="node31" href="$primal__grid__structure_8hpp.html" title="Headers of the main subroutines for storing the primal grid structure. The subroutines and functions ..." alt="" coords="1649,891,1815,917"/>
+<area shape="rect" id="node32" href="$dual__grid__structure_8hpp.html" title="Headers of the main subroutines for doing the complete dual grid structure. The subroutines and funct..." alt="" coords="1699,965,1852,992"/>
+<area shape="rect" id="node33" href="$geometry__structure_8inl.html" title="In&#45;Line subroutines of the geometry_structure.hpp file. " alt="" coords="2195,891,2343,917"/>
+<area shape="rect" id="node41" href="$grid__movement__structure_8inl.html" title="In&#45;Line subroutines of the grid_movement_structure.hpp file. " alt="" coords="1193,643,1375,669"/>
+<area shape="rect" id="node44" href="$integration__structure_8inl.html" title="In&#45;Line subroutines of the integration_structure.hpp file. " alt="" coords="3919,469,4072,496"/>
+<area shape="rect" id="node48" href="$transfer__structure_8inl.html" title="In&#45;Line subroutines of the transfer_structure.hpp file. " alt="" coords="2056,469,2195,496"/>
+</map>

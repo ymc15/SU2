@@ -1,0 +1,12 @@
+<map id="transfer_structure.hpp" name="transfer_structure.hpp">
+<area shape="rect" id="node2" href="$iteration__structure_8hpp.html" title="Headers of the main subroutines used by SU2_CFD. The subroutines and functions are in the definition_..." alt="" coords="220,80,368,107"/>
+<area shape="rect" id="node3" href="$driver__structure_8hpp.html" title="Headers of the main subroutines for driving single or multi&#45;zone problems. The subroutines and functi..." alt="" coords="72,155,206,181"/>
+<area shape="rect" id="node4" href="$definition__structure_8hpp.html" title="Headers of the main subroutines used by SU2_CFD. The subroutines and functions are in the definition_..." alt="" coords="282,229,435,256"/>
+<area shape="rect" id="node5" href="$_s_u2___c_f_d_8hpp.html" title="Headers of the main subroutines of the code SU2_CFD. The subroutines and functions are in the SU2_CFD..." alt="" coords="147,304,251,331"/>
+<area shape="rect" id="node10" href="$transfer__physics_8cpp.html" title="transfer_physics.cpp" alt="" coords="556,80,695,107"/>
+<area shape="rect" id="node11" href="$transfer__structure_8cpp.html" title="Main subroutines for physics of the information transfer between zones. " alt="" coords="719,80,866,107"/>
+<area shape="rect" id="node9" href="$iteration__structure_8cpp.html" title="Main subroutines used by SU2_CFD. " alt="" coords="332,155,480,181"/>
+<area shape="rect" id="node8" href="$driver__structure_8cpp.html" title="The main subroutines for driving single or multi&#45;zone problems. " alt="" coords="21,229,155,256"/>
+<area shape="rect" id="node7" href="$definition__structure_8cpp.html" title="Main subroutines used by SU2_CFD. " alt="" coords="282,304,435,331"/>
+<area shape="rect" id="node6" href="$_s_u2___c_f_d_8cpp.html" title="Main file of the Computational Fluid Dynamics code. " alt="" coords="147,379,251,405"/>
+</map>

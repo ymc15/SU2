@@ -1,0 +1,9 @@
+<map id="CMirror" name="CMirror">
+<area shape="rect" id="node2" href="$class_c_interpolator.html" title="Main class for defining the interpolator, it requires a child class for each particular interpolation..." alt="" coords="151,336,247,363"/>
+<area shape="rect" id="node3" href="$class_c_geometry.html" title="Parent class for defining the geometry of the problem (complete geometry, multigrid agglomerated geom..." alt="" coords="155,216,241,243"/>
+<area shape="rect" id="node4" href="$class_c_primal_grid.html" title="Class to define the numerical primal grid. " alt="" coords="5,83,96,109"/>
+<area shape="rect" id="node5" href="$class_c_vertex.html" title="Class for vertex definition (equivalent to edges, but for the boundaries). " alt="" coords="121,83,188,109"/>
+<area shape="rect" id="node6" href="$class_c_dual_grid.html" title="Class for controlling the dual volume definition. The dual volume is compose by three main elements: ..." alt="" coords="202,5,283,32"/>
+<area shape="rect" id="node7" href="$class_c_edge.html" title="Class for defining an edge. " alt="" coords="213,83,272,109"/>
+<area shape="rect" id="node8" href="$class_c_point.html" title="Class for point definition (including control volume definition). " alt="" coords="297,83,359,109"/>
+</map>

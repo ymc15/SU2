@@ -1,0 +1,5 @@
+<map id="CFluidModel" name="CFluidModel">
+<area shape="rect" id="node2" href="$class_c_ideal_gas.html" title="Child class for defining ideal gas model. " alt="" coords="95,80,176,107"/>
+<area shape="rect" id="node3" href="$class_c_peng_robinson.html" title="Child class for defining the Peng&#45;Robinson model. " alt="" coords="5,155,120,181"/>
+<area shape="rect" id="node4" href="$class_c_van_der_waals_gas.html" title="Child class for defining the Van der Waals model. " alt="" coords="144,155,273,181"/>
+</map>
