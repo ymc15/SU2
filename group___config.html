@@ -30,7 +30,7 @@
   <td id="projectlogo"><img alt="Logo" src="logoSU2_v3.3_small.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">SU2
-   &#160;<span id="projectnumber">Version 4.1.0 (Cardinal)</span>
+   &#160;<span id="projectnumber">Version 4.2.0 (Cardinal)</span>
    </div>
    <div id="projectbrief">Software suite for the simulation and design of aerospace systems, using unstructured grid technology</div>
   </td>
@@ -131,41 +131,41 @@ Functions</h2></td></tr>
 <dl class="section user"><dt>CONFIG_CATEGORY: Problem Definition </dt><dd></dd></dl>
 <p>REGIME_TYPE <br/>
  Kind of adjoint function. <br/>
- Default: COMPRESSIBLE, <a class="el" href="option__structure_8hpp.html#a3d92e0a004752d2ef55cf6c1e2e3d6f0">Options </a></p>
+ Default: COMPRESSIBLE, <a class="el" href="option__structure_8hpp.html#ac388075b0ff0438d9a0d15e4e908da49">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a3d92e0a004752d2ef55cf6c1e2e3d6f0">Option details </a></p>
 <p>DEBUG_MODE <br/>
  Flag for debug mode. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>PHYSICAL_PROBLEM <br/>
  Kind of solver Euler, NS, Continuous adjoint, etc. <br/>
- Default: NO_SOLVER, <a class="el" href="option__structure_8hpp.html#a7e93bda08563596859d4d82f0ab516ac">Options </a></p>
+ Default: NO_SOLVER, <a class="el" href="option__structure_8hpp.html#ae71525a48ada64c81ecbc7ecd9330e37">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a7e93bda08563596859d4d82f0ab516ac">Option details </a></p>
 <p>MATH_PROBLEM <br/>
- DESCRIPTION: Mathematical problem <br/>
+ Mathematical problem <br/>
  Options: DIRECT, ADJOINT</p>
 <p>KIND_TURB_MODEL <br/>
  Turbulent model definition. <br/>
- Default: NO_TURB_MODEL, <a class="el" href="option__structure_8hpp.html#ad373dc9c6ae8d8d7fe047111b3944f4e">Options </a></p>
+ Default: NO_TURB_MODEL, <a class="el" href="option__structure_8hpp.html#a4be22fbe30b91ff48152abd004d4b9b6">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ad373dc9c6ae8d8d7fe047111b3944f4e">Option details </a></p>
 <p>KIND_TRANS_MODEL <br/>
  Transition model definition. <br/>
- Default: NO_TRANS_MODEL, <a class="el" href="option__structure_8hpp.html#ae87af5bfaaf4dc4cac5b9f9570c0f691">Options </a></p>
+ Default: NO_TRANS_MODEL, <a class="el" href="option__structure_8hpp.html#a76496442a47c471e4747f072b8c42f4c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ae87af5bfaaf4dc4cac5b9f9570c0f691">Option details </a></p>
 <p>AXISYMMETRIC <br/>
  Flag for axisymmetric calculations. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>GRAVITY_FORCE <br/>
  Flag to know if the gravity force is incuded in the formulation. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>LOW_FIDELITY_SIMULATION <br/>
  Compute a low fidelity simulation. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>RESTART_SOL <br/>
  Restart solution from native solution file <br/>
  Options: NO, YES. Default: NO</p>
 <p>SYSTEM_MEASUREMENTS <br/>
  System of measurements. <br/>
- Default: SI, <a class="el" href="option__structure_8hpp.html#af6bed6db440befe2a34b40c6915d5b05">Options </a></p>
+ Default: SI, <a class="el" href="option__structure_8hpp.html#a0aaa25aad4c3df47e5717ceb7056d88f">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#af6bed6db440befe2a34b40c6915d5b05">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: FluidModel </dt><dd></dd></dl>
 <p>FLUID_MODEL <br/>
  Kind of the Fluid Model: Ideal or Van der Walls, ... . <br/>
- Default: STANDARD_AIR, <a class="el" href="option__structure_8hpp.html#ac309910df55b56aee3a4077631ef2ca6">Options </a></p>
+ Default: STANDARD_AIR, <a class="el" href="option__structure_8hpp.html#a4d35535e5c230d2478e686190de02796">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ac309910df55b56aee3a4077631ef2ca6">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Freestream Conditions </dt><dd></dd></dl>
 <p>GAS_CONSTANT <br/>
  Specific gas constant. <br/>
@@ -187,7 +187,7 @@ Functions</h2></td></tr>
  Default: 0.035</p>
 <p>VISCOSITY_MODEL <br/>
  Kind of the Viscosity Model. <br/>
- Default: SUTHERLAND, <a class="el" href="option__structure_8hpp.html#a83df276d33a9e23b8ae7dd00db6fd817">Options </a></p>
+ Default: SUTHERLAND, <a class="el" href="option__structure_8hpp.html#a745efd765ba1279092d94cac01434b14">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a83df276d33a9e23b8ae7dd00db6fd817">Option details </a></p>
 <p>MU_CONSTANT <br/>
  Constant Viscosity for ConstantViscosity model. <br/>
  Default: 1.716E-5</p>
@@ -202,15 +202,15 @@ Functions</h2></td></tr>
  Default: 110.4</p>
 <p>CONDUCTIVITY_MODEL <br/>
  Kind of the Thermal Conductivity Model. <br/>
- Default: CONSTANT_PRANDTL, <a class="el" href="option__structure_8hpp.html#a3616aebee98fba744158cf119de2c9e6">Options </a></p>
+ Default: CONSTANT_PRANDTL, <a class="el" href="option__structure_8hpp.html#abafd0da41dc44dfd60fc1113f927e11b">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a3616aebee98fba744158cf119de2c9e6">Option details </a></p>
 <p>KT_CONSTANT <br/>
  Constant Thermal Conductivity for ConstantConductivity model. <br/>
  Default: 0.0257</p>
 <p>REYNOLDS_NUMBER <br/>
  Reynolds number (non-dimensional, based on the free-stream values). Needed for viscous solvers. For incompressible solvers the Reynolds length will always be 1.0 <br/>
- DEFAULT: 0.0 \</p>
+ DEFAULT: 0.0</p>
 <p>REYNOLDS_LENGTH <br/>
- Reynolds length (1 m by default). Used for compressible solver: incompressible solver will use 1.0. \</p>
+ Reynolds length (1 m by default). Used for compressible solver: incompressible solver will use 1.0.</p>
 <p>PRANDTL_LAM <br/>
  Laminar Prandtl number (0.72 (air), only for compressible flows) <br/>
  Default: 0.72</p>
@@ -228,10 +228,10 @@ Functions</h2></td></tr>
  Default: 0.0</p>
 <p>INIT_OPTION <br/>
  Kind of Init option to choose if initializing with Reynolds number or with thermodynamic conditions. <br/>
- Default: REYNOLDS, <a class="el" href="">Options </a></p>
+ Default: REYNOLDS, <a class="el" href="option__structure_8hpp.html#a8b4bdc87597e1888425fab73d93fcbb8">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ac9f3f2c2da455edd2b4b1f7ff0688db1">Option details </a></p>
 <p>FREESTREAM_OPTION <br/>
  Kind of free stream option to choose if initializing with density or temperature. <br/>
- Default: TEMPERATURE_FS, <a class="el" href="">Options </a></p>
+ Default: TEMPERATURE_FS, <a class="el" href="option__structure_8hpp.html#af12d34648a639b0ded56025d304263d7">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a12f1af627694b6770a33eb21cbbe4a36">Option details </a></p>
 <p>FREESTREAM_PRESSURE <br/>
  Total pressure of the fluid. <br/>
  Default: 101325.0 (N/m^2)</p>
@@ -244,7 +244,7 @@ Functions</h2></td></tr>
 <p>FREESTREAM_TEMPERATURE_VE<br/>
  Free-stream vibrational-electronic temperature (288.15 K by default)</p>
 <p>FREESTREAM_VELOCITY<br/>
- DESCRIPTION: Free-stream velocity (m/s)</p>
+ Free-stream velocity (m/s)</p>
 <p>FREESTREAM_VISCOSITY <br/>
  Viscosity of the fluid. (1.853E-5 Ns/m^2 (air), 0.798E-3 Ns/m^2 (water)) <br/>
  Default: -1.0</p>
@@ -271,7 +271,7 @@ Functions</h2></td></tr>
  Default: 0.0</p>
 <p>FIXED_CL_MODE <br/>
  Activate fixed CL mode (external flow only). <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>TARGET_CL <br/>
  Specify a target CL instead of AoA (external flow only). <br/>
  Default: 0.0</p>
@@ -308,78 +308,74 @@ Functions</h2></td></tr>
  Default: -1.0</p>
 <p>REF_DIMENSIONALIZATION <br/>
  Kind of non dimensionalization. <br/>
- Default: DIMENSIONAL, <a class="el" href="">Options </a></p>
+ Default: DIMENSIONAL, <a class="el" href="option__structure_8hpp.html#a17e86ca0dc6c299743aa277137f2eb6f">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#abb44095cd1b2b41f904fc18bc658b543">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Boundary Markers </dt><dd></dd></dl>
 <p>MARKER_PLOTTING<br/>
- DESCRIPTION: Marker(s) of the surface in the surface flow solution file</p>
+ Marker(s) of the surface in the surface flow solution file</p>
 <p>MARKER_MONITORING<br/>
- DESCRIPTION: Marker(s) of the surface where evaluate the non-dimensional coefficients</p>
+ Marker(s) of the surface where evaluate the non-dimensional coefficients</p>
 <p>MARKER_DESIGNING<br/>
- DESCRIPTION: Marker(s) of the surface where objective function (design problem) will be evaluated</p>
+ Marker(s) of the surface where objective function (design problem) will be evaluated</p>
 <p>MARKER_OUT_1D <br/>
- DESCRIPTION: Outlet boundary marker(s) over which to calculate 1-D flow properties Format: ( outlet marker)</p>
+ Outlet boundary marker(s) over which to calculate 1-D flow properties Format: ( outlet marker)</p>
 <p>GEO_MARKER<br/>
- DESCRIPTION: Marker(s) of the surface where evaluate the geometrical functions</p>
+ Marker(s) of the surface where evaluate the geometrical functions</p>
 <p>MARKER_EULER<br/>
- DESCRIPTION: Euler wall boundary marker(s)</p>
+ Euler wall boundary marker(s)</p>
 <p>MARKER_FAR<br/>
- DESCRIPTION: Far-field boundary marker(s)</p>
+ Far-field boundary marker(s)</p>
 <p>MARKER_SYM<br/>
- DESCRIPTION: Symmetry boundary condition</p>
+ Symmetry boundary condition</p>
 <p>MARKER_PRESSURE<br/>
- DESCRIPTION: Symmetry boundary condition</p>
+ Symmetry boundary condition</p>
 <p>MARKER_NEARFIELD<br/>
- DESCRIPTION: Near-Field boundary condition</p>
+ Near-Field boundary condition</p>
 <p>MARKER_INTERFACE<br/>
- DESCRIPTION: Zone interface boundary marker(s)</p>
+ Zone interface boundary marker(s)</p>
 <p>MARKER_FSI_INTERFACE <br/>
- DESCRIPTION: FSI interface boundary marker(s)</p>
+ FSI interface boundary marker(s)</p>
 <p>MARKER_DIRICHLET <br/>
- DESCRIPTION: Dirichlet boundary marker(s)</p>
+ Dirichlet boundary marker(s)</p>
 <p>MARKER_ACTDISK<br/>
- DESCRIPTION: Periodic boundary marker(s) for use with SU2_MSH Format: ( periodic marker, donor marker, rotation_center_x, rotation_center_y, rotation_center_z, rotation_angle_x-axis, rotation_angle_y-axis, rotation_angle_z-axis, translation_x, translation_y, translation_z, ... )</p>
+ Periodic boundary marker(s) for use with SU2_MSH Format: ( periodic marker, donor marker, rotation_center_x, rotation_center_y, rotation_center_z, rotation_angle_x-axis, rotation_angle_y-axis, rotation_angle_z-axis, translation_x, translation_y, translation_z, ... )</p>
 <p>INLET_TYPE <br/>
   boundary type <br/>
- Default: TOTAL_CONDITIONS, <a class="el" href="option__structure_8hpp.html#ab7aed8b38c76a620151bd0cde1de059d">Options </a></p>
+ Default: TOTAL_CONDITIONS, <a class="el" href="option__structure_8hpp.html#a795270e5ebabf193319e1bc1671ea01e">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ab7aed8b38c76a620151bd0cde1de059d">Option details </a></p>
 <p>MARKER_INLET <br/>
- DESCRIPTION: Inlet boundary marker(s) with the following formats, Total Conditions: (inlet marker, total temp, total pressure, flow_direction_x, flow_direction_y, flow_direction_z, ... ) where flow_direction is a unit vector. Mass Flow: (inlet marker, density, velocity magnitude, flow_direction_x, flow_direction_y, flow_direction_z, ... ) where flow_direction is a unit vector.</p>
+ Inlet boundary marker(s) with the following formats, Total Conditions: (inlet marker, total temp, total pressure, flow_direction_x, flow_direction_y, flow_direction_z, ... ) where flow_direction is a unit vector. Mass Flow: (inlet marker, density, velocity magnitude, flow_direction_x, flow_direction_y, flow_direction_z, ... ) where flow_direction is a unit vector.</p>
 <p>MARKER_RIEMANN <br/>
- DESCRIPTION: Riemann boundary marker(s) with the following formats, a unit vector. <br/>
- OPTIONS: See <a class="el" href="option__structure_8hpp.html#a5d71f391b914291d278ea064ff1d630a">RIEMANN_TYPE</a>. The variables indicated by the option and the flow direction unit vector must be specified.</p>
+ Riemann boundary marker(s) with the following formats, a unit vector. <br/>
+ Options: See <a class="el" href="option__structure_8hpp.html#ae34afcbda437fe87726d6c4a416b2b64">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a5d71f391b914291d278ea064ff1d630a">Option details </a>. The variables indicated by the option and the flow direction unit vector must be specified.</p>
 <p>MARKER_NRBC <br/>
- DESCRIPTION: Riemann boundary marker(s) with the following formats, a unit vector.</p>
-<p>MIXING_PROCESS_TYPE <br/>
- DESCRIPTION: types of mixing process for averaging quantities at the boundaries. <br/>
- OPTIONS: see <a class="el" href="option__structure_8hpp.html#accd7998f8859c5a74f927cc327cad111">MIXINGPROCESS_TYPE</a> <br/>
- DEFAULT: AREA_AVERAGE</p>
+ Riemann boundary marker(s) with the following formats, a unit vector.</p>
 <p>MIXING_PROCESS_TYPE <br/>
  Kind of mixing process. <br/>
- Default: AREA_AVERAGE, <a class="el" href="">Options </a></p>
+ Default: AREA_AVERAGE, <a class="el" href="option__structure_8hpp.html#a20c20c0c4991ba5ec92ba86b1572cab7">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#accd7998f8859c5a74f927cc327cad111">Option details </a></p>
 <p>MARKER_MIXINGPLANE <br/>
- DESCRIPTION: Identify the boundaries in which the mixing plane is applied.</p>
+ Identify the boundaries in which the mixing plane is applied.</p>
 <p>MARKER_MIXINGPLANE <br/>
- DESCRIPTION: Identify the boundaries in which the mixing plane is applied.</p>
+ Identify the boundaries in which the mixing plane is applied.</p>
 <p>MARKER_SUPERSONIC_INLET <br/>
- DESCRIPTION: Supersonic inlet boundary marker(s) <br/>
+ Supersonic inlet boundary marker(s) <br/>
  Format: (inlet marker, temperature, static pressure, velocity_x, velocity_y, velocity_z, ... ), i.e. primitive variables specified.</p>
 <p>MARKER_SUPERSONIC_OUTLET <br/>
- DESCRIPTION: Supersonic outlet boundary marker(s)</p>
+ Supersonic outlet boundary marker(s)</p>
 <p>MARKER_OUTLET <br/>
- DESCRIPTION: Outlet boundary marker(s)<br/>
+ Outlet boundary marker(s)<br/>
 Format: ( outlet marker, back pressure (static), ... )</p>
-<p>MARKER_ISOTHERMAL DESCRIPTION: Isothermal wall boundary marker(s)<br/>
+<p>MARKER_ISOTHERMAL Isothermal wall boundary marker(s)<br/>
 Format: ( isothermal marker, wall temperature (static), ... )</p>
 <p>MARKER_HEATFLUX <br/>
- DESCRIPTION: Specified heat flux wall boundary marker(s) Format: ( Heat flux marker, wall heat flux (static), ... )</p>
+ Specified heat flux wall boundary marker(s) Format: ( Heat flux marker, wall heat flux (static), ... )</p>
 <p>MARKER_ENGINE_INFLOW <br/>
- DESCRIPTION: Engine inflow boundary marker(s) Format: ( nacelle inflow marker, fan face Mach, ... )</p>
+ Engine inflow boundary marker(s) Format: ( nacelle inflow marker, fan face Mach, ... )</p>
 <p>MARKER_ENGINE_BLEED <br/>
- DESCRIPTION: Engine bleed boundary marker(s) Format: ( nacelle inflow marker, flux, ... )</p>
+ Engine bleed boundary marker(s) Format: ( nacelle inflow marker, flux, ... )</p>
 <p>SUBSONIC_ENGINE<br/>
  Engine subsonic intake region</p>
 <p>SUBSONIC_ENGINE <br/>
  Engine intake subsonic region. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>DAMP_ENGINE_INFLOW <br/>
  Damping factor for the engine inlet. <br/>
  Default: 0.95</p>
@@ -392,7 +388,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Time-marching </dt><dd></dd></dl>
 <p>UNSTEADY_SIMULATION <br/>
  Steady or unsteady (time stepping or dual time stepping) computation. <br/>
- Default: STEADY, <a class="el" href="option__structure_8hpp.html#a67e195cd9919c129a4abecd5dec5d9d0">Options </a></p>
+ Default: STEADY, <a class="el" href="option__structure_8hpp.html#a44ef4f8067b0c80bddb862d1bd323b54">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a67e195cd9919c129a4abecd5dec5d9d0">Option details </a></p>
 <p>CFL_NUMBER <br/>
  Courant-Friedrichs-Lewy condition of the finest grid <br/>
  Default: 1.25</p>
@@ -401,7 +397,10 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 1000000</p>
 <p>CFL_ADAPT <br/>
  Activate The adaptive CFL number <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
+<p>CFL_ADAPT_PARAM<br/>
+Parameters of the adaptive CFL number (factor down, factor up, CFL limit (min and max) ) Factor down generally &gt;1.0, factor up generally &lt; 1.0 to cause the CFL to increase when residual is decreasing, and decrease when the residual is increasing or stalled. Factors up/down are the exponent in: CFL = CFL*(RhoRes_old/RhoRes_new)^power. <br/>
+ Default: (0.0,0.0,1.0,100.0)</p>
 <p>CFL_REDUCTION_ADJFLOW <br/>
  CFL reduction coefficient for the adjoint problem. <br/>
  Default: 0.8</p>
@@ -433,38 +432,38 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 1</p>
 <p>TIME_DISCRE_FLOW <br/>
  Time integration for the flow equations. <br/>
- Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Options </a></p>
+ Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#acab70439b6df7aece2ac6bd3bd48bf1c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Option details </a></p>
 <p>TIME_DISCRE_ADJLEVELSET <br/>
  Time integration for the adjoint level set model. <br/>
- Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Options </a></p>
+ Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#acab70439b6df7aece2ac6bd3bd48bf1c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Option details </a></p>
 <p>TIME_DISCRE_ADJFLOW <br/>
  Time integration for the adjoint flow equations. <br/>
- Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Options </a></p>
+ Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#acab70439b6df7aece2ac6bd3bd48bf1c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Option details </a></p>
 <p>TIME_DISCRE_TURB <br/>
  Time integration for the turbulence model. <br/>
- Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Options </a></p>
+ Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#acab70439b6df7aece2ac6bd3bd48bf1c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Option details </a></p>
 <p>TIME_DISCRE_ADJTURB <br/>
  Time integration for the adjoint turbulence model. <br/>
- Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Options </a></p>
+ Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#acab70439b6df7aece2ac6bd3bd48bf1c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Option details </a></p>
 <p>TIME_DISCRE_WAVE <br/>
  Time integration for the wave equations. <br/>
- Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Options </a></p>
+ Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#acab70439b6df7aece2ac6bd3bd48bf1c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Option details </a></p>
 <p>TIME_DISCRE_FEA <br/>
  Time integration for the FEA equations. <br/>
- Default: NEWMARK_IMPLICIT, <a class="el" href="">Options </a></p>
+ Default: NEWMARK_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a2218b64e0d1d3435ca7784ad3a834d4b">Option strings </a> ; <a class="el" href="">Option details </a></p>
 <p>TIME_DISCRE_HEAT <br/>
  Time integration for the wave equations. <br/>
- Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Options </a></p>
+ Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#acab70439b6df7aece2ac6bd3bd48bf1c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Option details </a></p>
 <p>TIME_DISCRE_POISSON <br/>
  Time integration for the wave equations. <br/>
- Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Options </a></p>
+ Default: EULER_IMPLICIT, <a class="el" href="option__structure_8hpp.html#acab70439b6df7aece2ac6bd3bd48bf1c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1c0aaa963aeef12ad1fd705409815248">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Linear solver definition </dt><dd></dd></dl>
 <p>LINEAR_SOLVER <br/>
  Linear solver for the implicit, mesh deformation, or discrete adjoint systems <br/>
- Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Options </a></p>
+ Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a5b201289ba45123f7ac6066ab5d98092">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Option details </a></p>
 <p>LINEAR_SOLVER_PREC <br/>
  Preconditioner for the Krylov linear solvers <br/>
- Default: LU_SGS, <a class="el" href="option__structure_8hpp.html#ab54440e50a711be5d03018e3d4cd6e53">Options </a></p>
+ Default: LU_SGS, <a class="el" href="option__structure_8hpp.html#a40472a6d3ed20aabd50d0b615936d6ba">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ab54440e50a711be5d03018e3d4cd6e53">Option details </a></p>
 <p>LINEAR_SOLVER_ERROR <br/>
  Min error of the linear solver for the implicit formulation. <br/>
  Default: 1E-5</p>
@@ -473,7 +472,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 10</p>
 <p>LINEAR_SOLVER_RESTART_FREQUENCY <br/>
  Restart frequency of the linear solver for the implicit formulation. <br/>
- Default: 10</p>
+ Default: 10. Use with RESTARTED_FGMRES</p>
 <p>RELAXATION_FACTOR_FLOW <br/>
  Relaxation coefficient of the linear solver mean flow. <br/>
  Default: 1.0</p>
@@ -488,10 +487,10 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 0.5</p>
 <p>ROE_TURKEL_PREC <br/>
  Flag to know if we are using a low Mach number preconditioner. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>LOW_MACH_CORR <br/>
  Flag to know if we are using a low Mach number correction. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>MIN_ROE_TURKEL_PREC <br/>
  Minimum value of Beta for the Roe-Turkel low Mach preconditioner. <br/>
  Default: 0.01</p>
@@ -500,10 +499,10 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 0.2</p>
 <p>ADJTURB_LIN_SOLVER <br/>
  Numerical solver for the turbulent adjoint implicit scheme. <br/>
- Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Options </a></p>
+ Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a5b201289ba45123f7ac6066ab5d98092">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Option details </a></p>
 <p>ADJTURB_LIN_PREC <br/>
  Preconditioner of the turbulent adjoint linear solver. <br/>
- Default: LU_SGS, <a class="el" href="option__structure_8hpp.html#ab54440e50a711be5d03018e3d4cd6e53">Options </a></p>
+ Default: LU_SGS, <a class="el" href="option__structure_8hpp.html#a40472a6d3ed20aabd50d0b615936d6ba">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ab54440e50a711be5d03018e3d4cd6e53">Option details </a></p>
 <p>ADJTURB_LIN_ERROR <br/>
  Min error of the turbulent adjoint linear solver for the implicit formulation. <br/>
  Default: 1E-5</p>
@@ -515,18 +514,14 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 0.001</p>
 <p>DISCADJ_LIN_SOLVER <br/>
  Linear solver for the discrete adjoint system. <br/>
- Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Options </a></p>
+ Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a5b201289ba45123f7ac6066ab5d98092">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Option details </a></p>
 <p>DISCADJ_LIN_PREC <br/>
  Preconditioner of the discrete adjoint linear solver. <br/>
- Default: ILU, <a class="el" href="option__structure_8hpp.html#ab54440e50a711be5d03018e3d4cd6e53">Options </a></p>
+ Default: ILU, <a class="el" href="option__structure_8hpp.html#a40472a6d3ed20aabd50d0b615936d6ba">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ab54440e50a711be5d03018e3d4cd6e53">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Convergence </dt><dd></dd></dl>
 <p>CONV_CRITERIA <br/>
- Convergence criteria <br/>
- OPTIONS: see <a class="el" href="option__structure_8hpp.html#a523202194d6b1b3e8704f45dfada6028">Converge_Crit_Map</a> <br/>
- DEFAULT: RESIDUAL</p>
-<p>CONV_CRITERIA <br/>
  Kind of convergence criteria. <br/>
- Default: RESIDUAL, <a class="el" href="option__structure_8hpp.html#a2b849477d7fb6dc07e2c3727b7576598">Options </a></p>
+ Default: RESIDUAL, <a class="el" href="option__structure_8hpp.html#a523202194d6b1b3e8704f45dfada6028">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a2b849477d7fb6dc07e2c3727b7576598">Option details </a></p>
 <p>RESIDUAL_REDUCTION <br/>
  Residual reduction (order of magnitude with respect to the initial value)<br/>
  DEFAULT: 3.0</p>
@@ -556,7 +551,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: -9.0</p>
 <p>RESIDUAL_FUNC_FLOW <br/>
  Equation to apply residual convergence to. <br/>
- Default: RHO_RESIDUAL, <a class="el" href="option__structure_8hpp.html#aa2f6213dec45e625dc5e9831537937e3">Options </a></p>
+ Default: RHO_RESIDUAL, <a class="el" href="option__structure_8hpp.html#a1ed56cdfbcfe5839062f9badc10498c1">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#aa2f6213dec45e625dc5e9831537937e3">Option details </a></p>
 <p>STARTCONV_ITER <br/>
  Iteration number to begin convergence monitoring <br/>
  Default: 5</p>
@@ -568,10 +563,10 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 1E-10</p>
 <p>CAUCHY_FUNC_FLOW <br/>
  Flow functional for the Cauchy criteria <br/>
- Default: DRAG_COEFFICIENT, <a class="el" href="option__structure_8hpp.html#a451d8d6bd6a84f670f76e9fc4e3dfe8a">Options </a></p>
+ Default: DRAG_COEFFICIENT, Options: DRAG_COEFFICIENT, LIFT_COEFFICIENT, MASS_FLOW_RATE, NEARFIELD_PRESSURE</p>
 <p>CAUCHY_FUNC_ADJFLOW <br/>
  Function where to apply the convergence criteria in the adjoint problem. <br/>
- Default: SENS_GEOMETRY, <a class="el" href="option__structure_8hpp.html#aa2eccecc05396e177dacdeb7be2407a3">Options </a></p>
+ Default: SENS_GEOMETRY, Options: SENS_GEOMETRY, SENS_MACH </p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Multi-grid </dt><dd></dd></dl>
 <p>START_UP_ITER <br/>
  Start up iterations using the fine grid. <br/>
@@ -583,11 +578,11 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Kind of multigrid cycle. <br/>
  Default: V_CYCLE, <a class="el" href="option__structure_8hpp.html#a6bfa7c8f0791439d94dd3558e015bc74">Options </a></p>
 <p>MG_PRE_SMOOTH<br/>
- DESCRIPTION: Multi-grid pre-smoothing level</p>
+ Multi-grid pre-smoothing level</p>
 <p>MG_POST_SMOOTH<br/>
- DESCRIPTION: Multi-grid post-smoothing level</p>
+ Multi-grid post-smoothing level</p>
 <p>MG_CORRECTION_SMOOTH<br/>
- DESCRIPTION: Jacobi implicit smoothing of the correction</p>
+ Jacobi implicit smoothing of the correction</p>
 <p>MG_DAMP_RESTRICTION <br/>
  Damping factor for the residual restriction. <br/>
  Default: 0.75</p>
@@ -597,7 +592,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Spatial Discretization </dt><dd></dd></dl>
 <p>NUM_METHOD_GRAD <br/>
  Numerical method for computation of spatial gradients. <br/>
- Default: WEIGHTED_LEAST_SQUARES, <a class="el" href="">Options </a></p>
+ Default: WEIGHTED_LEAST_SQUARES, <a class="el" href="option__structure_8hpp.html#ac50bec24751dde97f2a161a941eea8f5">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#af38c934f477044b7ceb0394ffd9b3ea4">Option details </a></p>
 <p>LIMITER_COEFF <br/>
  Limiter coefficient. <br/>
  Default: 0.5 <br/>
@@ -609,65 +604,58 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Coefficient to identify the limit of a sharp edge. <br/>
  Default: 3.0. Use with sharp edges limiter.</p>
 <p>CONV_NUM_METHOD_FLOW <br/>
- DESCRIPTION: Convective numerical method <br/>
- OPTIONS: See <a class="el" href="option__structure_8hpp.html#a69c0afe1865405530bb0d176030ce15d">Upwind_Map</a> , <a class="el" href="option__structure_8hpp.html#aa1026fdcca89a9b26a8c6345fc2ac38f">Centered_Map</a>.</p>
+ Convective numerical method <br/>
+ OPTIONS: See <a class="el" href="option__structure_8hpp.html#a0e6f6eb4c523780ba375ff4b5ecb906a">upwind </a> , <a class="el" href="option__structure_8hpp.html#a3f8233d6265facefd98dd3e9a3a8eef2">centered </a> options.</p>
 <p>SPATIAL_ORDER_FLOW <br/>
  Order of the spatial numerical integration. <br/>
- Default: SECOND_ORDER, <a class="el" href="">Options </a></p>
+ Default: SECOND_ORDER, <a class="el" href="option__structure_8hpp.html#a15e4259c31ea8302377f04c1d7d937da">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ad0ac8ba71e8483484bc9126958bf4637">Option details </a></p>
 <p>SLOPE_LIMITER_FLOW <br/>
  Slope limiter for flow equations. <br/>
- Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Options </a></p>
+ Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a3ace10a16534067e33a24e327afcf948">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Option details </a></p>
 <p>AD_COEFF_FLOW <br/>
- DESCRIPTION: 1st, 2nd and 4th order artificial dissipation coefficients</p>
+ 1st, 2nd and 4th order artificial dissipation coefficients</p>
 <p>CONV_NUM_METHOD_ADJFLOW <br/>
- DESCRIPTION: Convective numerical method for the adjoint solver. <br/>
- OPTIONS: See <a class="el" href="option__structure_8hpp.html#a69c0afe1865405530bb0d176030ce15d">Upwind_Map</a> , <a class="el" href="option__structure_8hpp.html#aa1026fdcca89a9b26a8c6345fc2ac38f">Centered_Map</a>. Note: not all methods are guaranteed to be implemented for the adjoint solver.</p>
-<p>SPATIAL_ORDER_ADJFLOW <br/>
- Spatial numerical order integration <br/>
- OPTIONS: See <a class="el" href="option__structure_8hpp.html#a15e4259c31ea8302377f04c1d7d937da">SpatialOrder_Map</a> <br/>
- DEFAULT: SECOND_ORDER</p>
+ Convective numerical method for the adjoint solver. <br/>
+ See <a class="el" href="option__structure_8hpp.html#a0e6f6eb4c523780ba375ff4b5ecb906a">upwind </a> , <a class="el" href="option__structure_8hpp.html#a3f8233d6265facefd98dd3e9a3a8eef2">centered </a> options.. Note: not all methods are guaranteed to be implemented for the adjoint solver.</p>
 <p>SPATIAL_ORDER_ADJFLOW <br/>
  Order of the spatial numerical integration. <br/>
- Default: SECOND_ORDER, <a class="el" href="">Options </a></p>
-<p>SLOPE_LIMITER_ADJFLOW Slope limiter for the adjoint solution. <br/>
- OPTIONS: See <a class="el" href="option__structure_8hpp.html#a3ace10a16534067e33a24e327afcf948">Limiter_Map</a> <br/>
- DEFAULT VENKATAKRISHNAN</p>
+ Default: SECOND_ORDER, <a class="el" href="option__structure_8hpp.html#a15e4259c31ea8302377f04c1d7d937da">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ad0ac8ba71e8483484bc9126958bf4637">Option details </a></p>
 <p>SLOPE_LIMITER_ADJFLOW <br/>
  Slope limiter for the adjoint equation. <br/>
- Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Options </a></p>
-<p>AD_COEFF_ADJFLOW <br/>
- DESCRIPTION: 1st, 2nd and 4th order artificial dissipation coefficients for the adjoint solver. <br/>
+ Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a3ace10a16534067e33a24e327afcf948">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Option details </a></p>
+<p>AD_COEFF_ADJFLOW<br/>
+ 1st, 2nd and 4th order artificial dissipation coefficients for the adjoint solver. <br/>
  FORMAT and default values: AD_COEFF_ADJFLOW = (0.15, 0.5, 0.02)</p>
 <p>SPATIAL_ORDER_TURB <br/>
  Order of the spatial numerical integration. <br/>
- Default: FIRST_ORDER, <a class="el" href="">Options </a></p>
+ Default: FIRST_ORDER, <a class="el" href="option__structure_8hpp.html#a15e4259c31ea8302377f04c1d7d937da">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ad0ac8ba71e8483484bc9126958bf4637">Option details </a></p>
 <p>SLOPE_LIMITER_TURB <br/>
  Slope limiter for the turbulence equation. <br/>
- Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Options </a></p>
+ Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a3ace10a16534067e33a24e327afcf948">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Option details </a></p>
 <p>CONV_NUM_METHOD_TURB <br/>
- DESCRIPTION: Convective numerical method</p>
+ Convective numerical method</p>
 <p>SPATIAL_ORDER_ADJTURB <br/>
  Order of the spatial numerical integration. <br/>
- Default: FIRST_ORDER, <a class="el" href="">Options </a></p>
+ Default: FIRST_ORDER, <a class="el" href="option__structure_8hpp.html#a15e4259c31ea8302377f04c1d7d937da">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ad0ac8ba71e8483484bc9126958bf4637">Option details </a></p>
 <p>SLOPE_LIMITER_ADJTURB <br/>
  Slope limiter for the adjoint turbulent equation. <br/>
- Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Options </a></p>
+ Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a3ace10a16534067e33a24e327afcf948">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Option details </a></p>
 <p>CONV_NUM_METHOD_ADJTURB<br/>
- DESCRIPTION: Convective numerical method for the adjoint/turbulent problem</p>
+ Convective numerical method for the adjoint/turbulent problem</p>
 <p>SPATIAL_ORDER_ADJLEVELSET <br/>
  Order of the spatial numerical integration. <br/>
- Default: SECOND_ORDER, <a class="el" href="">Options </a></p>
+ Default: SECOND_ORDER, <a class="el" href="option__structure_8hpp.html#a15e4259c31ea8302377f04c1d7d937da">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ad0ac8ba71e8483484bc9126958bf4637">Option details </a></p>
 <p>SLOPE_LIMITER_ADJLEVELSET <br/>
  Slope limiter for the adjoint level set equation. <br/>
- Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Options </a></p>
+ Default: VENKATAKRISHNAN, <a class="el" href="option__structure_8hpp.html#a3ace10a16534067e33a24e327afcf948">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1038258a01667f15da82d5ea70fdb56b">Option details </a></p>
 <p>CONV_NUM_METHOD_ADJLEVELSET <br/>
- DESCRIPTION: Convective numerical method for the adjoint levelset problem.</p>
+ Convective numerical method for the adjoint levelset problem.</p>
 <p>VISCOUS_LIMITER_FLOW <br/>
- <br/>
- Options: YES, NO. Default: YES</p>
+ Viscous limiter mean flow equations <br/>
+ Options: YES, NO. Default: NO</p>
 <p>VISCOUS_LIMITER_TURB <br/>
- Viscous limiters. <br/>
- Options: YES, NO. Default: YES</p>
+ Viscous limiter turbulent equations <br/>
+ Options: YES, NO. Default: NO</p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Adjoint and Gradient </dt><dd></dd></dl>
 <p>LIMIT_ADJFLOW <br/>
  Adjoint variable limit. <br/>
@@ -677,12 +665,12 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Options: YES, NO. Default: YES</p>
 <p>OBJECTIVE_FUNCTION <br/>
  Kind of objective function. used with the adjoint solvers<br/>
- Default: DRAG_COEFFICIENT, <a class="el" href="option__structure_8hpp.html#a451d8d6bd6a84f670f76e9fc4e3dfe8a">Options </a></p>
+ Default: DRAG_COEFFICIENT, <a class="el" href="option__structure_8hpp.html#a6821126aa7ef692ca81bbe37c0f045be">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a451d8d6bd6a84f670f76e9fc4e3dfe8a">Option details </a></p>
 <p>OBJ_CHAIN_RULE_COEFF <br/>
- DESCRIPTION: Coefficients defining the objective function gradient using the chain rule with area-averaged outlet primitive variables. This is used with the genereralized outflow objective.</p>
+ Coefficients defining the objective function gradient using the chain rule with area-averaged outlet primitive variables. This is used with the genereralized outflow objective.</p>
 <p>GEO_ORIENTATION_SECTIONS <br/>
  Axis orientation. <br/>
- Default: Y_AXIS, <a class="el" href="option__structure_8hpp.html#a0d1aba61f7c42e6aaaec0bbe76314860">Options </a></p>
+ Default: Y_AXIS, <a class="el" href="option__structure_8hpp.html#ab1a4d3a8d00ac3291327bbd7afc7ab27">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a0d1aba61f7c42e6aaaec0bbe76314860">Option details </a></p>
 <p>GEO_NUMBER_SECTIONS <br/>
  Number of section cuts to make when calculating internal volume. <br/>
  Default: 5</p>
@@ -691,16 +679,16 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 101</p>
 <p>GEO_PLOT_SECTIONS <br/>
  Write sectional forces for specified markers. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>GEO_MODE <br/>
  Gemoetry mode (analysis or gradient computation). <br/>
- Default: FUNCTION, <a class="el" href="">Options </a></p>
+ Default: FUNCTION, <a class="el" href="option__structure_8hpp.html#a5fb3349fd52124ab2fb73bcb20aa548e">Options </a></p>
 <p>DRAG_IN_SONICBOOM <br/>
  Weight of the drag coefficient. <br/>
  Default: 0.0</p>
 <p>SENS_SMOOTHING <br/>
  Kind of sensitivity smoothing technique. <br/>
- Default: NO_SMOOTH, <a class="el" href="option__structure_8hpp.html#af1fc856942c8b41af45fc2cdf204deff">Options </a></p>
+ Default: NO_SMOOTH, <a class="el" href="option__structure_8hpp.html#ab1814ef8720e55bb88ac9be3ae91b130">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#af1fc856942c8b41af45fc2cdf204deff">Option details </a></p>
 <p>FROZEN_VISC <br/>
  Flag for adjoint problem with/without frozen viscosity. <br/>
  Options: YES, NO. Default: YES</p>
@@ -708,79 +696,77 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Fix an azimuthal line due to misalignments of the nearfield. <br/>
  Default: 90.0</p>
 <p>SENS_REMOVE_SHARP <br/>
- Remove sharp edges from the sensitivity evaluation <br/>
- Format: SENS_REMOVE_SHARP = YES <br/>
- DEFAULT: NO</p>
-<p>SENS_REMOVE_SHARP <br/>
  Flag for removing or not the sharp edges from the sensitivity computation. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Input/output files and formats </dt><dd></dd></dl>
 <p>OUTPUT_FORMAT <br/>
  Format of the output files. <br/>
- Default: TECPLOT, <a class="el" href="option__structure_8hpp.html#a1b7b3eb4b72f79dbfd1733dd24d90e48">Options </a></p>
+ Default: TECPLOT, <a class="el" href="option__structure_8hpp.html#a538808fe1f82978db6b7559611718f75">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1b7b3eb4b72f79dbfd1733dd24d90e48">Option details </a></p>
 <p>MESH_FORMAT <br/>
  Mesh input format. <br/>
- Default: SU2, <a class="el" href="option__structure_8hpp.html#aec049644896c454c49cece18d10b2681">Options </a></p>
+ Default: SU2, <a class="el" href="option__structure_8hpp.html#a695a07142b5710fb529f6e0c1bede41a">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#aec049644896c454c49cece18d10b2681">Option details </a></p>
+<p>MESH_FILENAME<br/>
+ Mesh input file Default: mesh.su2</p>
 <p>MESH_OUT_FILENAME <br/>
- DESCRIPTION: Mesh output file name. Used when converting, scaling, or deforming a mesh. <br/>
+ Mesh output file name. Used when converting, scaling, or deforming a mesh. <br/>
  DEFAULT: mesh_out.su2</p>
 <p>CONV_FILENAME <br/>
- DESCRIPTION: Output file convergence history (w/o extension) <br/>
+ Output file convergence history (w/o extension) <br/>
  DEFAULT: history</p>
 <p>BREAKDOWN_FILENAME <br/>
- DESCRIPTION: Output file forces breakdown</p>
+ Output file forces breakdown</p>
 <p>CONV_FILENAME <br/>
- DESCRIPTION: Output file convergence history (w/o extension) <br/>
+ Output file convergence history (w/o extension) <br/>
  DEFAULT: history</p>
 <p>WRITE_CONV_FILENAME_FSI <br/>
  Write convergence file for FSI problems. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>SOLUTION_FLOW_FILENAME <br/>
- DESCRIPTION: Restart flow input file (the file output under the filename set by RESTART_FLOW_FILENAME) <br/>
+ Restart flow input file (the file output under the filename set by RESTART_FLOW_FILENAME) <br/>
  DEFAULT: solution_flow.dat</p>
 <p>SOLUTION_ADJ_FILENAME<br/>
- DESCRIPTION: Restart adjoint input file. Objective function abbreviation is expected.</p>
+ Restart adjoint input file. Objective function abbreviation is expected.</p>
 <p>SOLUTION_FLOW_FILENAME <br/>
- DESCRIPTION: Restart structure input file (the file output under the filename set by RESTART_FLOW_FILENAME) <br/>
+ Restart structure input file (the file output under the filename set by RESTART_FLOW_FILENAME) <br/>
  Default: solution_flow.dat</p>
 <p>RESTART_FLOW_FILENAME <br/>
- DESCRIPTION: Output file restart flow</p>
+ Output file restart flow</p>
 <p>RESTART_ADJ_FILENAME <br/>
- DESCRIPTION: Output file restart adjoint. Objective function abbreviation will be appended.</p>
+ Output file restart adjoint. Objective function abbreviation will be appended.</p>
 <p>RESTART_WAVE_FILENAME <br/>
- DESCRIPTION: Output file restart wave</p>
+ Output file restart wave</p>
 <p>RESTART_FLOW_FILENAME <br/>
- DESCRIPTION: Output file restart structure</p>
+ Output file restart structure</p>
 <p>VOLUME_FLOW_FILENAME <br/>
- DESCRIPTION: Output file flow (w/o extension) variables</p>
+ Output file flow (w/o extension) variables</p>
 <p>VOLUME_STRUCTURE_FILENAME <br/>
- DESCRIPTION: Output file structure (w/o extension) variables</p>
+ Output file structure (w/o extension) variables</p>
 <p>SURFACE_STRUCTURE_FILENAME <br/>
- DESCRIPTION: Output file structure (w/o extension) variables</p>
+ Output file structure (w/o extension) variables</p>
 <p>SURFACE_WAVE_FILENAME <br/>
- DESCRIPTION: Output file structure (w/o extension) variables</p>
+ Output file structure (w/o extension) variables</p>
 <p>SURFACE_HEAT_FILENAME <br/>
- DESCRIPTION: Output file structure (w/o extension) variables</p>
+ Output file structure (w/o extension) variables</p>
 <p>VOLUME_WAVE_FILENAME <br/>
- DESCRIPTION: Output file wave (w/o extension) variables</p>
+ Output file wave (w/o extension) variables</p>
 <p>VOLUME_HEAT_FILENAME <br/>
- DESCRIPTION: Output file wave (w/o extension) variables</p>
+ Output file wave (w/o extension) variables</p>
 <p>VOLUME_ADJWAVE_FILENAME <br/>
- DESCRIPTION: Output file adj. wave (w/o extension) variables</p>
+ Output file adj. wave (w/o extension) variables</p>
 <p>VOLUME_ADJ_FILENAME <br/>
- DESCRIPTION: Output file adjoint (w/o extension) variables</p>
+ Output file adjoint (w/o extension) variables</p>
 <p>GRAD_OBJFUNC_FILENAME <br/>
- DESCRIPTION: Output objective function gradient</p>
+ Output objective function gradient</p>
 <p>VALUE_OBJFUNC_FILENAME <br/>
- DESCRIPTION: Output objective function</p>
+ Output objective function</p>
 <p>SURFACE_FLOW_FILENAME <br/>
- DESCRIPTION: Output file surface flow coefficient (w/o extension)</p>
+ Output file surface flow coefficient (w/o extension)</p>
 <p>SURFACE_ADJ_FILENAME <br/>
- DESCRIPTION: Output file surface adjoint coefficient (w/o extension)</p>
+ Output file surface adjoint coefficient (w/o extension)</p>
 <p>SURFACE_SENS_FILENAME_FILENAME <br/>
- DESCRIPTION: Output file surface sensitivity (discrete adjoint) (w/o extension)</p>
+ Output file surface sensitivity (discrete adjoint) (w/o extension)</p>
 <p>VOLUME_SENS_FILENAME <br/>
- DESCRIPTION: Output file volume sensitivity (discrete adjoint))</p>
+ Output file volume sensitivity (discrete adjoint))</p>
 <p>WRT_SOL_FREQ <br/>
  Writing solution frequency. <br/>
  Default: 1000</p>
@@ -795,7 +781,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 10</p>
 <p>LOW_MEMORY_OUTPUT <br/>
  Output less information for lower memory use. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>WRT_VOL_SOL <br/>
  Write a volume solution file. <br/>
  Options: YES, NO. Default: YES</p>
@@ -807,26 +793,26 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Options: YES, NO. Default: YES</p>
 <p>WRT_RESIDUALS <br/>
  Write residuals to solution file. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>WRT_LIMITERS <br/>
  Write residuals to solution file. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>WRT_SHARPEDGES <br/>
  Write sharp edge limiter information to solution file. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>WRT_HALO <br/>
  Write rind layers in solution files. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>ONE_D_OUTPUT <br/>
  Output averaged outlet flow values on specified exit marker. <br/>
  Use with MARKER_OUT_1D.</p>
 <p>CONSOLE_OUTPUT_VERBOSITY <br/>
  Level of verbosity for console output. <br/>
- Default: VERB_HIGH, <a class="el" href="">Options </a></p>
+ Default: VERB_HIGH, <a class="el" href="option__structure_8hpp.html#a85560becb339f9dfb12db7ad76090c3a">Options </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Dynamic mesh definition </dt><dd></dd></dl>
 <p>GRID_MOVEMENT <br/>
  Flag to know if there is grid movement. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>GRID_MOVEMENT_KIND <br/>
  List specifying values for:  Options.</p>
 <p>MACH_MOTION <br/>
@@ -883,7 +869,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Grid adaptation </dt><dd></dd></dl>
 <p>KIND_ADAPT <br/>
  Kind of numerical grid adaptation. <br/>
- Default: NO_ADAPT, <a class="el" href="option__structure_8hpp.html#af7c1c2099c3cc1e62cf123b468d04c4a">Options </a></p>
+ Default: NO_ADAPT, <a class="el" href="option__structure_8hpp.html#a8ec624217da36e64b8f80654121f8579">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#af7c1c2099c3cc1e62cf123b468d04c4a">Option details </a></p>
 <p>NEW_ELEMS <br/>
  Elements to adapt in the numerical grid adaptation process. <br/>
  Default: -1.0</p>
@@ -892,10 +878,10 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 0.5</p>
 <p>ANALYTICAL_SURFDEF <br/>
  Information about the analytical definition of the surface for grid adaptation. <br/>
- Default: NO_GEO_ANALYTIC, <a class="el" href="option__structure_8hpp.html#aa993e6648e36baf41346a24d58b0ddd2">Options </a></p>
+ Default: NO_GEO_ANALYTIC, <a class="el" href="option__structure_8hpp.html#accbb443b6fc673c29b93ba2e5d258e0c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#aa993e6648e36baf41346a24d58b0ddd2">Option details </a></p>
 <p>SMOOTH_GEOMETRY <br/>
  Smooth the numerical grid. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>ADAPT_BOUNDARY <br/>
  Adapt the elements on the boundary. <br/>
  Options: YES, NO. Default: YES</p>
@@ -924,10 +910,10 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Wind Gust </dt><dd></dd></dl>
 <p>WIND_GUST <br/>
  Flag to know if there is a wind gust. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>GUST_TYPE <br/>
  Type of Gust. <br/>
- Default: NO_GUST, <a class="el" href="option__structure_8hpp.html#a037cc1c98b2fc32c478ea1f42e16986d">Options </a></p>
+ Default: NO_GUST, <a class="el" href="option__structure_8hpp.html#a6bed2290f3df2c5e0599948e55dfdc82">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a037cc1c98b2fc32c478ea1f42e16986d">Option details </a></p>
 <p>GUST_WAVELENGTH <br/>
  The gust wavelength. <br/>
  Default: 0.0</p>
@@ -945,11 +931,11 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 0.0</p>
 <p>GUST_DIR <br/>
  Direction of the gust. <br/>
- Default: Y_DIR, <a class="el" href="option__structure_8hpp.html#a3d337267cf8d311cf28283ef95314b56">Options </a></p>
+ Default: Y_DIR, <a class="el" href="option__structure_8hpp.html#a1943790c747a4f65f904c3218d20eaf8">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a3d337267cf8d311cf28283ef95314b56">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Equivalent Area </dt><dd></dd></dl>
 <p>EQUIV_AREA <br/>
  Flag to know if the code is going to compute and plot the equivalent area. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>EA_SCALE_FACTOR <br/>
  Equivalent Area scaling factor. <br/>
  Default: 1.0</p>
@@ -981,12 +967,38 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Grid deformation </dt><dd></dd></dl>
 <p>DV_KIND <br/>
  List specifying values for:  Options.</p>
+<p>DV_PARAM<br/>
+ Parameters of the shape deformation</p>
+<ul>
+<li>FFD_CONTROL_POINT_2D ( FFDBox ID, i_Ind, j_Ind, x_Disp, y_Disp )</li>
+<li>FFD_RADIUS_2D ( FFDBox ID )</li>
+<li>FFD_CAMBER_2D ( FFDBox ID, i_Ind )</li>
+<li>FFD_THICKNESS_2D ( FFDBox ID, i_Ind )</li>
+<li>HICKS_HENNE ( Lower Surface (0)/Upper Surface (1)/Only one Surface (2), x_Loc )</li>
+<li>COSINE_BUMP ( Lower Surface (0)/Upper Surface (1)/Only one Surface (2), x_Loc, Thickness )</li>
+<li>FOURIER ( Lower Surface (0)/Upper Surface (1)/Only one Surface (2), index, cos(0)/sin(1) )</li>
+<li>NACA_4DIGITS ( 1st digit, 2nd digit, 3rd and 4th digit )</li>
+<li>PARABOLIC ( Center, Thickness )</li>
+<li>DISPLACEMENT ( x_Disp, y_Disp, z_Disp )</li>
+<li>ROTATION ( x_Orig, y_Orig, z_Orig, x_End, y_End, z_End )</li>
+<li>OBSTACLE ( Center, Bump size )</li>
+<li>SPHERICAL ( ControlPoint_Index, Theta_Disp, R_Disp )</li>
+<li>FFD_CONTROL_POINT ( FFDBox ID, i_Ind, j_Ind, k_Ind, x_Disp, y_Disp, z_Disp )</li>
+<li>FFD_DIHEDRAL_ANGLE ( FFDBox ID, x_Orig, y_Orig, z_Orig, x_End, y_End, z_End )</li>
+<li>FFD_TWIST_ANGLE ( FFDBox ID, x_Orig, y_Orig, z_Orig, x_End, y_End, z_End )</li>
+<li>FFD_ROTATION ( FFDBox ID, x_Orig, y_Orig, z_Orig, x_End, y_End, z_End )</li>
+<li>FFD_CONTROL_SURFACE ( FFDBox ID, x_Orig, y_Orig, z_Orig, x_End, y_End, z_End )</li>
+<li>FFD_CAMBER ( FFDBox ID, i_Ind, j_Ind )</li>
+<li>FFD_THICKNESS ( FFDBox ID, i_Ind, j_Ind )</li>
+</ul>
+<p>DV_VALUE<br/>
+ New value of the shape deformation</p>
 <p>HOLD_GRID_FIXED <br/>
  Flag hold fixed some part of the mesh during the deformation. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>VISUALIZE_DEFORMATION <br/>
  Flag to visualize the deformation in MDC. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>DEFORM_CONSOLE_OUTPUT <br/>
  Print the residuals during mesh deformation to the console. <br/>
  Options: YES, NO. Default: YES</p>
@@ -1004,7 +1016,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 1E6</p>
 <p>DEFORM_STIFFNESS_TYPE <br/>
  Type of element stiffness imposed for FEA mesh deformation. <br/>
- Default: WALL_DISTANCE, <a class="el" href="option__structure_8hpp.html#a3428ed40b74523b22048bdda8915bc88">Options </a></p>
+ Default: WALL_DISTANCE, <a class="el" href="option__structure_8hpp.html#ad900886e3641644742372d9f931ee44d">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a3428ed40b74523b22048bdda8915bc88">Option details </a></p>
 <p>DEFORM_ELASTICITY_MODULUS <br/>
  <br/>
  Default: 2E11</p>
@@ -1013,7 +1025,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 0.3</p>
 <p>DEFORM_LINEAR_SOLVER <br/>
  Numerical method to deform the grid. <br/>
- Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Options </a></p>
+ Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a5b201289ba45123f7ac6066ab5d98092">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Rotorcraft problem </dt><dd></dd></dl>
 <p>CYCLIC_PITCH <br/>
  Cyclic pitch for rotorcraft simulations. <br/>
@@ -1036,34 +1048,34 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 160E9</p>
 <p>GEOMETRIC_CONDITIONS <br/>
  Determines the geometric condition (small or large deformations) for structural analysis. <br/>
- Default: SMALL_DEFORMATIONS, <a class="el" href="option__structure_8hpp.html#a387c0c31a00f2eab0dc10f4466086f72">Options </a></p>
+ Default: SMALL_DEFORMATIONS, <a class="el" href="option__structure_8hpp.html#af7256a7ee0eaa12f1db6799d5919c5ea">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a387c0c31a00f2eab0dc10f4466086f72">Option details </a></p>
 <p>MATERIAL_MODEL <br/>
  Determines the material model to be used (structural analysis). <br/>
- Default: LINEAR_ELASTIC, <a class="el" href="option__structure_8hpp.html#aab35e030f4526a82d71b32c230cb0cbb">Options </a></p>
+ Default: LINEAR_ELASTIC, <a class="el" href="option__structure_8hpp.html#aeb319be2d07a564b2c2e5eb61e3d601e">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#aab35e030f4526a82d71b32c230cb0cbb">Option details </a></p>
 <p>MATERIAL_COMPRESSIBILITY <br/>
  Determines if the material is compressible or incompressible (structural analysis). <br/>
- Default: COMPRESSIBLE_MAT, <a class="el" href="option__structure_8hpp.html#aef87947e7df6deac434f8dda814de139">Options </a></p>
+ Default: COMPRESSIBLE_MAT, <a class="el" href="option__structure_8hpp.html#a41a8fc6b44e19cbb360e90b3fe4fe148">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#aef87947e7df6deac434f8dda814de139">Option details </a></p>
 <p>PRESTRETCH <br/>
  type of interpolation to use for multi-zone applications. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>PRESTRETCH_FILENAME <br/>
- DESCRIPTION: Filename to input for prestretching membranes <br/>
+ Filename to input for prestretching membranes <br/>
  Default: prestretch_file.dat</p>
 <p>NONLINEAR_FEM_SOLUTION_METHOD <br/>
  Iterative scheme for nonlinear structural analysis. <br/>
- Default: NEWTON_RAPHSON, <a class="el" href="option__structure_8hpp.html#a44a915bc4e6a8d3754a83151f19be98c">Options </a></p>
+ Default: NEWTON_RAPHSON, <a class="el" href="option__structure_8hpp.html#aea4722e301817e8c0900b45ecd6f50e1">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a44a915bc4e6a8d3754a83151f19be98c">Option details </a></p>
 <p>NONLINEAR_FEM_INT_ITER <br/>
  Number of internal iterations (Newton-Raphson Method for nonlinear structural analysis). <br/>
  Default: 10</p>
 <p>FORMULATION_ELASTICITY_2D <br/>
  Kind of bidimensional elasticity solver. <br/>
- Default: PLANE_STRAIN, <a class="el" href="option__structure_8hpp.html#a1177593ade794ffe8a065001223c23ec">Options </a></p>
+ Default: PLANE_STRAIN, <a class="el" href="option__structure_8hpp.html#ac1632dca88edbd6503212eeb4b13dfa9">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1177593ade794ffe8a065001223c23ec">Option details </a></p>
 <p>DEAD_LOAD <br/>
  Application of dead loads to the FE analysis. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>DYNAMIC_ANALYSIS <br/>
  Static or dynamic structural analysis. <br/>
- Default: STATIC, <a class="el" href="option__structure_8hpp.html#a20a77f64cbbfb260d40a212649b22739">Options </a></p>
+ Default: STATIC, <a class="el" href="option__structure_8hpp.html#a4f2d48d57ebf5fe163444c5b8c8e0f2c">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a20a77f64cbbfb260d40a212649b22739">Option details </a></p>
 <p>DYN_TIMESTEP <br/>
  Time step for dynamic structural computations. <br/>
  Default: 0.0</p>
@@ -1078,10 +1090,10 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 0.5</p>
 <p>SIGMOID_LOADING <br/>
  Apply the load using a sigmoid. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>RAMP_LOADING <br/>
  Apply the load with linear increases. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>RAMP_TIME <br/>
  Time until the maximum load is applied. <br/>
  Default: 1.0</p>
@@ -1095,7 +1107,7 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  List specifying values:</p>
 <p>INCREMENTAL_LOAD <br/>
  Apply the load in increments (for nonlinear structural analysis). <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>NUMBER_INCREMENTS <br/>
  Number of increments. <br/>
  Default: 10</p>
@@ -1107,21 +1119,21 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 0</p>
 <p>MULTIPHYSICS_TRANSFER_METHOD <br/>
  Iterative scheme for nonlinear structural analysis. <br/>
- Default: BROADCAST_DATA, <a class="el" href="option__structure_8hpp.html#a32f7dd87817921d2bcc392f50a1856b3">Options </a></p>
+ Default: BROADCAST_DATA, <a class="el" href="option__structure_8hpp.html#a35c310032c55c0b264f385a1b5721d49">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a32f7dd87817921d2bcc392f50a1856b3">Option details </a></p>
 <p>FSI_FLUID_PROBLEM <br/>
  Kind of solver for the fluid in FSI applications. <br/>
- Default: NO_SOLVER_FFSI, <a class="el" href="option__structure_8hpp.html#af1b311a67d3f236a5c8f17234c8b292a">Options </a></p>
-<p>PHYSICAL_PROBLEM_STRUCTURAL_FSI DESCRIPTION: Physical governing equations <br/>
+ Default: NO_SOLVER_FFSI, <a class="el" href="option__structure_8hpp.html#a913e4103a19eaa71982c765b63e055e4">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#af1b311a67d3f236a5c8f17234c8b292a">Option details </a></p>
+<p>PHYSICAL_PROBLEM_STRUCTURAL_FSI Physical governing equations <br/>
  Options: NONE (default), FEM_ELASTICITY</p>
 <p>FSI_STRUCTURAL_PROBLEM <br/>
  Kind of solver for the structure in FSI applications. <br/>
- Default: NO_SOLVER_SFSI, <a class="el" href="option__structure_8hpp.html#a23fc49e1bb5cb9febf0eb26cf5054ced">Options </a></p>
+ Default: NO_SOLVER_SFSI, <a class="el" href="option__structure_8hpp.html#aab7130c6a1f7896ef81efe750242b493">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a23fc49e1bb5cb9febf0eb26cf5054ced">Option details </a></p>
 <p>FSI_LINEAR_SOLVER_STRUC <br/>
  Numerical solver for the structural part in FSI problems. <br/>
- Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Options </a></p>
+ Default: FGMRES, <a class="el" href="option__structure_8hpp.html#a5b201289ba45123f7ac6066ab5d98092">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a1a4e44ca05cd0c194989128cb2d8dc3b">Option details </a></p>
 <p>FSI_LINEAR_SOLVER_PREC_STRUC <br/>
  Preconditioner of the linear solver for the structural part in FSI problems. <br/>
- Default: LU_SGS, <a class="el" href="option__structure_8hpp.html#ab54440e50a711be5d03018e3d4cd6e53">Options </a></p>
+ Default: LU_SGS, <a class="el" href="option__structure_8hpp.html#a40472a6d3ed20aabd50d0b615936d6ba">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#ab54440e50a711be5d03018e3d4cd6e53">Option details </a></p>
 <p>FSI_LINEAR_SOLVER_ITER_STRUC <br/>
  Max iterations of the linear solver for FSI applications and structural solver. <br/>
  Default: 500</p>
@@ -1130,13 +1142,13 @@ Format: ( isothermal marker, wall temperature (static), ... )</p>
  Default: 1E-6</p>
 <p>RESTART_STEADY_STATE <br/>
  Restart from a steady state (sets grid velocities to 0 when loading the restart). <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>MATCHING_MESH <br/>
  Matching mesh (while implementing interpolation procedures). <br/>
  Options: YES, NO. Default: YES</p>
 <p>KIND_INTERPOLATION <br/>
 Type of interpolation to use for multi-zone problems. <br/>
- Default: NEAREST_NEIGHBOR, <a class="el" href="option__structure_8hpp.html#a71180aa3a8c6fe328b270ad53281478f">Options </a></p>
+ Default: NEAREST_NEIGHBOR, <a class="el" href="option__structure_8hpp.html#a97bc84f26d6dcf3e84fcaba93ce10bf8">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a71180aa3a8c6fe328b270ad53281478f">Option details </a></p>
 <p>FSI_ITER <br/>
  Number of maximum number of subiterations in a FSI problem. <br/>
  Default: 1</p>
@@ -1151,7 +1163,7 @@ Type of interpolation to use for multi-zone problems. <br/>
  Default: 0.5</p>
 <p>BGS_RELAXATION <br/>
  Kind of relaxation method for Block Gauss Seidel method in FSI problems. <br/>
- Default: NO_RELAXATION, <a class="el" href="option__structure_8hpp.html#af337f927352ea6494882a6e909792220">Options </a></p>
+ Default: NO_RELAXATION, <a class="el" href="option__structure_8hpp.html#a105840583cf23093c219ad6ed601853d">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#af337f927352ea6494882a6e909792220">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Wave solver </dt><dd></dd></dl>
 <p>WAVE_SPEED <br/>
  Wave speed used in the wave solver. <br/>
@@ -1164,14 +1176,14 @@ Type of interpolation to use for multi-zone problems. <br/>
 <dl class="section user"><dt>CONFIG_CATEGORY: Inverse design problem </dt><dd></dd></dl>
 <p>INV_DESIGN_CP <br/>
  Flag to know if the code is going to compute and plot the inverse design. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <p>INV_DESIGN_HEATFLUX <br/>
  Flag to know if the code is going to compute and plot the inverse design. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Unsupported options </dt><dd></dd></dl>
 <p>EXTRA_OUTPUT <br/>
  Write extra output <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <dl class="section user"><dt>CONFIG_CATEGORY:FFD point inversion </dt><dd></dd></dl>
 <p>FFD_ITERATIONS <br/>
  Iteration for the point inversion problem. <br/>
@@ -1181,14 +1193,14 @@ Type of interpolation to use for multi-zone problems. <br/>
  Default: 1E-10</p>
 <p>FFD_CONTINUITY <br/>
  Surface continuity at the intersection with the FFD. <br/>
- Default: DERIVATIVE_2ND, <a class="el" href="option__structure_8hpp.html#a67697a1dbc0f47f02cdfd8f69a52b60f">Options </a></p>
+ Default: DERIVATIVE_2ND, <a class="el" href="option__structure_8hpp.html#ab25f2259966667dbaae3df4e1580693d">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a67697a1dbc0f47f02cdfd8f69a52b60f">Option details </a></p>
 <dl class="section user"><dt>CONFIG_CATEGORY: Automatic Differentation options </dt><dd></dd></dl>
 <p>DIRECT_DIFF <br/>
  Direct Differentation mode. <br/>
- Default: NO_DERIVATIVE, <a class="el" href="option__structure_8hpp.html#a18b02df0aacaa4543f6ca9ab3099570e">Options </a></p>
+ Default: NO_DERIVATIVE, <a class="el" href="option__structure_8hpp.html#a111c612003b631be8594d7a895c62967">Option strings </a> ; <a class="el" href="option__structure_8hpp.html#a18b02df0aacaa4543f6ca9ab3099570e">Option details </a></p>
 <p>AUTO_DIFF <br/>
  Algorithmic Differentiation support. <br/>
- Options: YES, NO. Default: YES</p>
+ Options: YES, NO. Default: NO</p>
 <dl class="section user"><dt>CONFIG_CATEGORY:Python Options </dt><dd></dd></dl>
 <p>GRADIENT_METHOD <br/>
  Gradient method in python scripts.</p>
@@ -1222,7 +1234,7 @@ Type of interpolation to use for multi-zone problems. <br/>
  Flag specifying if the mesh was decomposed in python scripts.</p>
 <p>PARMETIS <br/>
  Boolean for activating ParMETIS mode (while testing). <br/>
- Options: YES, NO. Default: YES </p>
+ Options: YES, NO. Default: NO </p>
 
 <p>Definition at line <a class="el" href="config__structure_8cpp_source.html#l00210">210</a> of file <a class="el" href="config__structure_8cpp_source.html">config_structure.cpp</a>.</p>
 
@@ -1231,7 +1243,7 @@ Type of interpolation to use for multi-zone problems. <br/>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 19 2016 16:17:49 for SU2 by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 27 2016 08:51:50 for SU2 by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

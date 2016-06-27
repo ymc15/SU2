@@ -30,7 +30,7 @@
   <td id="projectlogo"><img alt="Logo" src="logoSU2_v3.3_small.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">SU2
-   &#160;<span id="projectnumber">Version 4.1.0 (Cardinal)</span>
+   &#160;<span id="projectnumber">Version 4.2.0 (Cardinal)</span>
    </div>
    <div id="projectbrief">Software suite for the simulation and design of aerospace systems, using unstructured grid technology</div>
   </td>
@@ -105,11 +105,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
  <a href="class_c_driver.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>&gt;</code></p>
-<div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
-  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> Inheritance diagram for CDriver:</div>
-<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
-</div>
-<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="dynheader">
+Inheritance diagram for CDriver:</div>
+<div class="dyncontent">
 <div class="center"><img src="class_c_driver__inherit__graph.png" border="0" usemap="#_c_driver_inherit__map" alt="Inheritance graph"/></div>
 <map name="_c_driver_inherit__map" id="_c_driver_inherit__map">
 <area shape="rect" id="node2" href="class_c_f_s_i_driver.html" title="Class for driving a BGS iteration for a fluid&#45;structure interaction problem in multiple zones..." alt="" coords="5,80,91,107"/><area shape="rect" id="node3" href="class_c_multi_zone_driver.html" title="Class for driving an iteration of the physics within multiple zones. " alt="" coords="115,80,236,107"/><area shape="rect" id="node4" href="class_c_single_zone_driver.html" title="Class for driving an iteration of the physics within a single zone. " alt="" coords="261,80,389,107"/><area shape="rect" id="node5" href="class_c_spectral_driver.html" title="Class for driving an iteration of a spectral method problem using multiple zones. ..." alt="" coords="413,80,524,107"/></map>
@@ -687,6 +685,7 @@ Protected Attributes</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">geometry_container</td><td>- Geometrical definition of the problem. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">integration_container</td><td>- Container vector with all the integration methods. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">numerics_container</td><td>- Description of the numerical method (the way in which the equations are solved). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">interpolator_container</td><td>- Definition of the interpolation method between non-matching discretizations of the interface. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">config</td><td>- Definition of the particular problem. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">val_nZone</td><td>- Total number of zones. </td></tr>
   </table>
@@ -794,7 +793,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="class_c_f_s_i_driver.html#a311f96500d2c68983897023df6569ed4">CFSIDriver</a>.</p>
 
-<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00214">214</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
+<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00215">215</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
 
 </div>
 </div>
@@ -895,7 +894,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="class_c_f_s_i_driver.html#a5af283861338400cdfe1b07ced9fc1a5">CFSIDriver</a>.</p>
 
-<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00224">224</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
+<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00225">225</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
 
 </div>
 </div>
@@ -973,7 +972,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="class_c_f_s_i_driver.html#a455ebf11234e9f09e4e2683567a96c70">CFSIDriver</a>.</p>
 
-<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00255">255</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
+<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00256">256</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
 
 </div>
 </div>
@@ -1051,7 +1050,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="class_c_f_s_i_driver.html#a659c9b758769563623e9e699c297adca">CFSIDriver</a>.</p>
 
-<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00264">264</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
+<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00265">265</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
 
 </div>
 </div>
@@ -1361,7 +1360,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="class_c_f_s_i_driver.html#a155319c48e6461711c92142e306a6e21">CFSIDriver</a>.</p>
 
-<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00234">234</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
+<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00235">235</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
 
 </div>
 </div>
@@ -1468,7 +1467,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="class_c_f_s_i_driver.html#ab579b55509b913e91ca684727d768296">CFSIDriver</a>.</p>
 
-<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00244">244</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
+<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00245">245</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
 
 </div>
 </div>
@@ -1575,7 +1574,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="class_c_f_s_i_driver.html#a5de05f47200846b82aea2d2cef91bd28">CFSIDriver</a>.</p>
 
-<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00272">272</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
+<p>Definition at line <a class="el" href="driver__structure_8hpp_source.html#l00273">273</a> of file <a class="el" href="driver__structure_8hpp_source.html">driver_structure.hpp</a>.</p>
 
 </div>
 </div>
@@ -1611,7 +1610,7 @@ Protected Attributes</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 19 2016 16:17:54 for SU2 by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 27 2016 08:52:05 for SU2 by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
