@@ -299,13 +299,11 @@ static const map<string, ENUM_INTERPOLATOR> Interpolator_Map = CCreateMap<string
  */
 enum ENUM_REGIME {
   COMPRESSIBLE = 0,			/*!< \brief Definition of compressible solver. */
-  INCOMPRESSIBLE = 1,				/*!< \brief Definition of incompressible solver. */
-  FREESURFACE = 2			/*!< \brief Definition of freesurface solver (incompressible). */
+  INCOMPRESSIBLE = 1				/*!< \brief Definition of incompressible solver. */
 };
 static const map<string, ENUM_REGIME> Regime_Map = CCreateMap<string, ENUM_REGIME>
 ("COMPRESSIBLE", COMPRESSIBLE)
-("INCOMPRESSIBLE", INCOMPRESSIBLE)
-("FREESURFACE", FREESURFACE);
+("INCOMPRESSIBLE", INCOMPRESSIBLE);
 
 /*!
  * \brief different non-dimensional modes

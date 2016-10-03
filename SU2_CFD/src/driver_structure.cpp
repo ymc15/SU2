@@ -1075,7 +1075,6 @@ void CDriver::Numerics_Preprocessing(CNumerics ****numerics_container,
   
   bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
   bool incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
-  bool freesurface = (config->GetKind_Regime() == FREESURFACE);
   bool ideal_gas = (config->GetKind_FluidModel() == STANDARD_AIR || config->GetKind_FluidModel() == IDEAL_GAS );
   
   /*--- Initialize some useful booleans ---*/
@@ -1224,10 +1223,6 @@ void CDriver::Numerics_Preprocessing(CNumerics ****numerics_container,
             numerics_container[iMGlevel][FLOW_SOL][CONV_BOUND_TERM] = new CUpwArtComp_Flow(nDim, nVar_Flow, config);
           
         }
-        if (freesurface) {
-          /*--- FreeSurface flow, use artificial compressibility method ---*/
-          cout << "Centered scheme not implemented." << endl; exit(EXIT_FAILURE);
-        }
         break;
       case SPACE_UPWIND :
         if (compressible) {
@@ -1310,20 +1305,6 @@ void CDriver::Numerics_Preprocessing(CNumerics ****numerics_container,
             default : cout << "Upwind scheme not implemented." << endl; exit(EXIT_FAILURE); break;
           }
         }
-        if (freesurface) {
-          /*--- Incompressible flow, use artificial compressibility method ---*/
-          switch (config->GetKind_Upwind_Flow()) {
-            case NO_UPWIND : cout << "No upwind scheme." << endl; break;
-            case ROE:
-              for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-                numerics_container[iMGlevel][FLOW_SOL][CONV_TERM] = new CUpwArtComp_FreeSurf_Flow(nDim, nVar_Flow, config);
-                numerics_container[iMGlevel][FLOW_SOL][CONV_BOUND_TERM] = new CUpwArtComp_FreeSurf_Flow(nDim, nVar_Flow, config);
-              }
-              break;
-            default : cout << "Upwind scheme not implemented." << endl; exit(EXIT_FAILURE); break;
-          }
-        }
-        
         break;
         
       default :
@@ -1367,17 +1348,6 @@ void CDriver::Numerics_Preprocessing(CNumerics ****numerics_container,
       for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++)
         numerics_container[iMGlevel][FLOW_SOL][VISC_BOUND_TERM] = new CAvgGradArtComp_Flow(nDim, nVar_Flow, config);
     }
-    if (freesurface) {
-      /*--- Freesurface flow, use artificial compressibility method ---*/
-      numerics_container[MESH_0][FLOW_SOL][VISC_TERM] = new CAvgGradCorrectedArtComp_Flow(nDim, nVar_Flow, config);
-      for (iMGlevel = 1; iMGlevel <= config->GetnMGLevels(); iMGlevel++)
-        numerics_container[iMGlevel][FLOW_SOL][VISC_TERM] = new CAvgGradArtComp_Flow(nDim, nVar_Flow, config);
-      
-      /*--- Definition of the boundary condition method ---*/
-      for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++)
-        numerics_container[iMGlevel][FLOW_SOL][VISC_BOUND_TERM] = new CAvgGradArtComp_Flow(nDim, nVar_Flow, config);
-    }
-    
     /*--- Definition of the source term integration scheme for each equation and mesh level ---*/
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
       
@@ -1543,7 +1513,7 @@ void CDriver::Numerics_Preprocessing(CNumerics ****numerics_container,
           
         }
         
-        if (incompressible || freesurface) {
+        if (incompressible) {
           
           /*--- Incompressible flow, use artificial compressibility method ---*/
           
@@ -1582,7 +1552,7 @@ void CDriver::Numerics_Preprocessing(CNumerics ****numerics_container,
           }
         }
         
-        if (incompressible || freesurface) {
+        if (incompressible) {
           
           /*--- Incompressible flow, use artificial compressibility method ---*/
           
@@ -1621,7 +1591,7 @@ void CDriver::Numerics_Preprocessing(CNumerics ****numerics_container,
       
     }
     
-    if (incompressible || freesurface) {
+    if (incompressible) {
       
       /*--- Incompressible flow, use artificial compressibility method ---*/
       
@@ -1669,7 +1639,7 @@ void CDriver::Numerics_Preprocessing(CNumerics ****numerics_container,
         
       }
       
-      if (incompressible || freesurface) {
+      if (incompressible) {
         
         numerics_container[iMGlevel][ADJFLOW_SOL][SOURCE_FIRST_TERM] = new CSourceNothing(nDim, nVar_Adj_Flow, config);
         numerics_container[iMGlevel][ADJFLOW_SOL][SOURCE_SECOND_TERM] = new CSourceNothing(nDim, nVar_Adj_Flow, config);
@@ -1787,7 +1757,6 @@ void CDriver::Numerics_Postprocessing(CNumerics ****numerics_container,
   
   bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
   bool incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
-  bool freesurface = (config->GetKind_Regime() == FREESURFACE);
   
   /*--- Initialize some useful booleans ---*/
   euler            = false;   ns               = false;   turbulent        = false;
@@ -1897,7 +1866,7 @@ void CDriver::Numerics_Postprocessing(CNumerics ****numerics_container,
           }
           
         }
-        if (incompressible || freesurface) {
+        if (incompressible) {
           /*--- Incompressible flow, use artificial compressibility method ---*/
           switch (config->GetKind_Upwind_Flow()) {
             case ROE:
@@ -1913,7 +1882,7 @@ void CDriver::Numerics_Postprocessing(CNumerics ****numerics_container,
     }
     
     /*--- Definition of the viscous scheme for each equation and mesh level ---*/
-    if (compressible||incompressible||freesurface) {
+    if (compressible||incompressible) {
       /*--- Compressible flow Ideal gas ---*/
       delete numerics_container[MESH_0][FLOW_SOL][VISC_TERM];
       for (iMGlevel = 1; iMGlevel <= config->GetnMGLevels(); iMGlevel++)
@@ -2026,7 +1995,7 @@ void CDriver::Numerics_Postprocessing(CNumerics ****numerics_container,
           
         }
         
-        if (incompressible || freesurface) {
+        if (incompressible) {
           
           /*--- Incompressible flow, use artificial compressibility method ---*/
           
@@ -2047,7 +2016,7 @@ void CDriver::Numerics_Postprocessing(CNumerics ****numerics_container,
         
       case SPACE_UPWIND :
         
-        if (compressible || incompressible || freesurface) {
+        if (compressible || incompressible) {
           
           /*--- Compressible flow ---*/
           
@@ -2066,7 +2035,7 @@ void CDriver::Numerics_Postprocessing(CNumerics ****numerics_container,
     
     /*--- Definition of the viscous scheme for each equation and mesh level ---*/
     
-    if (compressible || incompressible || freesurface) {
+    if (compressible || incompressible) {
       
       /*--- Compressible flow ---*/
       for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
@@ -2080,7 +2049,7 @@ void CDriver::Numerics_Postprocessing(CNumerics ****numerics_container,
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
       
       
-      if (compressible || incompressible || freesurface) {
+      if (compressible || incompressible) {
         
         delete numerics_container[iMGlevel][ADJFLOW_SOL][SOURCE_FIRST_TERM];
         delete numerics_container[iMGlevel][ADJFLOW_SOL][SOURCE_SECOND_TERM];

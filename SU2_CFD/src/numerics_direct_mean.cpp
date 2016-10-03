@@ -4754,7 +4754,6 @@ CSourceGravity::CSourceGravity(unsigned short val_nDim, unsigned short val_nVar,
   
   compressible = (config->GetKind_Regime() == COMPRESSIBLE);
   incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
-  freesurface = (config->GetKind_Regime() == FREESURFACE);
   
 }
 
@@ -4772,7 +4771,7 @@ void CSourceGravity::ComputeResidual(su2double *val_residual, CConfig *config) {
     val_residual[nDim] = Volume * U_i[0] * STANDART_GRAVITY;
     
   }
-  if (incompressible || freesurface) {
+  if (incompressible) {
     
     /*--- Compute the Froude number  ---*/
     Froude = config->GetFroude();
@@ -4863,7 +4862,6 @@ void CSourceAxisymmetric_Flow::ComputeResidual(su2double *val_residual, su2doubl
   bool implicit = (config->GetKind_TimeIntScheme_Turb() == EULER_IMPLICIT);
   bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
   bool incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
-  bool freesurface = (config->GetKind_Regime() == FREESURFACE);
   
   if (Coord_i[1] > 0.0) yinv = 1.0/Coord_i[1];
   else yinv = 0.0;
@@ -4883,7 +4881,7 @@ void CSourceAxisymmetric_Flow::ComputeResidual(su2double *val_residual, su2doubl
     val_residual[2] = yinv*Volume*(U_i[2]*U_i[2]/U_i[0]);
     val_residual[3] = yinv*Volume*Enthalpy_i*U_i[2];
   }
-  if (incompressible || freesurface) {
+  if (incompressible) {
     val_residual[0] = yinv*Volume*U_i[2]*BetaInc2_i;
     val_residual[1] = yinv*Volume*U_i[1]*U_i[2]/DensityInc_i;
     val_residual[2] = yinv*Volume*U_i[2]*U_i[2]/DensityInc_i;

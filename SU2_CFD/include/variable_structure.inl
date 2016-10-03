@@ -1037,11 +1037,6 @@ inline void CTurbSAVariable::SetTimeSpectral_Source(unsigned short val_var, su2d
 
 inline su2double CTurbSAVariable::GetTimeSpectral_Source(unsigned short val_var) { return TS_Source[val_var]; }
 
-
-inline void CTurbMLVariable::SetTimeSpectral_Source(unsigned short val_var, su2double val_source) { TS_Source[val_var] = val_source; }
-
-inline su2double CTurbMLVariable::GetTimeSpectral_Source(unsigned short val_var) { return TS_Source[val_var]; }
-
 inline su2double CTurbSSTVariable::GetF1blending() { return F1; }
 
 inline su2double CTurbSSTVariable::GetF2blending() { return F2; }
