@@ -3,7 +3,7 @@
  * \brief Headers of the main subroutines used by SU2_CFD.
  *        The subroutines and functions are in the <i>definition_structure.cpp</i> file.
  * \author F. Palacios, T. Economon
- * \version 4.0.1 "Cardinal"
+ * \version 4.3.0 "Cardinal"
  *
  * SU2 Lead Developers: Dr. Francisco Palacios (Francisco.D.Palacios@boeing.com).
  *                      Dr. Thomas D. Economon (economon@stanford.edu).
@@ -13,6 +13,10 @@
  *                 Prof. Nicolas R. Gauger's group at Kaiserslautern University of Technology.
  *                 Prof. Alberto Guardone's group at Polytechnic University of Milan.
  *                 Prof. Rafael Palacios' group at Imperial College London.
+ *                 Prof. Edwin van der Weide's group at the University of Twente.
+ *                 Prof. Vincent Terrapon's group at the University of Liege.
+ *
+ * Copyright (C) 2012-2016 SU2, the open-source CFD code.
  *
  * SU2 is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,14 +37,21 @@
 #include "../../Common/include/mpi_structure.hpp"
 
 #include <ctime>
+
+#include "../../Common/include/gauss_structure.hpp"
+#include "../../Common/include/element_structure.hpp"
 #include "driver_structure.hpp"
 #include "iteration_structure.hpp"
 #include "solver_structure.hpp"
 #include "integration_structure.hpp"
 #include "output_structure.hpp"
 #include "numerics_structure.hpp"
+#include "transfer_structure.hpp"
 #include "../../Common/include/geometry_structure.hpp"
 #include "../../Common/include/config_structure.hpp"
+#include "../../Common/include/interpolation_structure.hpp"
+
+
 
 using namespace std;
 
@@ -62,26 +73,8 @@ unsigned short GetnZone(string val_mesh_filename, unsigned short val_format, CCo
 unsigned short GetnDim(string val_mesh_filename, unsigned short val_format);
 
 /*!
- * \brief Definition of the driver class for single and multi-zone problems.
- * \param[in] driver - Pointer to the driver object to be instantiated.
- * \param[in] config - Definition of the particular problem.
- * \param[in] nZone - Total number of zones in the problem.
- */
-void Driver_Preprocessing(CDriver **driver,
-    CIteration **iteration_container,
-    CSolver ****solver_container,
-    CGeometry ***geometry_container,
-    CIntegration ***integration_container,
-    CNumerics *****numerics_container,
-                          CConfig **config,
-                          unsigned short val_nZone);
-
-
-
-/*! 
- * \brief Do the geometrical preprocessing.
+ * \brief Performs an analysis of the mesh partitions for distributed memory calculations.
  * \param[in] geometry - Geometrical definition of the problem.
  * \param[in] config - Definition of the particular problem.
- * \param[in] val_nZone - Total number of zones.
  */
-void Geometrical_Preprocessing(CGeometry ***geometry, CConfig **config, unsigned short val_nZone);
+void Partition_Analysis(CGeometry *geometry, CConfig *config);

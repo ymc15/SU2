@@ -2,7 +2,7 @@
  * \file variable_direct_mean.cpp
  * \brief Definition of the solution fields.
  * \author F. Palacios, T. Economon
- * \version 4.0.1 "Cardinal"
+ * \version 4.3.0 "Cardinal"
  *
  * SU2 Lead Developers: Dr. Francisco Palacios (Francisco.D.Palacios@boeing.com).
  *                      Dr. Thomas D. Economon (economon@stanford.edu).
@@ -12,8 +12,10 @@
  *                 Prof. Nicolas R. Gauger's group at Kaiserslautern University of Technology.
  *                 Prof. Alberto Guardone's group at Polytechnic University of Milan.
  *                 Prof. Rafael Palacios' group at Imperial College London.
+ *                 Prof. Edwin van der Weide's group at the University of Twente.
+ *                 Prof. Vincent Terrapon's group at the University of Liege.
  *
- * Copyright (C) 2012-2015 SU2, the open-source CFD code.
+ * Copyright (C) 2012-2016 SU2, the open-source CFD code.
  *
  * SU2 is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,13 +36,28 @@
 CEulerVariable::CEulerVariable(void) : CVariable() {
   
   /*--- Array initialization ---*/
-	TS_Source = NULL;
-	Primitive = NULL;
-	Gradient_Primitive = NULL;
-	Limiter_Primitive = NULL;
-  WindGust = NULL;
-  WindGustDer = NULL;
   
+	HB_Source = NULL;
+	Primitive = NULL;
+	Secondary = NULL;
+	
+  Gradient_Primitive = NULL;
+	Gradient_Secondary = NULL;
+  
+	Limiter_Primitive = NULL;
+	Limiter_Secondary = NULL;
+  
+  WindGust    = NULL;
+  WindGustDer = NULL;
+
+  nPrimVar     = 0;
+  nPrimVarGrad = 0;
+
+  nSecondaryVar     = 0;
+  nSecondaryVarGrad = 0;
+ 
+  Undivided_Laplacian = NULL;
+ 
 }
 
 CEulerVariable::CEulerVariable(su2double val_density, su2double *val_velocity, su2double val_energy, unsigned short val_nDim,
@@ -58,12 +75,26 @@ CEulerVariable::CEulerVariable(su2double val_density, su2double *val_velocity, s
   
   /*--- Array initialization ---*/
   
-	TS_Source = NULL;
-	Primitive = NULL;
-	Gradient_Primitive = NULL;
-	Limiter_Primitive = NULL;
-  WindGust = NULL;
+  HB_Source = NULL;
+  Primitive = NULL;
+  Secondary = NULL;
+  
+  Gradient_Primitive = NULL;
+  Gradient_Secondary = NULL;
+  
+  Limiter_Primitive = NULL;
+  Limiter_Secondary = NULL;
+  
+  WindGust    = NULL;
   WindGustDer = NULL;
+  
+  nPrimVar     = 0;
+  nPrimVarGrad = 0;
+  
+  nSecondaryVar     = 0;
+  nSecondaryVarGrad = 0;
+
+  Undivided_Laplacian = NULL;
 
   /*--- Allocate and initialize the primitive variables and gradients ---*/
   
@@ -105,7 +136,7 @@ CEulerVariable::CEulerVariable(su2double val_density, su2double *val_velocity, s
   for (iVar = 0; iVar < nPrimVarGrad; iVar++)
     Limiter_Primitive[iVar] = 0.0;
   
-  if(compressible){ 
+  if(compressible) { 
     Limiter_Secondary = new su2double [nSecondaryVarGrad];
     for (iVar = 0; iVar < nSecondaryVarGrad; iVar++)
       Limiter_Secondary[iVar] = 0.0;
@@ -166,11 +197,11 @@ CEulerVariable::CEulerVariable(su2double val_density, su2double *val_velocity, s
 		}
 	}
   
-	/*--- Allocate space for the time spectral source terms ---*/
+	/*--- Allocate space for the harmonic balance source terms ---*/
   
-	if (config->GetUnsteady_Simulation() == TIME_SPECTRAL) {
-		TS_Source = new su2double[nVar];
-		for (iVar = 0; iVar < nVar; iVar++) TS_Source[iVar] = 0.0;
+	if (config->GetUnsteady_Simulation() == HARMONIC_BALANCE) {
+		HB_Source = new su2double[nVar];
+		for (iVar = 0; iVar < nVar; iVar++) HB_Source[iVar] = 0.0;
 	}
     
   /*--- Allocate vector for wind gust and wind gust derivative field ---*/
@@ -191,7 +222,7 @@ CEulerVariable::CEulerVariable(su2double val_density, su2double *val_velocity, s
   Primitive = new su2double [nPrimVar];
   for (iVar = 0; iVar < nPrimVar; iVar++) Primitive[iVar] = 0.0;
   
-  if (compressible){ 
+  if (compressible) { 
     Secondary = new su2double [nSecondaryVar];
     for (iVar = 0; iVar < nSecondaryVar; iVar++) Secondary[iVar] = 0.0;
   }
@@ -208,7 +239,7 @@ CEulerVariable::CEulerVariable(su2double val_density, su2double *val_velocity, s
       Gradient_Primitive[iVar][iDim] = 0.0;
   }
 
-  if (compressible){  
+  if (compressible) {  
     Gradient_Secondary = new su2double* [nSecondaryVarGrad];
     for (iVar = 0; iVar < nSecondaryVarGrad; iVar++) {
       Gradient_Secondary[iVar] = new su2double [nDim];
@@ -231,13 +262,28 @@ CEulerVariable::CEulerVariable(su2double *val_solution, unsigned short val_nDim,
   bool windgust = config->GetWind_Gust();
   
   /*--- Array initialization ---*/
-	TS_Source = NULL;
-	Primitive = NULL;
-	Gradient_Primitive = NULL;
+  
+  HB_Source = NULL;
+  Primitive = NULL;
+  Secondary = NULL;
+  
+  Gradient_Primitive = NULL;
+  Gradient_Secondary = NULL;
+  
   Limiter_Primitive = NULL;
-  WindGust = NULL;
+  Limiter_Secondary = NULL;
+  
+  WindGust    = NULL;
   WindGustDer = NULL;
   
+  nPrimVar     = 0;
+  nPrimVarGrad = 0;
+  
+  nSecondaryVar     = 0;
+  nSecondaryVarGrad = 0;
+ 
+  Undivided_Laplacian = NULL;
+ 
 	/*--- Allocate and initialize the primitive variables and gradients ---*/
   if (incompressible) { nPrimVar = nDim+5; nPrimVarGrad = nDim+3; }
   if (freesurface)    { nPrimVar = nDim+7; nPrimVarGrad = nDim+6; }
@@ -272,7 +318,7 @@ CEulerVariable::CEulerVariable(su2double *val_solution, unsigned short val_nDim,
   for (iVar = 0; iVar < nPrimVarGrad; iVar++)
     Limiter_Primitive[iVar] = 0.0;
  
-  if (compressible){ 
+  if (compressible) { 
     Limiter_Secondary = new su2double [nSecondaryVarGrad];
     for (iVar = 0; iVar < nSecondaryVarGrad; iVar++)
       Limiter_Secondary[iVar] = 0.0;
@@ -306,10 +352,10 @@ CEulerVariable::CEulerVariable(su2double *val_solution, unsigned short val_nDim,
 		}
 	}
   
-	/*--- Allocate space for the time spectral source terms ---*/
-	if (config->GetUnsteady_Simulation() == TIME_SPECTRAL) {
-		TS_Source = new su2double[nVar];
-		for (iVar = 0; iVar < nVar; iVar++) TS_Source[iVar] = 0.0;
+	/*--- Allocate space for the harmonic balance source terms ---*/
+	if (config->GetUnsteady_Simulation() == HARMONIC_BALANCE) {
+		HB_Source = new su2double[nVar];
+		for (iVar = 0; iVar < nVar; iVar++) HB_Source[iVar] = 0.0;
 	}
     
   /*--- Allocate vector for wind gust and wind gust derivative field ---*/
@@ -327,7 +373,7 @@ CEulerVariable::CEulerVariable(su2double *val_solution, unsigned short val_nDim,
   Primitive = new su2double [nPrimVar];
   for (iVar = 0; iVar < nPrimVar; iVar++) Primitive[iVar] = 0.0;
   
-  if (compressible){ 
+  if (compressible) { 
     Secondary = new su2double [nSecondaryVar];
     for (iVar = 0; iVar < nSecondaryVar; iVar++) Secondary[iVar] = 0.0;
   }
@@ -343,7 +389,7 @@ CEulerVariable::CEulerVariable(su2double *val_solution, unsigned short val_nDim,
       Gradient_Primitive[iVar][iDim] = 0.0;
   }
 
-  if (compressible){  
+  if (compressible) {  
     Gradient_Secondary = new su2double* [nSecondaryVarGrad];
     for (iVar = 0; iVar < nSecondaryVarGrad; iVar++) {
       Gradient_Secondary[iVar] = new su2double [nDim];
@@ -356,18 +402,27 @@ CEulerVariable::CEulerVariable(su2double *val_solution, unsigned short val_nDim,
 
 CEulerVariable::~CEulerVariable(void) {
 	unsigned short iVar;
-  
-	if (TS_Source         != NULL) delete [] TS_Source;
+
+  if (HB_Source         != NULL) delete [] HB_Source;
   if (Primitive         != NULL) delete [] Primitive;
+  if (Secondary         != NULL) delete [] Secondary;
   if (Limiter_Primitive != NULL) delete [] Limiter_Primitive;
+  if (Limiter_Secondary != NULL) delete [] Limiter_Secondary;
   if (WindGust          != NULL) delete [] WindGust;
   if (WindGustDer       != NULL) delete [] WindGustDer;
 
   if (Gradient_Primitive != NULL) {
     for (iVar = 0; iVar < nPrimVarGrad; iVar++)
-      delete Gradient_Primitive[iVar];
+      if (Gradient_Primitive[iVar] != NULL) delete [] Gradient_Primitive[iVar];
     delete [] Gradient_Primitive;
   }
+  if (Gradient_Secondary != NULL) {
+    for (iVar = 0; iVar < nSecondaryVarGrad; iVar++)
+      if (Gradient_Secondary[iVar] != NULL) delete [] Gradient_Secondary[iVar];
+    delete [] Gradient_Secondary;
+  }
+
+  if (Undivided_Laplacian != NULL) delete [] Undivided_Laplacian;
   
 }
 
@@ -569,6 +624,9 @@ bool CNSVariable::SetStrainMag(bool val_limiter) {
   su2double Div;
   unsigned short iDim;
   
+  AD::StartPreacc();
+  AD::SetPreaccIn(Gradient_Primitive, nDim+1, nDim);
+
   Div = 0.0;
   for (iDim = 0; iDim < nDim; iDim++) {
     Div += Gradient_Primitive[iDim+1][iDim];
@@ -592,6 +650,9 @@ bool CNSVariable::SetStrainMag(bool val_limiter) {
   }
   
   StrainMag = sqrt(2.0*StrainMag);
+
+  AD::SetPreaccOut(StrainMag);
+  AD::EndPreacc();
 
   return false;
   
